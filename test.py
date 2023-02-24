@@ -7,9 +7,10 @@ from antlr4 import *
 from antlr4.error.ErrorListener import *
 
 
-from Python3Lexer import Python3Lexer
-from Python3Parser import Python3Parser
-from Python3Listener import Python3Listener
+from antlr.Python3Lexer import Python3Lexer
+from antlr.Python3Parser import Python3Parser
+from antlr.Python3Listener import Python3Listener
+
 from Python3Visitor import Python3Visitor
 
 
@@ -80,7 +81,7 @@ class Python3ParserTests(TestCase):
         self.assertEqual(len(self.errorListener.symbol), 0)"""
 
     def test_python3_test_student(self):
-        parser = self.setup("q1_3.py")
+        parser = self.setup("test/q1_3.py")
         tree = parser.file_input()
         listener = Printer()
         walker = ParseTreeWalker()
@@ -130,14 +131,14 @@ class AstGeneratorTests(TestCase):
         return parser
 
     def test_ast_generator_student(self):
-        parser = self.setup("q1_3.py")
+        parser = self.setup("test/q1_3.py")
         tree = parser.file_input()
         
         generatedTree = Python3Visitor().visit(tree)
         print(ast.dump(generatedTree))
 
-        with open("q1_3.py") as file:
-            pythonTree = ast.parse(file.read(), "q1_3.py")
+        with open("test/q1_3.py") as file:
+            pythonTree = ast.parse(file.read(), "test/q1_3.py")
             print()
             print(ast.dump(pythonTree))
             self.assertTrue(asts_equal(pythonTree, generatedTree))
