@@ -3,7 +3,7 @@ from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .Python3Parser import Python3Parser
 else:
-    from Python3Parser import Python3Parser
+    from antlr.Python3Parser import Python3Parser
 
 from ast import *
 
