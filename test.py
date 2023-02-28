@@ -5,7 +5,6 @@ import ast
 import pytest
 from antlr4 import *
 from antlr4.error.ErrorListener import *
-from colorama import Fore, Style
 
 from antlr.Python3Lexer import Python3Lexer
 from antlr.Python3Parser import Python3Parser
