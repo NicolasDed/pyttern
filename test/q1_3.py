@@ -5,10 +5,11 @@ def multiplications(n):
           telles que n == a*b == b*a
     """
     # A COMPLETER #
-    print("ok")
+    print(True)
     b=n
     a=1
     c=0
+    d = b[0]
 
     if a or b or a and c: print("ok")
     elif not a and (not c or b):

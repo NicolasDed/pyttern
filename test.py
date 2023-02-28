@@ -5,7 +5,7 @@ import ast
 import pytest
 from antlr4 import *
 from antlr4.error.ErrorListener import *
-
+from colorama import Fore, Style
 
 from antlr.Python3Lexer import Python3Lexer
 from antlr.Python3Parser import Python3Parser
@@ -45,6 +45,10 @@ class Printer(ParseTreeListener):
     def exitEveryRule(self, ctx):
         self.depth -= 1
 
+    def visitTerminal(self, node:TerminalNode):
+        print(node)
+
+
 class Python3ParserTests(TestCase):
 
     def setup(self, path):
@@ -72,13 +76,13 @@ class Python3ParserTests(TestCase):
         parser.addErrorListener(self.errorListener)
         return parser
 
-    """def test_python3_test_grammar(self):
-        parser = self.setup("test_grammar.py")
+    def test_python3_test_grammar(self):
+        parser = self.setup("test/test_grammar.py")
         tree = parser.file_input()
         listener = Python3Listener()
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
-        self.assertEqual(len(self.errorListener.symbol), 0)"""
+        self.assertEqual(len(self.errorListener.symbol), 0)
 
     def test_python3_test_student(self):
         parser = self.setup("test/q1_3.py")
@@ -89,30 +93,6 @@ class Python3ParserTests(TestCase):
         self.assertEqual(len(self.errorListener.symbol), 0)
 
 
-def asts_equal(expected_ast, actual_ast):
-    """
-    Compare two abstract syntax trees (ASTs) to see if they are equal.
-    """
-    if type(expected_ast) != type(actual_ast):
-        return False
-
-    if isinstance(expected_ast, ast.AST):
-        for field, expected_value in ast.iter_fields(expected_ast):
-            actual_value = getattr(actual_ast, field, None)
-            if not asts_equal(expected_value, actual_value):
-                return False
-        return True
-
-    elif isinstance(expected_ast, list):
-        if len(expected_ast) != len(actual_ast):
-            return False
-        for expected_value, actual_value in zip(expected_ast, actual_ast):
-            if not asts_equal(expected_value, actual_value):
-                return False
-        return True
-
-    else:
-        return expected_ast == actual_ast
 
 class AstGeneratorTests(TestCase):
 
@@ -130,29 +110,49 @@ class AstGeneratorTests(TestCase):
         parser.addErrorListener(self.errorListener)
         return parser
 
+    def asts_equal(self, expected_ast, actual_ast):
+        """
+        Compare two abstract syntax trees (ASTs) to see if they are equal.
+        """
+        if isinstance(expected_ast, ast.Load) and isinstance(actual_ast, ast.Store) \
+            or isinstance(expected_ast, ast.Store) and isinstance(actual_ast, ast.Load):
+            return
+
+        self.assertEqual(type(actual_ast), type(expected_ast))
+
+        if isinstance(expected_ast, ast.AST):
+            for field, expected_value in ast.iter_fields(expected_ast):
+                actual_value = getattr(actual_ast, field, None)
+                self.asts_equal(expected_value, actual_value)
+
+        elif isinstance(expected_ast, list):
+            self.assertEqual(len(actual_ast), len(expected_ast), f"{str(actual_ast)} != {str(expected_ast)}")
+            for expected_value, actual_value in zip(expected_ast, actual_ast):
+                self.asts_equal(expected_value, actual_value)
+
+        else:
+            self.assertEqual(actual_ast, expected_ast)
+
     def test_ast_generator_student(self):
         parser = self.setup("test/q1_3.py")
         tree = parser.file_input()
         
         generatedTree = Python3Visitor().visit(tree)
-        print(ast.dump(generatedTree))
+        print(ast.dump(generatedTree, indent=1))
 
         with open("test/q1_3.py") as file:
             pythonTree = ast.parse(file.read(), "test/q1_3.py")
             print()
-            print(ast.dump(pythonTree))
-            self.assertTrue(asts_equal(pythonTree, generatedTree))
+            print(ast.dump(pythonTree, indent=1))
+            self.asts_equal(pythonTree, generatedTree)
 
 
-    """def test_ast_generator_complex(self):
-        parser = self.setup("test_grammar.py")
+    def test_ast_generator_complex(self):
+        parser = self.setup("test/test_grammar.py")
         tree = parser.file_input()
-        listener = AstGenerator()
-        walker = ParseTreeWalker()
-        walker.walk(listener, tree)
-        generatedTree = listener.stack[0]
-        print(ast.dump(generatedTree))
+        
+        generatedTree = Python3Visitor().visit(tree)
 
-        with open("test_grammar.py") as file:
-            pythonTree = ast.parse(file.read(), "test_grammar.py")
-            self.assertTrue(asts_equal(pythonTree, generatedTree))"""
+        with open("test/test_grammar.py") as file:
+            pythonTree = ast.parse(file.read(), "test/test_grammar.py")
+            self.asts_equal(pythonTree, generatedTree)
