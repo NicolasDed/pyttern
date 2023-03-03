@@ -113,24 +113,43 @@ class AstGeneratorTests(TestCase):
         """
         Compare two abstract syntax trees (ASTs) to see if they are equal.
         """
+        self.__asts_equal(expected_ast, actual_ast, [])
+
+    def __asts_equal(self, expected_ast, actual_ast, path):
+        """
+        Compare two abstract syntax trees (ASTs) to see if they are equal.
+        """
+        if hasattr(actual_ast, 'name'):
+            toApp = (type(actual_ast).__name__, actual_ast.name)
+        else:
+            toApp = type(actual_ast).__name__
+        path.append(toApp)
+
         if isinstance(expected_ast, ast.Load) and isinstance(actual_ast, ast.Store) \
             or isinstance(expected_ast, ast.Store) and isinstance(actual_ast, ast.Load):
+            path.pop()
             return
 
-        self.assertEqual(type(actual_ast), type(expected_ast))
+        self.assertEqual(type(actual_ast), type(expected_ast), (actual_ast, expected_ast, path))
 
         if isinstance(expected_ast, ast.AST):
             for field, expected_value in ast.iter_fields(expected_ast):
+                path.append(field)
                 actual_value = getattr(actual_ast, field, None)
-                self.asts_equal(expected_value, actual_value)
+                self.__asts_equal(expected_value, actual_value, path)
+                path.pop()
 
         elif isinstance(expected_ast, list):
-            self.assertEqual(len(actual_ast), len(expected_ast), f"{str(actual_ast)} != {str(expected_ast)}")
+            self.assertEqual(len(actual_ast), len(expected_ast), f"{str(actual_ast)} != {str(expected_ast)} : {path}")
             for expected_value, actual_value in zip(expected_ast, actual_ast):
-                self.asts_equal(expected_value, actual_value)
+                self.__asts_equal(expected_value, actual_value, path)
 
         else:
-            self.assertEqual(actual_ast, expected_ast)
+            if not(isinstance(expected_ast, str) and isinstance(actual_ast, str)):
+                self.assertEqual(actual_ast, expected_ast, path)
+                
+        
+        path.pop()
 
     def test_ast_generator_student(self):
         parser = self.setup("test/q1_3.py")
@@ -145,13 +164,30 @@ class AstGeneratorTests(TestCase):
             print(ast.dump(pythonTree, indent=1))
             self.asts_equal(pythonTree, generatedTree)
 
+    def test_ast_generator_student2(self):
+        parser = self.setup("test/q1_254.py")
+        tree = parser.file_input()
+        
+        generatedTree = Python3Visitor().visit(tree)
+        print(ast.dump(generatedTree, indent=1))
+
+        with open("test/q1_254.py") as file:
+            pythonTree = ast.parse(file.read(), "test/q1_254.py")
+            print()
+            print(ast.dump(pythonTree, indent=1))
+            self.asts_equal(pythonTree, generatedTree)
+
 
     def test_ast_generator_complex(self):
         parser = self.setup("test/test_grammar.py")
         tree = parser.file_input()
         
         generatedTree = Python3Visitor().visit(tree)
+        print(ast.dump(generatedTree, indent=1))
+
 
         with open("test/test_grammar.py") as file:
             pythonTree = ast.parse(file.read(), "test/test_grammar.py")
+            print()
+            print(ast.dump(pythonTree, indent=1))
             self.asts_equal(pythonTree, generatedTree)

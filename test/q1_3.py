@@ -10,6 +10,8 @@ def multiplications(n):
     a=1
     c=0
     d = b[0]
+    e = (1,2,3)
+    f = 1 + 2 + 3 + 4
 
     if a or b or a and c: print("ok")
     elif not a and (not c or b):

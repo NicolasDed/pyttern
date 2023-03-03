@@ -241,7 +241,7 @@ shift_expr: arith_expr (('<<'|'>>') arith_expr)*;
 arith_expr: term (('+'|'-') term)*;
 term: factor (('*'|'@'|'/'|'%'|'//') factor)*;
 factor: ('+'|'-'|'~') factor | power;
-power: atom_expr ('**' factor)?;
+power:  atom_expr ('**' factor)?;
 atom_expr: (AWAIT)? atom trailer*;
 atom: ('(' (yield_expr|testlist_comp)? ')' |
        '[' (testlist_comp)? ']' |
