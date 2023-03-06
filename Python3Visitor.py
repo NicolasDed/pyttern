@@ -907,7 +907,10 @@ class Python3Visitor(ParseTreeVisitor):
         if ctx.OPEN_PAREN() is not None:
             if ctx.testlist_comp() is not None:
                 val = ctx.testlist_comp().accept(self)
-                val = val.elts if isinstance(val, List) else val
+                if isinstance(val, List):
+                    val = val.elts
+                elif isinstance(val, ListComp):
+                    return GeneratorExp(elt=val.elt, generators=val.generators)
             elif ctx.yield_expr() is not None:
                 val = ctx.yield_expr().accept(self)
             else:
@@ -1067,6 +1070,10 @@ class Python3Visitor(ParseTreeVisitor):
             key = key.id if isinstance(key, Name) else key.value
             return keyword(arg=key, value=ctx.test(1).accept(self))
 
+        if ctx.comp_for() is not None:
+            generator = ctx.comp_for().accept(self)
+            elt = ctx.test(0).accept(self)
+            return GeneratorExp(elt=elt, generators=generator)
 
         return self.visitChildren(ctx)
 
@@ -1074,8 +1081,6 @@ class Python3Visitor(ParseTreeVisitor):
     # Visit a parse tree produced by Python3Parser#comp_iter.
     def visitComp_iter(self, ctx:Python3Parser.Comp_iterContext):
         vals = self.visitChildren(ctx)
-        if not isinstance(vals, list):
-            vals = vals
         return vals
 
 
@@ -1085,22 +1090,25 @@ class Python3Visitor(ParseTreeVisitor):
         iterVal = ctx.or_test().accept(self)
         is_async = 1 if ctx.ASYNC() is not None else 0
         
+        ret = []
+        ifs = []
         nextComp = ctx.comp_iter()
         if nextComp is not None:
             nextComp = nextComp.accept(self)
-            if isinstance(nextComp, list):
-                nextComp.insert(0, comprehension(target, iterVal, [], is_async))
-                return nextComp
-            else:
-                return [comprehension(target, iterVal, nextComp, is_async)]
-        return [comprehension(target, iterVal, [], is_async)]
+            for comp in nextComp:
+                if isinstance(comp, comprehension):
+                    ret.append(comp)
+                else:
+                    ifs.append(comp)
+        return [comprehension(target=target, iter=iterVal, ifs=ifs, is_async=is_async)] + ret
 
 
     # Visit a parse tree produced by Python3Parser#comp_if.
     def visitComp_if(self, ctx:Python3Parser.Comp_ifContext):
         test = ctx.test_nocond().accept(self)
-        nextComp = ctx.comp_iter().accept(self) if ctx.comp_iter() is not None else None
-        return IfExp(test, nextComp, None) if nextComp is not None else test
+        nextComp = ctx.comp_iter().accept(self) if ctx.comp_iter() is not None else []
+        
+        return [test] + nextComp
 
 
     # Visit a parse tree produced by Python3Parser#encoding_decl.
