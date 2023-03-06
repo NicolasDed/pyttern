@@ -145,8 +145,7 @@ class AstGeneratorTests(TestCase):
                 self.__asts_equal(expected_value, actual_value, path)
 
         else:
-            if not(isinstance(expected_ast, str) and isinstance(actual_ast, str)):
-                self.assertEqual(actual_ast, expected_ast, path)
+            self.assertEqual(actual_ast, expected_ast, path)
                 
         
         path.pop()

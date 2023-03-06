@@ -119,8 +119,6 @@ class Python3Visitor(ParseTreeVisitor):
     # Visit a parse tree produced by Python3Parser#decorated.
     def visitDecorated(self, ctx:Python3Parser.DecoratedContext):
         decorator = ctx.decorators().accept(self)
-        if ctx.getChildCount() < 2:
-            return decorator
         decorated = ctx.getChild(1).accept(self)
         decorated.decorator_list = decorator
         return decorated
@@ -131,9 +129,7 @@ class Python3Visitor(ParseTreeVisitor):
         funcdef = ctx.funcdef()
         name = funcdef.NAME().accept(self)
         args = funcdef.parameters().accept(self)
-
         returns = funcdef.test().accept(self) if ctx.test() is not None else None
-
         suite = funcdef.suite().accept(self)
 
         return AsyncFunctionDef(name, args, suite, [], returns=returns)
@@ -846,6 +842,24 @@ class Python3Visitor(ParseTreeVisitor):
         # Replace all escaped characters with their corresponding values
         return escape_pattern.sub(lambda match: escape_dict[match.group()], string)
 
+    def cleanup_string(self, string):
+        # remove potential '\' at the end of each line
+        regex = r"\\\n"
+        string = re.sub(regex, "", string, 0, re.MULTILINE)
+
+        if string.startswith('"""') or string.startswith("'''"):
+            string = string[3:-3]
+            string = self.replace_escaped_chars(string)
+        elif string.startswith('"') or string.startswith("'"):
+            delim = string[0]
+            string = string[1:-1]
+            string = self.replace_escaped_chars(string)
+        elif string.startswith('b'):
+            string = string[2:-1]
+            string = bytes(string, 'utf-8')
+
+        return string
+
 
     # Visit a parse tree produced by Python3Parser#atom.
     def visitAtom(self, ctx:Python3Parser.AtomContext):
@@ -870,26 +884,11 @@ class Python3Visitor(ParseTreeVisitor):
         if len(ctx.STRING()) > 0:
             if len(ctx.STRING()) == 1:
                 string = ctx.STRING(0).accept(self)
+                string = self.cleanup_string(string)
             else:
-                strings = [s.accept(self) for s in ctx.STRING()]
+                strings = [self.cleanup_string(s.accept(self)) for s in ctx.STRING()]
                 string = ''.join(strings)
-                
-            # remove potential '\' at the end of each line
-            sep = string.split('\n')
-            if len(sep) > 1:
-                sep = [s.rstrip('\\') for s in sep]
-                string = '\n'.join(sep)
 
-            if string.startswith('"""') or string.startswith("'''"):
-                string = string[3:-3]
-                string = self.replace_escaped_chars(string)
-            elif string.startswith('"') or string.startswith("'"):
-                delim = string[0]
-                string = string[1:-1]
-                string = self.replace_escaped_chars(string)
-            elif string.startswith('b'):
-                string = string[2:-1]
-                string = bytes(string, 'utf-8')
             return Constant(string)
 
         if ctx.ELLIPSIS() is not None:
