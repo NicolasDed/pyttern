@@ -1,41 +1,45 @@
 # Generated from Python3.g4 by ANTLR 4.7.2
 from antlr4 import *
+
 if __name__ is not None and "." in __name__:
-    from .Python3Parser import Python3Parser
+    from .antlr.Python3Parser import Python3Parser
+    from .antlr.Python3Visitor import Python3Visitor
 else:
     from antlr.Python3Parser import Python3Parser
+    from antlr.Python3Visitor import Python3Visitor
 
 from ast import *
+from HoleAST import *
 import re
 
 # Bind operator to their classes
 operators = {
-    'and': And, 
-    'or': Or, 
-    '+': UAdd, 
-    '-': USub, 
-    '*': Mult, 
-    '@': MatMult, 
-    '/': Div, 
-    '%': Mod, 
-    '**': Pow, 
-    '<<': LShift, 
-    '>>': RShift, 
-    '|': BitOr, 
-    '^': BitXor, 
-    '&': BitAnd, 
-    '//': FloorDiv, 
-    '~': Invert, 
-    'not': Not, 
-    '==': Eq, 
-    '!=': NotEq, 
-    '<': Lt, 
-    '<=': LtE, 
-    '>': Gt, 
-    '>=': GtE, 
-    'is': Is, 
-    'is not': IsNot, 
-    'in': In, 
+    'and': And,
+    'or': Or,
+    '+': UAdd,
+    '-': USub,
+    '*': Mult,
+    '@': MatMult,
+    '/': Div,
+    '%': Mod,
+    '**': Pow,
+    '<<': LShift,
+    '>>': RShift,
+    '|': BitOr,
+    '^': BitXor,
+    '&': BitAnd,
+    '//': FloorDiv,
+    '~': Invert,
+    'not': Not,
+    '==': Eq,
+    '!=': NotEq,
+    '<': Lt,
+    '<=': LtE,
+    '>': Gt,
+    '>=': GtE,
+    'is': Is,
+    'is not': IsNot,
+    'in': In,
     'not in': NotIn,
     '+=': Add,
     '-=': Sub,
@@ -52,34 +56,37 @@ operators = {
     '//=': FloorDiv
 }
 
+
 # This class defines a complete generic visitor for a parse tree produced by Python3Parser.
 
-class Python3Visitor(ParseTreeVisitor):
+class PyHoleVisitor(Python3Visitor):
 
     def __init__(self):
         super().__init__()
         self.contexte = Load()
 
     def aggregateResult(self, aggregate, nextResult):
-        if aggregate is None: return nextResult
-        elif isinstance(aggregate, list): 
+        if aggregate is None:
+            return nextResult
+        elif isinstance(aggregate, list):
             aggregate.append(nextResult)
             return aggregate
-        elif nextResult is None: return aggregate
-        else: return [aggregate, nextResult]
+        elif nextResult is None:
+            return aggregate
+        else:
+            return [aggregate, nextResult]
 
     def visitChildren(self, ctx):
         childs = super().visitChildren(ctx)
-        #print(type(ctx).__name__ + str(childs))
+        # print(type(ctx).__name__ + str(childs))
         return childs
 
     # Visit a parse tree produced by Python3Parser#single_input.
-    def visitSingle_input(self, ctx:Python3Parser.Single_inputContext):
+    def visitSingle_input(self, ctx: Python3Parser.Single_inputContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#file_input.
-    def visitFile_input(self, ctx:Python3Parser.File_inputContext):
+    def visitFile_input(self, ctx: Python3Parser.File_inputContext):
         body = []
         stmts = ctx.stmt()
         n = len(stmts)
@@ -90,18 +97,16 @@ class Python3Visitor(ParseTreeVisitor):
 
         return Module(body, [])
 
-
     # Visit a parse tree produced by Python3Parser#eval_input.
-    def visitEval_input(self, ctx:Python3Parser.Eval_inputContext):
+    def visitEval_input(self, ctx: Python3Parser.Eval_inputContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#decorator.
-    def visitDecorator(self, ctx:Python3Parser.DecoratorContext):
+    def visitDecorator(self, ctx: Python3Parser.DecoratorContext):
         name = ctx.dotted_name().accept(self)
         if '.' in name:
             name = name.split('.')
-            attr  = name.pop()
+            attr = name.pop()
             while len(name) > 0:
                 attr = Attribute(Name(name.pop(), self.contexte), attr, self.contexte)
             name = attr
@@ -110,33 +115,29 @@ class Python3Visitor(ParseTreeVisitor):
             return Call(name, args, [])
         return Name(name, self.contexte)
 
-
     # Visit a parse tree produced by Python3Parser#decorators.
-    def visitDecorators(self, ctx:Python3Parser.DecoratorsContext):
+    def visitDecorators(self, ctx: Python3Parser.DecoratorsContext):
         return list(map(lambda x: x.accept(self), ctx.decorator()))
 
-
     # Visit a parse tree produced by Python3Parser#decorated.
-    def visitDecorated(self, ctx:Python3Parser.DecoratedContext):
+    def visitDecorated(self, ctx: Python3Parser.DecoratedContext):
         decorator = ctx.decorators().accept(self)
         decorated = ctx.getChild(1).accept(self)
         decorated.decorator_list = decorator
         return decorated
 
-
     # Visit a parse tree produced by Python3Parser#async_funcdef.
-    def visitAsync_funcdef(self, ctx:Python3Parser.Async_funcdefContext):
+    def visitAsync_funcdef(self, ctx: Python3Parser.Async_funcdefContext):
         funcdef = ctx.funcdef()
         name = funcdef.NAME().accept(self)
         args = funcdef.parameters().accept(self)
-        returns = funcdef.test().accept(self) if ctx.test() is not None else None
+        returns = funcdef.test().accept(self) if funcdef.test() is not None else None
         suite = funcdef.suite().accept(self)
 
         return AsyncFunctionDef(name, args, suite, [], returns=returns)
 
-
     # Visit a parse tree produced by Python3Parser#funcdef.
-    def visitFuncdef(self, ctx:Python3Parser.FuncdefContext):
+    def visitFuncdef(self, ctx: Python3Parser.FuncdefContext):
         name = ctx.NAME().accept(self)
         args = ctx.parameters().accept(self)
 
@@ -146,15 +147,14 @@ class Python3Visitor(ParseTreeVisitor):
 
         return FunctionDef(name, args, suite, [], returns=returns)
 
-
     # Visit a parse tree produced by Python3Parser#parameters.
-    def visitParameters(self, ctx:Python3Parser.ParametersContext):
+    def visitParameters(self, ctx: Python3Parser.ParametersContext):
         args = ctx.typedargslist()
-        return args.accept(self) if args is not None else arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[])
-
+        return args.accept(self) if args is not None else arguments(posonlyargs=[], args=[], kwonlyargs=[],
+                                                                    kw_defaults=[], defaults=[])
 
     # Visit a parse tree produced by Python3Parser#typedargslist.
-    def visitTypedargslist(self, ctx:Python3Parser.TypedargslistContext):
+    def visitTypedargslist(self, ctx: Python3Parser.TypedargslistContext):
         args = []
         defaults = []
         kwonlyargs = []
@@ -186,25 +186,26 @@ class Python3Visitor(ParseTreeVisitor):
 
             elif c.accept(self) == '**':
                 kwarg = childs.pop(0).accept(self)
-                
+
         if not kw:
             args = kwonlyargs[::]
             defaults = kw_defaults[::]
             kwonlyargs = []
             kw_defaults = []
 
-        return arguments(posonlyargs=[], args=args, vararg = vararg, kwonlyargs=kwonlyargs, kw_defaults=kw_defaults, kwarg=kwarg, defaults=defaults)
-
+        return arguments(posonlyargs=[], args=args, vararg=vararg, kwonlyargs=kwonlyargs, kw_defaults=kw_defaults,
+                         kwarg=kwarg, defaults=defaults)
 
     # Visit a parse tree produced by Python3Parser#tfpdef.
-    def visitTfpdef(self, ctx:Python3Parser.TfpdefContext):
+    def visitTfpdef(self, ctx: Python3Parser.TfpdefContext):
+        if ctx.hole() is not None:
+            return ctx.hole().accept(self)
         val = ctx.NAME().accept(self)
         typeVal = ctx.test().accept(self) if ctx.test() is not None else None
         return arg(val, annotation=typeVal)
 
-
     # Visit a parse tree produced by Python3Parser#varargslist.
-    def visitVarargslist(self, ctx:Python3Parser.VarargslistContext):
+    def visitVarargslist(self, ctx: Python3Parser.VarargslistContext):
         args = []
         defaults = []
         kwonlyargs = []
@@ -236,40 +237,36 @@ class Python3Visitor(ParseTreeVisitor):
 
             elif c.accept(self) == '**':
                 kwarg = childs.pop(0).accept(self)
-                
+
         if not kw:
             args = kwonlyargs[::]
             defaults = kw_defaults[::]
             kwonlyargs = []
             kw_defaults = []
 
-        return arguments(posonlyargs=[], args=args, vararg = vararg, kwonlyargs=kwonlyargs, kw_defaults=kw_defaults, kwarg=kwarg, defaults=defaults)
-
+        return arguments(posonlyargs=[], args=args, vararg=vararg, kwonlyargs=kwonlyargs, kw_defaults=kw_defaults,
+                         kwarg=kwarg, defaults=defaults)
 
     # Visit a parse tree produced by Python3Parser#vfpdef.
-    def visitVfpdef(self, ctx:Python3Parser.VfpdefContext):
+    def visitVfpdef(self, ctx: Python3Parser.VfpdefContext):
         return arg(ctx.NAME().accept(self))
 
-
     # Visit a parse tree produced by Python3Parser#stmt.
-    def visitStmt(self, ctx:Python3Parser.StmtContext):
+    def visitStmt(self, ctx: Python3Parser.StmtContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#simple_stmt.
-    def visitSimple_stmt(self, ctx:Python3Parser.Simple_stmtContext):
+    def visitSimple_stmt(self, ctx: Python3Parser.Simple_stmtContext):
         vals = list(map(lambda x: x.accept(self), ctx.small_stmt()))
         return vals if len(vals) > 1 else vals[0]
 
-
     # Visit a parse tree produced by Python3Parser#small_stmt.
-    def visitSmall_stmt(self, ctx:Python3Parser.Small_stmtContext):
+    def visitSmall_stmt(self, ctx: Python3Parser.Small_stmtContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#expr_stmt.
-    def visitExpr_stmt(self, ctx:Python3Parser.Expr_stmtContext):
-        
+    def visitExpr_stmt(self, ctx: Python3Parser.Expr_stmtContext):
+
         if ctx.ASSIGN(0) is not None:
             targets = self.visitChildren(ctx)
             value = targets.pop()
@@ -289,12 +286,11 @@ class Python3Visitor(ParseTreeVisitor):
             op = ctx.augassign().accept(self)
             val = ctx.getChild(2).accept(self)
             return AugAssign(target, op, val)
-        
+
         return Expr(target)
 
-
     # Visit a parse tree produced by Python3Parser#annassign.
-    def visitAnnassign(self, ctx:Python3Parser.AnnassignContext):
+    def visitAnnassign(self, ctx: Python3Parser.AnnassignContext):
         values = []
         tests = ctx.test()
 
@@ -305,27 +301,23 @@ class Python3Visitor(ParseTreeVisitor):
 
         return values
 
-
     # Visit a parse tree produced by Python3Parser#testlist_star_expr.
-    def visitTestlist_star_expr(self, ctx:Python3Parser.Testlist_star_exprContext):
+    def visitTestlist_star_expr(self, ctx: Python3Parser.Testlist_star_exprContext):
         values = self.visitChildren(ctx)
         if not isinstance(values, list):
             return values
         values = list(filter(lambda x: x != ',', values))
         return Tuple(values, self.contexte)
 
-
     # Visit a parse tree produced by Python3Parser#augassign.
-    def visitAugassign(self, ctx:Python3Parser.AugassignContext):
+    def visitAugassign(self, ctx: Python3Parser.AugassignContext):
         op = ctx.getChild(0).accept(self)
         clazz = operators[op]
-        
+
         return clazz()
 
-
-
     # Visit a parse tree produced by Python3Parser#del_stmt.
-    def visitDel_stmt(self, ctx:Python3Parser.Del_stmtContext):
+    def visitDel_stmt(self, ctx: Python3Parser.Del_stmtContext):
         self.contexte = Del()
         exprs = ctx.exprlist().accept(self)
         if not isinstance(exprs, Tuple):
@@ -335,74 +327,63 @@ class Python3Visitor(ParseTreeVisitor):
         self.contexte = Load()
         return Delete(exprs)
 
-
     # Visit a parse tree produced by Python3Parser#pass_stmt.
-    def visitPass_stmt(self, ctx:Python3Parser.Pass_stmtContext):
+    def visitPass_stmt(self, ctx: Python3Parser.Pass_stmtContext):
         return Pass()
 
-
     # Visit a parse tree produced by Python3Parser#flow_stmt.
-    def visitFlow_stmt(self, ctx:Python3Parser.Flow_stmtContext):
+    def visitFlow_stmt(self, ctx: Python3Parser.Flow_stmtContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#break_stmt.
-    def visitBreak_stmt(self, ctx:Python3Parser.Break_stmtContext):
+    def visitBreak_stmt(self, ctx: Python3Parser.Break_stmtContext):
         return Break()
 
-
     # Visit a parse tree produced by Python3Parser#continue_stmt.
-    def visitContinue_stmt(self, ctx:Python3Parser.Continue_stmtContext):
+    def visitContinue_stmt(self, ctx: Python3Parser.Continue_stmtContext):
         return Continue()
 
-
     # Visit a parse tree produced by Python3Parser#return_stmt.
-    def visitReturn_stmt(self, ctx:Python3Parser.Return_stmtContext):
+    def visitReturn_stmt(self, ctx: Python3Parser.Return_stmtContext):
         if ctx.testlist() is None: return Return()
         value = ctx.testlist().accept(self)
         return Return(value)
 
-
     # Visit a parse tree produced by Python3Parser#yield_stmt.
-    def visitYield_stmt(self, ctx:Python3Parser.Yield_stmtContext):
+    def visitYield_stmt(self, ctx: Python3Parser.Yield_stmtContext):
         value = ctx.yield_expr().accept(self)
         return Expr(value)
 
-
     # Visit a parse tree produced by Python3Parser#raise_stmt.
-    def visitRaise_stmt(self, ctx:Python3Parser.Raise_stmtContext):
+    def visitRaise_stmt(self, ctx: Python3Parser.Raise_stmtContext):
         tests = ctx.test()
         if len(tests) == 0:
             return Raise()
         exc = tests[0].accept(self)
         if len(tests) == 2:
-            cause = test[1].accept(self)
+            cause = tests[1].accept(self)
             return Raise(exc, cause)
 
         return Raise(exc)
 
-
     # Visit a parse tree produced by Python3Parser#import_stmt.
-    def visitImport_stmt(self, ctx:Python3Parser.Import_stmtContext):
+    def visitImport_stmt(self, ctx: Python3Parser.Import_stmtContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#import_name.
-    def visitImport_name(self, ctx:Python3Parser.Import_nameContext):
+    def visitImport_name(self, ctx: Python3Parser.Import_nameContext):
         names = ctx.dotted_as_names().accept(self)
         return Import(names)
 
-
     # Visit a parse tree produced by Python3Parser#import_from.
-    def visitImport_from(self, ctx:Python3Parser.Import_fromContext):
+    def visitImport_from(self, ctx: Python3Parser.Import_fromContext):
         module = ctx.dotted_name().accept(self)
         import_as = ctx.import_as_names()
         names = import_as.accept(self) if import_as is not None else [alias("*")]
         return ImportFrom(module, names, 0)
 
-
     # Visit a parse tree produced by Python3Parser#import_as_name.
-    def visitImport_as_name(self, ctx:Python3Parser.Import_as_nameContext):
+    def visitImport_as_name(self, ctx: Python3Parser.Import_as_nameContext):
         names = ctx.NAME()
         name = names[0].accept(self)
         if len(names) == 2:
@@ -410,35 +391,30 @@ class Python3Visitor(ParseTreeVisitor):
             return alias(name, al)
         return alias(name)
 
-
     # Visit a parse tree produced by Python3Parser#dotted_as_name.
-    def visitDotted_as_name(self, ctx:Python3Parser.Dotted_as_nameContext):
+    def visitDotted_as_name(self, ctx: Python3Parser.Dotted_as_nameContext):
         name = ctx.dotted_name().accept(self)
         asnameNode = ctx.NAME()
-        if asnameNode is not None: 
+        if asnameNode is not None:
             asname = asnameNode.accept(self)
             return alias(name, asname)
         return alias(name)
 
-
     # Visit a parse tree produced by Python3Parser#import_as_names.
-    def visitImport_as_names(self, ctx:Python3Parser.Import_as_namesContext):
+    def visitImport_as_names(self, ctx: Python3Parser.Import_as_namesContext):
         return list(map(lambda x: x.accept(self), ctx.import_as_name()))
 
-
     # Visit a parse tree produced by Python3Parser#dotted_as_names.
-    def visitDotted_as_names(self, ctx:Python3Parser.Dotted_as_namesContext):
+    def visitDotted_as_names(self, ctx: Python3Parser.Dotted_as_namesContext):
         return list(map(lambda x: x.accept(self), ctx.dotted_as_name()))
 
-
     # Visit a parse tree produced by Python3Parser#dotted_name.
-    def visitDotted_name(self, ctx:Python3Parser.Dotted_nameContext):
+    def visitDotted_name(self, ctx: Python3Parser.Dotted_nameContext):
         names = list(map(lambda x: x.accept(self), ctx.NAME()))
         return '.'.join(names)
 
-
     # Visit a parse tree produced by Python3Parser#global_stmt.
-    def visitGlobal_stmt(self, ctx:Python3Parser.Global_stmtContext):
+    def visitGlobal_stmt(self, ctx: Python3Parser.Global_stmtContext):
         names = []
         name = ctx.NAME()
         for i in range(len(name)):
@@ -448,9 +424,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return Global(names)
 
-
     # Visit a parse tree produced by Python3Parser#nonlocal_stmt.
-    def visitNonlocal_stmt(self, ctx:Python3Parser.Nonlocal_stmtContext):
+    def visitNonlocal_stmt(self, ctx: Python3Parser.Nonlocal_stmtContext):
         names = []
         name = ctx.NAME()
         for i in range(len(name)):
@@ -460,9 +435,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return Nonlocal(names)
 
-
     # Visit a parse tree produced by Python3Parser#assert_stmt.
-    def visitAssert_stmt(self, ctx:Python3Parser.Assert_stmtContext):
+    def visitAssert_stmt(self, ctx: Python3Parser.Assert_stmtContext):
         tests = ctx.test()
         test = tests[0].accept(self)
         if len(tests) == 2:
@@ -470,19 +444,16 @@ class Python3Visitor(ParseTreeVisitor):
             return Assert(test, msg)
         return Assert(test)
 
-
     # Visit a parse tree produced by Python3Parser#compound_stmt.
-    def visitCompound_stmt(self, ctx:Python3Parser.Compound_stmtContext):
+    def visitCompound_stmt(self, ctx: Python3Parser.Compound_stmtContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by Python3Parser#async_stmt.
-    def visitAsync_stmt(self, ctx:Python3Parser.Async_stmtContext):
+    def visitAsync_stmt(self, ctx: Python3Parser.Async_stmtContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#if_stmt.
-    def visitIf_stmt(self, ctx:Python3Parser.If_stmtContext):
+    def visitIf_stmt(self, ctx: Python3Parser.If_stmtContext):
         tests = ctx.test()
         suites = ctx.suite()
         if len(suites) > len(tests):
@@ -497,9 +468,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return curSuite[0]
 
-
     # Visit a parse tree produced by Python3Parser#while_stmt.
-    def visitWhile_stmt(self, ctx:Python3Parser.While_stmtContext):
+    def visitWhile_stmt(self, ctx: Python3Parser.While_stmtContext):
         test = ctx.test().accept(self)
         suite = ctx.suite(0).accept(self)
 
@@ -509,18 +479,16 @@ class Python3Visitor(ParseTreeVisitor):
         elseBody = ctx.suite(1).accept(self)
         return While(test, suite, elseBody)
 
-
     # Visit a parse tree produced by Python3Parser#for_stmt.
-    def visitFor_stmt(self, ctx:Python3Parser.For_stmtContext):
+    def visitFor_stmt(self, ctx: Python3Parser.For_stmtContext):
         target = ctx.exprlist().accept(self)
         ite = ctx.testlist().accept(self)
         body = ctx.suite(0).accept(self)
         orelse = ctx.suite(1).accept(self) if ctx.suite(1) is not None else []
         return For(target, ite, body, orelse)
 
-
     # Visit a parse tree produced by Python3Parser#try_stmt.
-    def visitTry_stmt(self, ctx:Python3Parser.Try_stmtContext):
+    def visitTry_stmt(self, ctx: Python3Parser.Try_stmtContext):
         suites = ctx.suite()
         suites.reverse()
         body = suites.pop().accept(self)
@@ -543,23 +511,21 @@ class Python3Visitor(ParseTreeVisitor):
 
         nextBody = suites.pop().accept(self)
         if ctx.ELSE() is None:
-            return Try(body, handlers,  [], nextBody)
+            return Try(body, handlers, [], nextBody)
         elif ctx.FINALLY() is None:
-            return Try(body, handlers,  nextBody, [])
+            return Try(body, handlers, nextBody, [])
         else:
             finalBody = suites.pop().accept(self)
             return Try(body, handlers, nextBody, finalBody)
 
-
     # Visit a parse tree produced by Python3Parser#with_stmt.
-    def visitWith_stmt(self, ctx:Python3Parser.With_stmtContext):
+    def visitWith_stmt(self, ctx: Python3Parser.With_stmtContext):
         items = list(map(lambda x: x.accept(self), ctx.with_item()))
         body = ctx.suite().accept(self)
         return With(items, body)
 
-
     # Visit a parse tree produced by Python3Parser#with_item.
-    def visitWith_item(self, ctx:Python3Parser.With_itemContext):
+    def visitWith_item(self, ctx: Python3Parser.With_itemContext):
         ctx_expr = ctx.test().accept(self)
         if ctx.expr() is None:
             return withitem(ctx_expr)
@@ -567,9 +533,8 @@ class Python3Visitor(ParseTreeVisitor):
         opt_vars = ctx.expr().accept(self)
         return withitem(ctx_expr, opt_vars)
 
-
     # Visit a parse tree produced by Python3Parser#except_clause.
-    def visitExcept_clause(self, ctx:Python3Parser.Except_clauseContext):
+    def visitExcept_clause(self, ctx: Python3Parser.Except_clauseContext):
         if ctx.test() is None:
             return ExceptHandler()
 
@@ -580,9 +545,8 @@ class Python3Visitor(ParseTreeVisitor):
         name = ctx.NAME().accept(self)
         return ExceptHandler(test, name)
 
-
     # Visit a parse tree produced by Python3Parser#suite.
-    def visitSuite(self, ctx:Python3Parser.SuiteContext):
+    def visitSuite(self, ctx: Python3Parser.SuiteContext):
         if ctx.simple_stmt() is not None:
             stmt = ctx.simple_stmt().accept(self)
             return stmt if isinstance(stmt, list) else [stmt]
@@ -592,18 +556,18 @@ class Python3Visitor(ParseTreeVisitor):
         for i in range(len(stmts)):
             c = stmts[i]
             childResult = c.accept(self)
-            if childResult is not None: 
+            if childResult is not None:
                 if isinstance(childResult, list):
                     body.extend(childResult)
                 else:
                     body.append(childResult)
-            else: print(type(c))
+            else:
+                print(type(c))
 
         return body
 
-
     # Visit a parse tree produced by Python3Parser#test.
-    def visitTest(self, ctx:Python3Parser.TestContext):
+    def visitTest(self, ctx: Python3Parser.TestContext):
         if ctx.IF() is not None:
             body = ctx.or_test(0).accept(self)
             test = ctx.or_test(1).accept(self)
@@ -612,63 +576,56 @@ class Python3Visitor(ParseTreeVisitor):
 
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#test_nocond.
-    def visitTest_nocond(self, ctx:Python3Parser.Test_nocondContext):
+    def visitTest_nocond(self, ctx: Python3Parser.Test_nocondContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#lambdef.
-    def visitLambdef(self, ctx:Python3Parser.LambdefContext):
+    def visitLambdef(self, ctx: Python3Parser.LambdefContext):
         args = ctx.varargslist()
         args = args.accept(self) if args is not None else arguments([], [], None, [], [], None, [])
         body = ctx.test().accept(self)
         return Lambda(args, body)
 
-
     # Visit a parse tree produced by Python3Parser#lambdef_nocond.
-    def visitLambdef_nocond(self, ctx:Python3Parser.Lambdef_nocondContext):
+    def visitLambdef_nocond(self, ctx: Python3Parser.Lambdef_nocondContext):
         args = ctx.varargslist().accept(self)
         body = ctx.test_nocond().accept(self)
         return Lambda(args, body)
 
-
     # Visit a parse tree produced by Python3Parser#or_test.
-    def visitOr_test(self, ctx:Python3Parser.Or_testContext):
+    def visitOr_test(self, ctx: Python3Parser.Or_testContext):
         ors = ctx.and_test()
         n = len(ors)
         if n == 1:
             return self.visitChildren(ctx)
-        
+
         vals = list(map(lambda x: x.accept(self), ors))
         return BoolOp(Or(), vals)
 
-
     # Visit a parse tree produced by Python3Parser#and_test.
-    def visitAnd_test(self, ctx:Python3Parser.And_testContext):
+    def visitAnd_test(self, ctx: Python3Parser.And_testContext):
         ands = ctx.not_test()
         n = len(ands)
         if n == 1:
             return self.visitChildren(ctx)
-        
+
         vals = list(map(lambda x: x.accept(self), ands))
         return BoolOp(And(), vals)
 
-
     # Visit a parse tree produced by Python3Parser#not_test.
-    def visitNot_test(self, ctx:Python3Parser.Not_testContext):
+    def visitNot_test(self, ctx: Python3Parser.Not_testContext):
         test = ctx.not_test()
         if test is None:
             return self.visitChildren(ctx)
         return UnaryOp(Not(), test.accept(self))
 
-
     # Visit a parse tree produced by Python3Parser#comparison.
-    def visitComparison(self, ctx:Python3Parser.ComparisonContext):
+    def visitComparison(self, ctx: Python3Parser.ComparisonContext):
         exprs = ctx.expr()
         if len(exprs) == 1:
             return self.visitChildren(ctx)
-        
+
         tests = ctx.comp_op()
         test = []
         expr = []
@@ -678,7 +635,7 @@ class Python3Visitor(ParseTreeVisitor):
             childResult = c.accept(self)
             test.append(childResult)
 
-            c = exprs[i+1]
+            c = exprs[i + 1]
             childResult = c.accept(self)
             expr.append(childResult)
 
@@ -686,24 +643,21 @@ class Python3Visitor(ParseTreeVisitor):
 
         return Compare(left, test, expr)
 
-    
     # Visit a parse tree produced by Python3Parser#comp_op.
-    def visitComp_op(self, ctx:Python3Parser.Comp_opContext):
+    def visitComp_op(self, ctx: Python3Parser.Comp_opContext):
         op = self.visitChildren(ctx)
         if isinstance(op, list):
             op = ' '.join(op)
         clazz = operators[op]
-        
+
         return clazz()
 
-
     # Visit a parse tree produced by Python3Parser#star_expr.
-    def visitStar_expr(self, ctx:Python3Parser.Star_exprContext):
+    def visitStar_expr(self, ctx: Python3Parser.Star_exprContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#expr.
-    def visitExpr(self, ctx:Python3Parser.ExprContext):
+    def visitExpr(self, ctx: Python3Parser.ExprContext):
         expr = ctx.xor_expr()
         if len(expr) == 1:
             return self.visitChildren(ctx)
@@ -715,9 +669,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return left
 
-
     # Visit a parse tree produced by Python3Parser#xor_expr.
-    def visitXor_expr(self, ctx:Python3Parser.Xor_exprContext):
+    def visitXor_expr(self, ctx: Python3Parser.Xor_exprContext):
         expr = ctx.and_expr()
         if len(expr) == 1:
             return self.visitChildren(ctx)
@@ -729,9 +682,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return left
 
-
     # Visit a parse tree produced by Python3Parser#and_expr.
-    def visitAnd_expr(self, ctx:Python3Parser.And_exprContext):
+    def visitAnd_expr(self, ctx: Python3Parser.And_exprContext):
         expr = ctx.shift_expr()
         if len(expr) == 1:
             return self.visitChildren(ctx)
@@ -743,9 +695,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return left
 
-
     # Visit a parse tree produced by Python3Parser#shift_expr.
-    def visitShift_expr(self, ctx:Python3Parser.Shift_exprContext):
+    def visitShift_expr(self, ctx: Python3Parser.Shift_exprContext):
         childs = list(ctx.getChildren())
         left = childs.pop(0).accept(self)
         while len(childs) > 0:
@@ -756,9 +707,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return left
 
-
     # Visit a parse tree produced by Python3Parser#arith_expr.
-    def visitArith_expr(self, ctx:Python3Parser.Arith_exprContext):
+    def visitArith_expr(self, ctx: Python3Parser.Arith_exprContext):
         childs = list(ctx.getChildren())
         left = childs.pop(0).accept(self)
         while len(childs) > 0:
@@ -769,9 +719,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return left
 
-
     # Visit a parse tree produced by Python3Parser#term.
-    def visitTerm(self, ctx:Python3Parser.TermContext):
+    def visitTerm(self, ctx: Python3Parser.TermContext):
         childs = list(ctx.getChildren())
         left = childs.pop(0).accept(self)
         while len(childs) > 0:
@@ -782,9 +731,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return left
 
-
     # Visit a parse tree produced by Python3Parser#factor.
-    def visitFactor(self, ctx:Python3Parser.FactorContext):
+    def visitFactor(self, ctx: Python3Parser.FactorContext):
         if ctx.getChildCount() == 1:
             return self.visitChildren(ctx)
 
@@ -794,9 +742,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return UnaryOp(op, expr)
 
-
     # Visit a parse tree produced by Python3Parser#power.
-    def visitPower(self, ctx:Python3Parser.PowerContext):
+    def visitPower(self, ctx: Python3Parser.PowerContext):
         childs = list(ctx.getChildren())
         left = childs.pop(0).accept(self)
         while len(childs) > 0:
@@ -807,15 +754,14 @@ class Python3Visitor(ParseTreeVisitor):
 
         return left
 
-
     # Visit a parse tree produced by Python3Parser#atom_expr.
-    def visitAtom_expr(self, ctx:Python3Parser.Atom_exprContext):
+    def visitAtom_expr(self, ctx: Python3Parser.Atom_exprContext):
         ret = ctx.atom().accept(self)
 
         trailers = ctx.trailer()
         for i in range(len(trailers)):
             trail = trailers[i].accept(self)
-            
+
             if isinstance(trail, Call):
                 trail.func = ret
                 ret = trail
@@ -824,7 +770,6 @@ class Python3Visitor(ParseTreeVisitor):
                 ret = trail
 
         return ret
-
 
     def replace_escaped_chars(self, string):
         # Define a dictionary mapping escaped characters to their corresponding values
@@ -860,9 +805,8 @@ class Python3Visitor(ParseTreeVisitor):
 
         return string
 
-
     # Visit a parse tree produced by Python3Parser#atom.
-    def visitAtom(self, ctx:Python3Parser.AtomContext):
+    def visitAtom(self, ctx: Python3Parser.AtomContext):
         if ctx.NAME() is not None:
             return Name(ctx.NAME().accept(self), self.contexte)
 
@@ -919,17 +863,20 @@ class Python3Visitor(ParseTreeVisitor):
             return val
 
         if ctx.OPEN_BRACK() is not None:
-            val = ctx.testlist_comp().accept(self) if ctx.testlist_comp() is not None else List(elts=[], ctx=self.contexte)
+            val = ctx.testlist_comp().accept(self) if ctx.testlist_comp() is not None else List(elts=[],
+                                                                                                ctx=self.contexte)
             if not isinstance(val, List) and not isinstance(val, ListComp):
                 val = List(elts=[val], ctx=self.contexte)
             return val
-        
+
         if ctx.OPEN_BRACE() is not None:
             val = ctx.dictorsetmaker().accept(self) if ctx.dictorsetmaker() is not None else Dict(keys=[], values=[])
             return val
 
+        return self.visitChildren(ctx)
+
     # Visit a parse tree pro duced by Python3Parser#testlist_comp.
-    def visitTestlist_comp(self, ctx:Python3Parser.Testlist_compContext):
+    def visitTestlist_comp(self, ctx: Python3Parser.Testlist_compContext):
         if ctx.comp_for() is not None:
             comp = ctx.comp_for().accept(self)
             elt = ctx.getChild(0).accept(self)
@@ -940,9 +887,8 @@ class Python3Visitor(ParseTreeVisitor):
             return List(elts=vals, ctx=self.contexte)
         return vals
 
-
     # Visit a parse tree produced by Python3Parser#trailer.
-    def visitTrailer(self, ctx:Python3Parser.TrailerContext):
+    def visitTrailer(self, ctx: Python3Parser.TrailerContext):
         if ctx.subscriptlist() is not None:
             val = ctx.subscriptlist().accept(self)
             return Subscript(value=None, slice=val, ctx=self.contexte)
@@ -959,26 +905,23 @@ class Python3Visitor(ParseTreeVisitor):
             args = list(filter(lambda x: x not in keywords, allargs))
 
             return Call(args=args, keywords=keywords)
-        
+
         return Call(args=[], keywords=[])
 
-
     # Visit a parse tree produced by Python3Parser#subscriptlist.
-    def visitSubscriptlist(self, ctx:Python3Parser.SubscriptlistContext):
+    def visitSubscriptlist(self, ctx: Python3Parser.SubscriptlistContext):
         if ctx.getChildCount() > 1:
             return Tuple(list(map(lambda x: x.accept(self), ctx.subscript())), self.contexte)
         else:
             return ctx.subscript(0).accept(self)
 
-
-
     # Visit a parse tree produced by Python3Parser#subscript.
-    def visitSubscript(self, ctx:Python3Parser.SubscriptContext):
+    def visitSubscript(self, ctx: Python3Parser.SubscriptContext):
         if ctx.COLON() is not None:
             lower = None
             upper = None
             step = ctx.sliceop().accept(self) if ctx.sliceop() is not None else None
-            
+
             if ctx.getChild(0) == ctx.test(0):
                 lower = ctx.test(0).accept(self)
                 upper = ctx.test(1).accept(self) if len(ctx.test()) > 1 else None
@@ -986,38 +929,32 @@ class Python3Visitor(ParseTreeVisitor):
                 upper = ctx.test(0).accept(self) if len(ctx.test()) > 0 else None
 
             return Slice(lower=lower, upper=upper, step=step)
-            
 
         return self.visitChildren(ctx)
-        
-
 
     # Visit a parse tree produced by Python3Parser#sliceop.
-    def visitSliceop(self, ctx:Python3Parser.SliceopContext):
+    def visitSliceop(self, ctx: Python3Parser.SliceopContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#exprlist.
-    def visitExprlist(self, ctx:Python3Parser.ExprlistContext):
+    def visitExprlist(self, ctx: Python3Parser.ExprlistContext):
         vals = self.visitChildren(ctx)
         if isinstance(vals, list):
             vals = list(filter(lambda x: x != ',', vals))
             return Tuple(elts=vals, ctx=self.contexte)
         return vals
 
-
     # Visit a parse tree produced by Python3Parser#testlist.
-    def visitTestlist(self, ctx:Python3Parser.TestlistContext):
+    def visitTestlist(self, ctx: Python3Parser.TestlistContext):
         vals = list(map(lambda x: x.accept(self), ctx.test()))
         return Tuple(vals, self.contexte) if len(vals) > 1 else vals[0]
 
-
     # Visit a parse tree produced by Python3Parser#dictorsetmaker.
-    def visitDictorsetmaker(self, ctx:Python3Parser.DictorsetmakerContext):
+    def visitDictorsetmaker(self, ctx: Python3Parser.DictorsetmakerContext):
         if len(ctx.COLON()) > 0:
             # we have a dict
             if ctx.comp_for() is not None:
-            # we have a dict comprehension
+                # we have a dict comprehension
                 comp = ctx.comp_for().accept(self)
                 keys = ctx.test(0).accept(self)
                 values = ctx.test(1).accept(self)
@@ -1038,29 +975,27 @@ class Python3Visitor(ParseTreeVisitor):
             vals = self.visitChildren(ctx)
             if not isinstance(vals, list):
                 vals = [vals]
-            else: vals = list(filter(lambda x: x != ',', vals))
+            else:
+                vals = list(filter(lambda x: x != ',', vals))
             return Set(elts=vals)
 
-
     # Visit a parse tree produced by Python3Parser#classdef.
-    def visitClassdef(self, ctx:Python3Parser.ClassdefContext):
+    def visitClassdef(self, ctx: Python3Parser.ClassdefContext):
         name = ctx.NAME().accept(self)
         args = ctx.arglist()
         args = args.accept(self) if args is not None else []
         body = ctx.suite().accept(self)
         return ClassDef(name, args, [], body, [])
 
-
     # Visit a parse tree produced by Python3Parser#arglist.
-    def visitArglist(self, ctx:Python3Parser.ArglistContext):
+    def visitArglist(self, ctx: Python3Parser.ArglistContext):
         return list(map(lambda x: x.accept(self), ctx.argument()))
 
-
     # Visit a parse tree produced by Python3Parser#argument.
-    def visitArgument(self, ctx:Python3Parser.ArgumentContext):
+    def visitArgument(self, ctx: Python3Parser.ArgumentContext):
         if ctx.STAR() is not None:
             return Starred(value=ctx.test(0).accept(self), ctx=self.contexte)
-        
+
         if ctx.POWER() is not None:
             return keyword(value=ctx.test(0).accept(self))
 
@@ -1076,19 +1011,17 @@ class Python3Visitor(ParseTreeVisitor):
 
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#comp_iter.
-    def visitComp_iter(self, ctx:Python3Parser.Comp_iterContext):
+    def visitComp_iter(self, ctx: Python3Parser.Comp_iterContext):
         vals = self.visitChildren(ctx)
         return vals
 
-
     # Visit a parse tree produced by Python3Parser#comp_for.
-    def visitComp_for(self, ctx:Python3Parser.Comp_forContext):
+    def visitComp_for(self, ctx: Python3Parser.Comp_forContext):
         target = ctx.exprlist().accept(self)
         iterVal = ctx.or_test().accept(self)
         is_async = 1 if ctx.ASYNC() is not None else 0
-        
+
         ret = []
         ifs = []
         nextComp = ctx.comp_iter()
@@ -1101,29 +1034,25 @@ class Python3Visitor(ParseTreeVisitor):
                     ifs.append(comp)
         return [comprehension(target=target, iter=iterVal, ifs=ifs, is_async=is_async)] + ret
 
-
     # Visit a parse tree produced by Python3Parser#comp_if.
-    def visitComp_if(self, ctx:Python3Parser.Comp_ifContext):
+    def visitComp_if(self, ctx: Python3Parser.Comp_ifContext):
         test = ctx.test_nocond().accept(self)
         nextComp = ctx.comp_iter().accept(self) if ctx.comp_iter() is not None else []
-        
+
         return [test] + nextComp
 
-
     # Visit a parse tree produced by Python3Parser#encoding_decl.
-    def visitEncoding_decl(self, ctx:Python3Parser.Encoding_declContext):
+    def visitEncoding_decl(self, ctx: Python3Parser.Encoding_declContext):
         return self.visitChildren(ctx)
 
-
     # Visit a parse tree produced by Python3Parser#yield_expr.
-    def visitYield_expr(self, ctx:Python3Parser.Yield_exprContext):
+    def visitYield_expr(self, ctx: Python3Parser.Yield_exprContext):
         if ctx.yield_arg() is not None:
             return ctx.yield_arg().accept(self)
         return Yield(None)
 
-
     # Visit a parse tree produced by Python3Parser#yield_arg.
-    def visitYield_arg(self, ctx:Python3Parser.Yield_argContext):
+    def visitYield_arg(self, ctx: Python3Parser.Yield_argContext):
         if ctx.FROM() is not None:
             return YieldFrom(ctx.test().accept(self))
         return Yield(ctx.testlist().accept(self))
@@ -1133,6 +1062,9 @@ class Python3Visitor(ParseTreeVisitor):
         if txt.isspace():
             return None
         return txt
+
+    def visitHole(self, ctx: Python3Parser.HoleContext):
+        return Hole()
 
 
 del Python3Parser

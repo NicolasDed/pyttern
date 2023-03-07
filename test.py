@@ -10,7 +10,8 @@ from antlr.Python3Lexer import Python3Lexer
 from antlr.Python3Parser import Python3Parser
 from antlr.Python3Listener import Python3Listener
 
-from Python3Visitor import Python3Visitor
+from PyHoleVisitor import PyHoleVisitor
+from Matcher import Matcher
 
 
 class Python3ErrorListener(ErrorListener):
@@ -33,18 +34,19 @@ class Python3ErrorListener(ErrorListener):
     def symbol(self):
         return self._symbol
 
+
 class Printer(ParseTreeListener):
     def __init__(self):
         self.depth = 0
 
     def enterEveryRule(self, ctx):
-        print((self.depth*' ') + type(ctx).__name__)
+        print((self.depth * ' ') + type(ctx).__name__)
         self.depth += 1
 
     def exitEveryRule(self, ctx):
         self.depth -= 1
 
-    def visitTerminal(self, node:TerminalNode):
+    def visitTerminal(self, node: TerminalNode):
         print(node)
 
 
@@ -66,7 +68,7 @@ class Python3ParserTests(TestCase):
                 print("    %s%s%s" % (type_name, sep,
                                       token.text.replace(" ", u'\u23B5').replace("\n", u'\u2936')))"""
         parser = Python3Parser(stream)
- 
+
         self.output = io.StringIO()
         self.error = io.StringIO()
 
@@ -92,7 +94,6 @@ class Python3ParserTests(TestCase):
         self.assertEqual(len(self.errorListener.symbol), 0)
 
 
-
 class AstGeneratorTests(TestCase):
 
     def setup(self, path):
@@ -100,7 +101,7 @@ class AstGeneratorTests(TestCase):
         lexer = Python3Lexer(input)
         stream = CommonTokenStream(lexer)
         parser = Python3Parser(stream)
- 
+
         self.output = io.StringIO()
         self.error = io.StringIO()
 
@@ -126,7 +127,7 @@ class AstGeneratorTests(TestCase):
         path.append(toApp)
 
         if isinstance(expected_ast, ast.Load) and isinstance(actual_ast, ast.Store) \
-            or isinstance(expected_ast, ast.Store) and isinstance(actual_ast, ast.Load):
+                or isinstance(expected_ast, ast.Store) and isinstance(actual_ast, ast.Load):
             path.pop()
             return
 
@@ -146,15 +147,14 @@ class AstGeneratorTests(TestCase):
 
         else:
             self.assertEqual(actual_ast, expected_ast, path)
-                
-        
+
         path.pop()
 
     def test_ast_generator_student(self):
         parser = self.setup("test/q1_3.py")
         tree = parser.file_input()
-        
-        generatedTree = Python3Visitor().visit(tree)
+
+        generatedTree = PyHoleVisitor().visit(tree)
         print(ast.dump(generatedTree, indent=1))
 
         with open("test/q1_3.py") as file:
@@ -166,8 +166,8 @@ class AstGeneratorTests(TestCase):
     def test_ast_generator_student2(self):
         parser = self.setup("test/q1_254.py")
         tree = parser.file_input()
-        
-        generatedTree = Python3Visitor().visit(tree)
+
+        generatedTree = PyHoleVisitor().visit(tree)
         print(ast.dump(generatedTree, indent=1))
 
         with open("test/q1_254.py") as file:
@@ -176,17 +176,53 @@ class AstGeneratorTests(TestCase):
             print(ast.dump(pythonTree, indent=1))
             self.asts_equal(pythonTree, generatedTree)
 
-
     def test_ast_generator_complex(self):
         parser = self.setup("test/test_grammar.py")
         tree = parser.file_input()
-        
-        generatedTree = Python3Visitor().visit(tree)
-        print(ast.dump(generatedTree, indent=1))
 
+        generatedTree = PyHoleVisitor().visit(tree)
+        print(ast.dump(generatedTree, indent=1))
 
         with open("test/test_grammar.py") as file:
             pythonTree = ast.parse(file.read(), "test/test_grammar.py")
             print()
             print(ast.dump(pythonTree, indent=1))
             self.asts_equal(pythonTree, generatedTree)
+
+class ASTHoleTests(TestCase):
+    def setup(self, path):
+        input = FileStream(path, encoding="utf-8")
+        lexer = Python3Lexer(input)
+        stream = CommonTokenStream(lexer)
+        parser = Python3Parser(stream)
+
+        self.output = io.StringIO()
+        self.error = io.StringIO()
+
+        parser.removeErrorListeners()
+        self.errorListener = Python3ErrorListener(self.error)
+        parser.addErrorListener(self.errorListener)
+        return parser
+
+    #@pytest.mark.timeout(60)
+    def test_ast_hole(self):
+        parser = self.setup("test/pyHoleTest.py")
+        tree = parser.file_input()
+
+        generatedTree = PyHoleVisitor().visit(tree)
+        print(ast.dump(generatedTree, indent=1))
+
+        wrongParser = self.setup("test/pyHoleNok.py")
+        wrongTree = wrongParser.file_input()
+
+        wrongGeneratedTree = PyHoleVisitor().visit(wrongTree)
+
+        with open("test/q1_3.py") as file:
+            pythonTree = ast.parse(file.read(), "test/q1_3.py")
+            print()
+            print(ast.dump(pythonTree, indent=1))
+            val = Matcher().match(generatedTree, pythonTree)
+            self.assertTrue(val)
+
+            wrongVal = Matcher().match(wrongGeneratedTree, pythonTree)
+            self.assertFalse(wrongVal)
