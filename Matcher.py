@@ -12,7 +12,7 @@ class Matcher:
         Compare two abstract syntax trees (ASTs) to see if they are equal.
         """
         if isinstance(expected_ast, HoleAST):
-            return True
+            return self.matchHole(expected_ast, actual_ast)
 
         if isinstance(expected_ast, ast.Load) and isinstance(actual_ast, ast.Store) \
                 or isinstance(expected_ast, ast.Store) and isinstance(actual_ast, ast.Load):
@@ -46,6 +46,9 @@ class Matcher:
     def matchListWithHole(self, expected_list, actual_list):
         if len(expected_list) == 0 and len(actual_list) == 0:
             return True
+
+        if len(expected_list) == 0 and len(actual_list) > 0:
+            return False
 
         first_val = expected_list[0]
         if isinstance(first_val, HoleAST):
@@ -95,5 +98,14 @@ class Matcher:
                 return i
         return -1
 
-    def matchInList(self, expected_list, actual_list):
-        pass
+    def matchHole(self, expected_ast, actual_ast):
+        if isinstance(expected_ast, SimpleHole):
+            return True
+
+        elif isinstance(expected_ast, CompoundHole):
+            if not hasattr(actual_ast, 'body'):
+                return False
+
+            return self.__asts_equal(expected_ast.body, actual_ast.body)
+
+        raise NotImplementedError(f"Match of class {type(expected_ast).__name__} not yet implemented")

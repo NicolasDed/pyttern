@@ -9,9 +9,14 @@ class HoleAST:
         return repr(self.__str__())
 
 
-class Hole(HoleAST):
-    def __init__(self):
-        self._fields = []
-
+class SimpleHole(HoleAST):
     def __str__(self):
         return 'ANY'
+
+
+class CompoundHole(HoleAST):
+    def __init__(self, body=None):
+        self.body = body
+
+    def __str__(self):
+        return 'ANY:'

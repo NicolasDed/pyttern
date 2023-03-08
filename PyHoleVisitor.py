@@ -1064,7 +1064,10 @@ class PyHoleVisitor(Python3Visitor):
         return txt
 
     def visitHole(self, ctx: Python3Parser.HoleContext):
-        return Hole()
+        if ctx.suite() is not None:
+            body = ctx.suite().accept(self)
+            return CompoundHole(body)
+        return SimpleHole()
 
 
 del Python3Parser

@@ -1,17 +1,15 @@
-from unittest import TestCase
-import io
 import ast
+import io
+from unittest import TestCase
 
-import pytest
 from antlr4 import *
 from antlr4.error.ErrorListener import *
 
-from antlr.Python3Lexer import Python3Lexer
-from antlr.Python3Parser import Python3Parser
-from antlr.Python3Listener import Python3Listener
-
-from PyHoleVisitor import PyHoleVisitor
 from Matcher import Matcher
+from PyHoleVisitor import PyHoleVisitor
+from antlr.Python3Lexer import Python3Lexer
+from antlr.Python3Listener import Python3Listener
+from antlr.Python3Parser import Python3Parser
 
 
 class Python3ErrorListener(ErrorListener):
@@ -205,7 +203,7 @@ class ASTHoleTests(TestCase):
         return parser
 
     #@pytest.mark.timeout(60)
-    def test_ast_hole(self):
+    def test_ast_simple_hole(self):
         parser = self.setup("test/pyHoleTest.py")
         tree = parser.file_input()
 
@@ -226,3 +224,15 @@ class ASTHoleTests(TestCase):
 
             wrongVal = Matcher().match(wrongGeneratedTree, pythonTree)
             self.assertFalse(wrongVal)
+
+    def test_ast_compound_hole(self):
+        parserOk = self.setup("test/pyHoleCoupoundOk.py")
+        treeOk = parserOk.file_input()
+
+        generatedTreeOk = PyHoleVisitor().visit(treeOk)
+
+        with open("test/q1_254.py") as file:
+            pythonTree = ast.parse(file.read(), "test/q1_254.py")
+
+            valOk = Matcher().match(generatedTreeOk, pythonTree)
+            self.assertTrue(valOk)
