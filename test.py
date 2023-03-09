@@ -1,36 +1,14 @@
 import ast
-import io
 from unittest import TestCase
 
+import pytest
 from antlr4 import *
-from antlr4.error.ErrorListener import *
 
-from Matcher import Matcher
-from PyHoleVisitor import PyHoleVisitor
+from PyHoleErrorListener import Python3ErrorListener
+from PyHoleParser import *
 from antlr.Python3Lexer import Python3Lexer
 from antlr.Python3Listener import Python3Listener
 from antlr.Python3Parser import Python3Parser
-
-
-class Python3ErrorListener(ErrorListener):
-    def __init__(self, output):
-        self.output = output
-        self._symbol = ''
-
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        self.output.write(msg)
-        self._symbol = offendingSymbol.text
-        stack = recognizer.getRuleInvocationStack()
-        stack.reverse()
-        print("rule stack: {}".format(str(stack)))
-        print("line {} : {} at {} : {}".format(str(line),
-                                               str(column),
-                                               str(offendingSymbol).replace(" ", u'\u23B5'),
-                                               msg.replace(" ", u'\u23B5')))
-
-    @property
-    def symbol(self):
-        return self._symbol
 
 
 class Printer(ParseTreeListener):
@@ -56,15 +34,6 @@ class Python3ParserTests(TestCase):
         stream = CommonTokenStream(lexer)
 
         # print out the token parsing
-        """stream.fill()
-        print("TOKENS")
-        for token in stream.tokens:
-            if token.text != '<EOF>':
-                type_name = Python3Parser.symbolicNames[token.type]
-                tabs = 5 - len(type_name) // 4
-                sep = "\t" * tabs
-                print("    %s%s%s" % (type_name, sep,
-                                      token.text.replace(" ", u'\u23B5').replace("\n", u'\u2936')))"""
         parser = Python3Parser(stream)
 
         self.output = io.StringIO()
@@ -202,7 +171,7 @@ class ASTHoleTests(TestCase):
         parser.addErrorListener(self.errorListener)
         return parser
 
-    #@pytest.mark.timeout(60)
+    @pytest.mark.timeout(10)
     def test_ast_simple_hole(self):
         parser = self.setup("test/pyHoleTest.py")
         tree = parser.file_input()
@@ -225,6 +194,7 @@ class ASTHoleTests(TestCase):
             wrongVal = Matcher().match(wrongGeneratedTree, pythonTree)
             self.assertFalse(wrongVal)
 
+    @pytest.mark.timeout(10)
     def test_ast_compound_hole(self):
         parserOk = self.setup("test/pyHoleCoupoundOk.py")
         treeOk = parserOk.file_input()
@@ -236,3 +206,8 @@ class ASTHoleTests(TestCase):
 
             valOk = Matcher().match(generatedTreeOk, pythonTree)
             self.assertTrue(valOk)
+
+    @pytest.mark.timeout(10)
+    def test_ast_labeled_hole(self):
+        val = match_files("test/pyHoleLabeled.py", "test/q1_3.py")
+        self.assertTrue(val)

@@ -439,8 +439,28 @@ class Python3Visitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#hole.
-    def visitHole(self, ctx:Python3Parser.HoleContext):
+    # Visit a parse tree produced by Python3Parser#expr_hole.
+    def visitExpr_hole(self, ctx:Python3Parser.Expr_holeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#simple_hole.
+    def visitSimple_hole(self, ctx:Python3Parser.Simple_holeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#double_hole.
+    def visitDouble_hole(self, ctx:Python3Parser.Double_holeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#var_hole.
+    def visitVar_hole(self, ctx:Python3Parser.Var_holeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#compound_hole.
+    def visitCompound_hole(self, ctx:Python3Parser.Compound_holeContext):
         return self.visitChildren(ctx)
 
 

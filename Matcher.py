@@ -4,10 +4,13 @@ from HoleAST import *
 
 class Matcher:
 
-    def match(self, pattern, code):
-        return self.__asts_equal(pattern, code)
+    def __init__(self):
+        self.variables = {}
 
-    def __asts_equal(self, expected_ast, actual_ast):
+    def match(self, pattern, code):
+        return self.asts_equal(pattern, code)
+
+    def asts_equal(self, expected_ast, actual_ast):
         """
         Compare two abstract syntax trees (ASTs) to see if they are equal.
         """
@@ -22,13 +25,10 @@ class Matcher:
             print(f"Invalid types {type(expected_ast)} != {type(actual_ast)}")
             return False
 
-        if isinstance(expected_ast, ast.Name):
-            return True
-
         if isinstance(expected_ast, ast.AST):
             for field, expected_value in ast.iter_fields(expected_ast):
                 actual_value = getattr(actual_ast, field, None)
-                if not self.__asts_equal(expected_value, actual_value):
+                if not self.asts_equal(expected_value, actual_value):
                     print(f"Invalid attrs {expected_value} != {actual_value}")
                     return False
             return True
@@ -40,7 +40,6 @@ class Matcher:
             return self.matchListWithHole(expected_ast, actual_ast)
 
         else:
-            print('ici?')
             return expected_ast == actual_ast
 
     def matchListWithHole(self, expected_list, actual_list):
@@ -51,10 +50,10 @@ class Matcher:
             return False
 
         first_val = expected_list[0]
-        if isinstance(first_val, HoleAST):
+        if isinstance(first_val, DoubleHole):
             return self.matchAnyInList(expected_list, actual_list)
         else:
-            if not self.__asts_equal(first_val, actual_list[0]):
+            if not self.asts_equal(first_val, actual_list[0]):
                 print(f"Error in list {first_val} != {actual_list[0]}")
                 return False
 
@@ -64,13 +63,12 @@ class Matcher:
         # Find index of first non-hole
         index = -1
         for i, val in enumerate(expected_list):
-            if not isinstance(val, HoleAST):
+            if not isinstance(val, DoubleHole):
                 index = i
                 break
 
         # no more values
         if index == -1:
-            print("No more values")
             return len(actual_list) == 0 or len(expected_list) != 0
 
         toFind = expected_list[index]
@@ -94,18 +92,9 @@ class Matcher:
         if start >= len(AstList):
             return -1
         for i, val in enumerate(AstList[start:]):
-            if self.__asts_equal(AstToFind, val):
+            if self.asts_equal(AstToFind, val):
                 return i
         return -1
 
     def matchHole(self, expected_ast, actual_ast):
-        if isinstance(expected_ast, SimpleHole):
-            return True
-
-        elif isinstance(expected_ast, CompoundHole):
-            if not hasattr(actual_ast, 'body'):
-                return False
-
-            return self.__asts_equal(expected_ast.body, actual_ast.body)
-
-        raise NotImplementedError(f"Match of class {type(expected_ast).__name__} not yet implemented")
+        return expected_ast.visit(actual_ast, self)

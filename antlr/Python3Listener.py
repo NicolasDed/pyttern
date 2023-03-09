@@ -782,12 +782,48 @@ class Python3Listener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by Python3Parser#hole.
-    def enterHole(self, ctx:Python3Parser.HoleContext):
+    # Enter a parse tree produced by Python3Parser#expr_hole.
+    def enterExpr_hole(self, ctx:Python3Parser.Expr_holeContext):
         pass
 
-    # Exit a parse tree produced by Python3Parser#hole.
-    def exitHole(self, ctx:Python3Parser.HoleContext):
+    # Exit a parse tree produced by Python3Parser#expr_hole.
+    def exitExpr_hole(self, ctx:Python3Parser.Expr_holeContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#simple_hole.
+    def enterSimple_hole(self, ctx:Python3Parser.Simple_holeContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#simple_hole.
+    def exitSimple_hole(self, ctx:Python3Parser.Simple_holeContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#double_hole.
+    def enterDouble_hole(self, ctx:Python3Parser.Double_holeContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#double_hole.
+    def exitDouble_hole(self, ctx:Python3Parser.Double_holeContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#var_hole.
+    def enterVar_hole(self, ctx:Python3Parser.Var_holeContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#var_hole.
+    def exitVar_hole(self, ctx:Python3Parser.Var_holeContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#compound_hole.
+    def enterCompound_hole(self, ctx:Python3Parser.Compound_holeContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#compound_hole.
+    def exitCompound_hole(self, ctx:Python3Parser.Compound_holeContext):
         pass
 
 

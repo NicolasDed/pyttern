@@ -198,8 +198,8 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#tfpdef.
     def visitTfpdef(self, ctx: Python3Parser.TfpdefContext):
-        if ctx.hole() is not None:
-            return ctx.hole().accept(self)
+        if ctx.expr_hole() is not None:
+            return ctx.expr_hole().accept(self)
         val = ctx.NAME().accept(self)
         typeVal = ctx.test().accept(self) if ctx.test() is not None else None
         return arg(val, annotation=typeVal)
@@ -1063,11 +1063,26 @@ class PyHoleVisitor(Python3Visitor):
             return None
         return txt
 
-    def visitHole(self, ctx: Python3Parser.HoleContext):
-        if ctx.suite() is not None:
-            body = ctx.suite().accept(self)
-            return CompoundHole(body)
+    # Visit a parse tree produced by Python3Parser#expr_hole.
+    def visitExpr_hole(self, ctx: Python3Parser.Expr_holeContext):
+        return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by Python3Parser#simple_hole.
+    def visitSimple_hole(self, ctx: Python3Parser.Simple_holeContext):
         return SimpleHole()
+
+    # Visit a parse tree produced by Python3Parser#double_hole.
+    def visitDouble_hole(self, ctx: Python3Parser.Double_holeContext):
+        return DoubleHole()
+
+    # Visit a parse tree produced by Python3Parser#compound_hole.
+    def visitCompound_hole(self, ctx: Python3Parser.Compound_holeContext):
+        body = ctx.suite().accept(self)
+        return CompoundHole(body)
+
+    def visitVar_hole(self, ctx:Python3Parser.Var_holeContext):
+        name = ctx.NAME().accept(self)
+        return VarHole(name)
 
 
 del Python3Parser

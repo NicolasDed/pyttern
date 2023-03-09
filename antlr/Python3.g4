@@ -164,18 +164,18 @@ typedargslist: (tfpdef ('=' test)? (',' tfpdef ('=' test)?)* (',' (
       | '**' tfpdef (',')?)?)?
   | '*' (tfpdef)? (',' tfpdef ('=' test)?)* (',' ('**' tfpdef (',')?)?)?
   | '**' tfpdef (',')?);
-tfpdef: (NAME (':' test)?) | hole;
+tfpdef: (NAME (':' test)?) | expr_hole;
 varargslist: (vfpdef ('=' test)? (',' vfpdef ('=' test)?)* (',' (
         '*' (vfpdef)? (',' vfpdef ('=' test)?)* (',' ('**' vfpdef (',')?)?)?
       | '**' vfpdef (',')?)?)?
   | '*' (vfpdef)? (',' vfpdef ('=' test)?)* (',' ('**' vfpdef (',')?)?)?
   | '**' vfpdef (',')?
 );
-vfpdef: NAME | hole;
+vfpdef: NAME | expr_hole;
 
 stmt: simple_stmt | compound_stmt;
 simple_stmt: small_stmt (';' small_stmt)* (';')? NEWLINE;
-small_stmt: (hole | expr_stmt | del_stmt | pass_stmt | flow_stmt |
+small_stmt: (expr_hole | expr_stmt | del_stmt | pass_stmt | flow_stmt |
              import_stmt | global_stmt | nonlocal_stmt | assert_stmt);
 expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) |
                      ('=' (yield_expr|testlist_star_expr))*);
@@ -206,7 +206,7 @@ global_stmt: 'global' NAME (',' NAME)*;
 nonlocal_stmt: 'nonlocal' NAME (',' NAME)*;
 assert_stmt: 'assert' test (',' test)?;
 
-compound_stmt: hole | if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt;
+compound_stmt: compound_hole | if_stmt | while_stmt | for_stmt | try_stmt | with_stmt | funcdef | classdef | decorated | async_stmt;
 async_stmt: ASYNC (funcdef | with_stmt | for_stmt);
 if_stmt: 'if' test ':' suite ('elif' test ':' suite)* ('else' ':' suite)?;
 while_stmt: 'while' test ':' suite ('else' ':' suite)?;
@@ -222,7 +222,7 @@ with_item: test ('as' expr)?;
 except_clause: 'except' (test ('as' NAME)?)?;
 suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT;
 
-test: or_test ('if' or_test 'else' test)? | lambdef;
+test: or_test ('if' or_test 'else' test)? | lambdef | var_hole;
 test_nocond: or_test | lambdef_nocond;
 lambdef: 'lambda' (varargslist)? ':' test;
 lambdef_nocond: 'lambda' (varargslist)? ':' test_nocond;
@@ -246,7 +246,7 @@ atom_expr: (AWAIT)? atom trailer*;
 atom: ('(' (yield_expr|testlist_comp)? ')' |
        '[' (testlist_comp)? ']' |
        '{' (dictorsetmaker)? '}' |
-       hole |
+       expr_hole |
        NAME | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False');
 testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* (',')? );
 trailer: '(' (arglist)? ')' | '[' subscriptlist ']' | '.' NAME;
@@ -289,7 +289,12 @@ yield_expr: 'yield' (yield_arg)?;
 yield_arg: 'from' test | testlist;
 
 // syntax of holes
-hole: '??' (':' suite)?;
+expr_hole: simple_hole | double_hole;
+simple_hole: '?';
+double_hole: '??';
+var_hole: '?' NAME;
+compound_hole: '??' ':' suite;
+
 
 /*
  * lexer rules
