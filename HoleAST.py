@@ -1,4 +1,5 @@
 from ast import *
+import inspect
 
 
 class HoleAST:
@@ -54,7 +55,12 @@ class VarHole(HoleAST):
             print(f"{self.name} exist")
             return matcher.asts_equal(matcher.variables[self.name], ast)
 
-        else:
-            print(f"Set {self.name} at {ast}")
-            matcher.variables[self.name] = ast
-            return True
+        elif self.name in matcher.forbidden:
+            print(f"{self.name} forbidden")
+            if ast in matcher.forbidden[self.name]:
+                print(f"{ast} in forbidden")
+                return False
+
+        print(f"Set {self.name} at {ast}")
+        matcher.variables[self.name] = ast
+        return True

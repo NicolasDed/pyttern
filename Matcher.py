@@ -6,9 +6,24 @@ class Matcher:
 
     def __init__(self):
         self.variables = {}
+        self.forbidden = {}
+
+
+    def setVariable(self, name, ast):
+        self.variables[name] = ast
 
     def match(self, pattern, code):
-        return self.asts_equal(pattern, code)
+        while True:
+            mat = self.asts_equal(pattern, code)
+            if mat:
+                return True
+            if len(self.variables) == 0:
+                return False
+            for key, val in self.variables.items():
+                if key not in self.forbidden:
+                    self.forbidden[key] = []
+                self.forbidden[key].append(val)
+            self.variables = {}
 
     def asts_equal(self, expected_ast, actual_ast):
         """
@@ -84,7 +99,7 @@ class Matcher:
                 if self.matchListWithHole(expected_list[index + 1:], actual_list[indexFound + 1:]):
                     return True
 
-            print("Fallback")
+            print("backtrack")
             start = indexFound + 1
 
     def findFirst(self, AstToFind, AstList, start=0):
