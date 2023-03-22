@@ -1,5 +1,5 @@
 def multiplications(n):
     ??:
-        for ?? in ??:
+        for ? in ?:
             ??
-    return ??
+    return ?

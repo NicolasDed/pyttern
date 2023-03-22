@@ -4,7 +4,7 @@ from unittest import TestCase
 import pytest
 from antlr4 import *
 
-from PyHoleErrorListener import Python3ErrorListener
+from Matcher import Matcher, match_files
 from PyHoleParser import *
 from antlr.Python3Lexer import Python3Lexer
 from antlr.Python3Listener import Python3Listener
@@ -88,10 +88,10 @@ class AstGeneratorTests(TestCase):
         Compare two abstract syntax trees (ASTs) to see if they are equal.
         """
         if hasattr(actual_ast, 'name'):
-            toApp = (type(actual_ast).__name__, actual_ast.name)
+            to_app = (type(actual_ast).__name__, actual_ast.name)
         else:
-            toApp = type(actual_ast).__name__
-        path.append(toApp)
+            to_app = type(actual_ast).__name__
+        path.append(to_app)
 
         if isinstance(expected_ast, ast.Load) and isinstance(actual_ast, ast.Store) \
                 or isinstance(expected_ast, ast.Store) and isinstance(actual_ast, ast.Load):
@@ -121,42 +121,43 @@ class AstGeneratorTests(TestCase):
         parser = self.setup("test/q1_3.py")
         tree = parser.file_input()
 
-        generatedTree = PyHoleVisitor().visit(tree)
-        print(ast.dump(generatedTree, indent=1))
+        generated_tree = PyHoleVisitor().visit(tree)
+        print(ast.dump(generated_tree, indent=1))
 
         with open("test/q1_3.py") as file:
-            pythonTree = ast.parse(file.read(), "test/q1_3.py")
+            python_tree = ast.parse(file.read(), "test/q1_3.py")
             print()
-            print(ast.dump(pythonTree, indent=1))
-            self.asts_equal(pythonTree, generatedTree)
+            print(ast.dump(python_tree, indent=1))
+            self.asts_equal(python_tree, generated_tree)
 
     def test_ast_generator_student2(self):
         parser = self.setup("test/q1_254.py")
         tree = parser.file_input()
 
-        generatedTree = PyHoleVisitor().visit(tree)
-        print(ast.dump(generatedTree, indent=1))
+        generated_tree = PyHoleVisitor().visit(tree)
+        print(ast.dump(generated_tree, indent=1))
 
         with open("test/q1_254.py") as file:
-            pythonTree = ast.parse(file.read(), "test/q1_254.py")
+            python_tree = ast.parse(file.read(), "test/q1_254.py")
             print()
-            print(ast.dump(pythonTree, indent=1))
-            self.asts_equal(pythonTree, generatedTree)
+            print(ast.dump(python_tree, indent=1))
+            self.asts_equal(python_tree, generated_tree)
 
     def test_ast_generator_complex(self):
         parser = self.setup("test/test_grammar.py")
         tree = parser.file_input()
 
-        generatedTree = PyHoleVisitor().visit(tree)
-        print(ast.dump(generatedTree, indent=1))
+        generated_tree = PyHoleVisitor().visit(tree)
+        print(ast.dump(generated_tree, indent=1))
 
         with open("test/test_grammar.py") as file:
-            pythonTree = ast.parse(file.read(), "test/test_grammar.py")
+            python_tree = ast.parse(file.read(), "test/test_grammar.py")
             print()
-            print(ast.dump(pythonTree, indent=1))
-            self.asts_equal(pythonTree, generatedTree)
+            print(ast.dump(python_tree, indent=1))
+            self.asts_equal(python_tree, generated_tree)
 
-class ASTHoleTests(TestCase):
+
+class TestASTHole(TestCase):
     def setup(self, path):
         input = FileStream(path, encoding="utf-8")
         lexer = Python3Lexer(input)
@@ -172,40 +173,51 @@ class ASTHoleTests(TestCase):
         return parser
 
     @pytest.mark.timeout(10)
+    def test_ast_equal_match(self):
+        val = match_files("test/q1_3.py", "test/q1_3.py")
+        self.assertTrue(val)
+
+        val = match_files("test/q1_254.py", "test/q1_254.py")
+        self.assertTrue(val)
+
+        val = match_files("test/q1_3.py", "test/q1_254.py")
+        self.assertFalse(val)
+
+        val = match_files("test/q1_254.py", "test/q1_3.py")
+        self.assertFalse(val)
+
+    @pytest.mark.timeout(10)
     def test_ast_simple_hole(self):
         parser = self.setup("test/pyHoleTest.py")
         tree = parser.file_input()
 
-        generatedTree = PyHoleVisitor().visit(tree)
-        print(ast.dump(generatedTree, indent=1))
+        generated_tree = PyHoleVisitor().visit(tree)
 
-        wrongParser = self.setup("test/pyHoleNok.py")
-        wrongTree = wrongParser.file_input()
+        wrong_parser = self.setup("test/pyHoleNok.py")
+        wrong_tree = wrong_parser.file_input()
 
-        wrongGeneratedTree = PyHoleVisitor().visit(wrongTree)
+        wrong_generated_tree = PyHoleVisitor().visit(wrong_tree)
 
         with open("test/q1_3.py") as file:
-            pythonTree = ast.parse(file.read(), "test/q1_3.py")
-            print()
-            print(ast.dump(pythonTree, indent=1))
-            val = Matcher().match(generatedTree, pythonTree)
+            python_tree = ast.parse(file.read(), "test/q1_3.py")
+            val = Matcher().match(generated_tree, python_tree)
             self.assertTrue(val)
 
-            wrongVal = Matcher().match(wrongGeneratedTree, pythonTree)
-            self.assertFalse(wrongVal)
+            wrong_val = Matcher().match(wrong_generated_tree, python_tree)
+            self.assertFalse(wrong_val)
 
     @pytest.mark.timeout(10)
     def test_ast_compound_hole(self):
-        parserOk = self.setup("test/pyHoleCoupoundOk.py")
-        treeOk = parserOk.file_input()
+        parser_ok = self.setup("test/pyHoleCompoundOk.py")
+        tree_ok = parser_ok.file_input()
 
-        generatedTreeOk = PyHoleVisitor().visit(treeOk)
+        generated_tree_ok = PyHoleVisitor().visit(tree_ok)
 
         with open("test/q1_254.py") as file:
-            pythonTree = ast.parse(file.read(), "test/q1_254.py")
+            python_tree = ast.parse(file.read(), "test/q1_254.py")
 
-            valOk = Matcher().match(generatedTreeOk, pythonTree)
-            self.assertTrue(valOk)
+            val_ok = Matcher().match(generated_tree_ok, python_tree)
+            self.assertTrue(val_ok)
 
     @pytest.mark.timeout(10)
     def test_ast_labeled_hole(self):

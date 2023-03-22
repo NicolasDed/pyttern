@@ -6,15 +6,15 @@ class Python3ErrorListener(ErrorListener):
         self.output = output
         self._symbol = ''
 
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+    def syntaxError(self, recognizer, offending_symbol, line, column, msg, e):
         self.output.write(msg)
-        self._symbol = offendingSymbol.text
+        self._symbol = offending_symbol.text
         stack = recognizer.getRuleInvocationStack()
         stack.reverse()
         print("rule stack: {}".format(str(stack)))
         print("line {} : {} at {} : {}".format(str(line),
                                                str(column),
-                                               str(offendingSymbol).replace(" ", u'\u23B5'),
+                                               str(offending_symbol).replace(" ", u'\u23B5'),
                                                msg.replace(" ", u'\u23B5')))
 
     @property

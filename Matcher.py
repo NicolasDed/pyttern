@@ -1,115 +1,70 @@
-import ast
+from copy import deepcopy
+
+import AstWalker
 from HoleAST import *
+from PyHoleParser import parse_pyhole
+
+
+def match_files(path_pattern, path_python):
+    pattern = parse_pyhole(path_pattern)
+    python = parse_pyhole(path_python)
+
+    res = Matcher().match(pattern, python)
+
+    return res
 
 
 class Matcher:
-
     def __init__(self):
+        self.pattern_walker = None
+        self.code_walker = None
+        self.saved_pattern_walkers = []
+        self.saved_code_walkers = []
         self.variables = {}
-        self.forbidden = {}
 
+    def save_walkers_state(self):
+        saved_pattern = deepcopy(self.pattern_walker)
+        saved_code = deepcopy(self.code_walker)
+        self.saved_pattern_walkers.append(saved_pattern)
+        self.saved_code_walkers.append(saved_code)
 
-    def setVariable(self, name, ast):
-        self.variables[name] = ast
+    def load_walkers_state(self):
+        saved_pattern = self.saved_pattern_walkers.pop()
+        saved_code = self.saved_code_walkers.pop()
+        self.pattern_walker = saved_pattern
+        self.code_walker = saved_code
 
     def match(self, pattern, code):
-        while True:
-            mat = self.asts_equal(pattern, code)
-            if mat:
-                return True
-            if len(self.variables) == 0:
-                return False
-            for key, val in self.variables.items():
-                if key not in self.forbidden:
-                    self.forbidden[key] = []
-                self.forbidden[key].append(val)
-            self.variables = {}
+        self.pattern_walker = AstWalker.AstWalker(pattern)
+        self.code_walker = AstWalker.AstWalker(code)
 
-    def asts_equal(self, expected_ast, actual_ast):
-        """
-        Compare two abstract syntax trees (ASTs) to see if they are equal.
-        """
-        if isinstance(expected_ast, HoleAST):
-            return self.matchHole(expected_ast, actual_ast)
+        return self.simple_match()
 
-        if isinstance(expected_ast, ast.Load) and isinstance(actual_ast, ast.Store) \
-                or isinstance(expected_ast, ast.Store) and isinstance(actual_ast, ast.Load):
-            return True
-
-        if type(expected_ast) != type(actual_ast):
-            print(f"Invalid types {type(expected_ast)} != {type(actual_ast)}")
-            return False
-
-        if isinstance(expected_ast, ast.AST):
-            for field, expected_value in ast.iter_fields(expected_ast):
-                actual_value = getattr(actual_ast, field, None)
-                if not self.asts_equal(expected_value, actual_value):
-                    print(f"Invalid attrs {expected_value} != {actual_value}")
-                    return False
-            return True
-
-        elif isinstance(expected_ast, list):
-            if len(actual_ast) == 0 and len(expected_ast) == 0:
-                return True
-
-            return self.matchListWithHole(expected_ast, actual_ast)
-
-        else:
-            return expected_ast == actual_ast
-
-    def matchListWithHole(self, expected_list, actual_list):
-        if len(expected_list) == 0 and len(actual_list) == 0:
-            return True
-
-        if len(expected_list) == 0 and len(actual_list) > 0:
-            return False
-
-        first_val = expected_list[0]
-        if isinstance(first_val, DoubleHole):
-            return self.matchAnyInList(expected_list, actual_list)
-        else:
-            if not self.asts_equal(first_val, actual_list[0]):
-                print(f"Error in list {first_val} != {actual_list[0]}")
-                return False
-
-            return self.matchListWithHole(expected_list[1:], actual_list[1:])
-
-    def matchAnyInList(self, expected_list, actual_list):
-        # Find index of first non-hole
-        index = -1
-        for i, val in enumerate(expected_list):
-            if not isinstance(val, DoubleHole):
-                index = i
-                break
-
-        # no more values
-        if index == -1:
-            return len(actual_list) == 0 or len(expected_list) != 0
-
-        toFind = expected_list[index]
-        start = 0
-        found = False
-        while not found:
-            indexFound = self.findFirst(toFind, actual_list, start)
-            if indexFound == -1:
-                print(f"{toFind} not found in {actual_list}")
+    def simple_match(self):
+        pattern_node = self.pattern_walker.next()
+        if pattern_node is None:
+            code_node = self.code_walker.next()
+            if code_node is not None:
                 return False
             else:
-                indexFound += start
-                if self.matchListWithHole(expected_list[index + 1:], actual_list[indexFound + 1:]):
-                    return True
+                return True
 
-            print("backtrack")
-            start = indexFound + 1
+        code_node = self.code_walker.next()
+        if code_node is None:
+            return False
 
-    def findFirst(self, AstToFind, AstList, start=0):
-        print(f'Search {AstToFind} in {AstList[start:]}')
-        if start >= len(AstList):
-            return -1
-        for i, val in enumerate(AstList[start:]):
-            if self.asts_equal(AstToFind, val):
-                return i
-        return -1
+        return self.rec_match(pattern_node, code_node)
 
-    def matchHole(self, expected_ast, actual_ast):
-        return expected_ast.visit(actual_ast, self)
+    def rec_match(self, pattern_node, code_node):
+        if isinstance(pattern_node, HoleAST):
+            return pattern_node.visit(self, code_node)
+
+        if type(pattern_node) != type(code_node):
+            return False
+
+        if isinstance(pattern_node, AST):
+            for const_pattern, const_code in zip(iter_constant_field(pattern_node), iter_constant_field(code_node)):
+                if const_pattern != const_code:
+                    return False
+
+        return self.simple_match()
