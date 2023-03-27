@@ -130,7 +130,24 @@ class MultipleCompoundHole(HoleAST):
         self._fields = ['body']
 
     def visit(self, matcher, current_node):
+        next_pattern_node = matcher.pattern_walker.next()
+        if next_pattern_node is None:
+            return False
+
+        code_node = current_node
+        while code_node is not None:
+            matcher.save_walkers_state()
+            if matcher.rec_match(next_pattern_node, code_node):
+                return True
+            matcher.load_walkers_state()
+            if hasattr(code_node, 'body'):
+                matcher.code_walker.select_specific_child('body')
+                code_node = matcher.code_walker.next()
+            else:
+                code_node = matcher.code_walker.next_sibling()
+
         return False
+
 
 
 
