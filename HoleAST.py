@@ -123,6 +123,16 @@ class VarHole(HoleAST):
 
         return True
 
+class MultipleCompoundHole(HoleAST):
+    def __init__(self, body):
+        super().__init__()
+        self.body = body
+        self._fields = ['body']
+
+    def visit(self, matcher, current_node):
+        return False
+
+
 
 # Static methods #
 

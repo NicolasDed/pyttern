@@ -223,3 +223,8 @@ class TestASTHole(TestCase):
     def test_ast_labeled_hole(self):
         val = match_files("test/pyHoleLabeled.py", "test/q1_3.py")
         self.assertTrue(val)
+
+    @pytest.mark.timeout(10)
+    def test_ast_multiple_depth(self):
+        val = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py")
+        self.assertTrue(val)

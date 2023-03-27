@@ -464,5 +464,15 @@ class Python3Visitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by Python3Parser#simple_compound_hole.
+    def visitSimple_compound_hole(self, ctx:Python3Parser.Simple_compound_holeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#multiple_compound_hole.
+    def visitMultiple_compound_hole(self, ctx:Python3Parser.Multiple_compound_holeContext):
+        return self.visitChildren(ctx)
+
+
 
 del Python3Parser

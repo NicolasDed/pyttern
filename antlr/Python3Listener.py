@@ -827,3 +827,21 @@ class Python3Listener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by Python3Parser#simple_compound_hole.
+    def enterSimple_compound_hole(self, ctx:Python3Parser.Simple_compound_holeContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#simple_compound_hole.
+    def exitSimple_compound_hole(self, ctx:Python3Parser.Simple_compound_holeContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#multiple_compound_hole.
+    def enterMultiple_compound_hole(self, ctx:Python3Parser.Multiple_compound_holeContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#multiple_compound_hole.
+    def exitMultiple_compound_hole(self, ctx:Python3Parser.Multiple_compound_holeContext):
+        pass
+
+

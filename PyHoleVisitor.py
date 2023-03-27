@@ -1077,12 +1077,19 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#compound_hole.
     def visitCompound_hole(self, ctx: Python3Parser.Compound_holeContext):
-        body = ctx.suite().accept(self)
-        return CompoundHole(body)
+        return self.visitChildren(ctx)
 
     def visitVar_hole(self, ctx: Python3Parser.Var_holeContext):
         name = ctx.NAME().accept(self)
         return VarHole(name)
+
+    def visitSimple_compound_hole(self, ctx: Python3Parser.Simple_compound_holeContext):
+        body = ctx.suite().accept(self)
+        return CompoundHole(body)
+
+    def visitMultiple_compound_hole(self, ctx: Python3Parser.Multiple_compound_holeContext):
+        body = ctx.suite().accept(self)
+        return MultipleCompoundHole(body)
 
 
 del Python3Parser
