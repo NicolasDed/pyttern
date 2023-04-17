@@ -1,6 +1,6 @@
 # Python Hole
 
-![example event parameter](https://github.com/JulienLie/python-hole/actions/workflows/python-app.yml/badge.svg?event=push)
+![Tests Status](https://github.com/JulienLie/python-hole/actions/workflows/python-app.yml/badge.svg?event=push)
 
 Python Hole (or PyHole) is a python library to create patterns file for Python code.
 
@@ -8,17 +8,17 @@ Python Hole (or PyHole) is a python library to create patterns file for Python c
 
 We extended the python syntax to create patterns file. Our new syntax include the following elements:
 
-| Wildcard   | Description                                         |
-|------------|-----------------------------------------------------|
-| ?          | Match 1 element                                     |
-| ??         | Match 0 or more elements                            |
-| ?{name}    | Match 1 element and bind it to {name}               |
-| ?:         | Match 1 element with a body                         |
-| ?_:        | Match the body of the wildcard in any indentation   |
+| Wildcard | Description                                       |
+|----------|---------------------------------------------------|
+| ?        | Match 1 element                                   |
+| ?*       | Match 0 or more elements                          |
+| ?{name}  | Match 1 element and bind it to {``name``}         |
+| ?:       | Match 1 element with a body                       |
+| ?*:      | Match the body of the wildcard in any indentation |
 
 ## Usage
 
-````python
+```python
 from pyhole import Matcher
 
 code = "code_file.py"
@@ -28,16 +28,16 @@ if match:
     print("We found a match")
 else:
     print("No match")
-````
+```
 
 ## Example
 
 ### Pattern file:
 ```python
 def multiplicatons(n):
-    ??
+    ?*
     ?var1 = ?       # We want to have a initial variable
-    ?_:
+    ?*:
         ?var1 = ?   # This variable has to be updated somewhere
     return ?var1    # And we want to return it
 ```
