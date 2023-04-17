@@ -1,5 +1,5 @@
-def multiplications(??):
-    ??
-    ?var1 = ??
-    ??
+def multiplications(?*):
+    ?*
+    ?var1 = ?*
+    ?*
     return ?var1

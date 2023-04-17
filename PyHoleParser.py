@@ -21,7 +21,7 @@ def parse_pyhole(path):
     parser.addErrorListener(error_listener)
     tree = parser.file_input()
     if len(error_listener.symbol) > 0:
-        raise IOError()
+        raise IOError(f"Syntax error in {path} at line {error_listener.symbol} : {error.getvalue()}")
 
     generated_tree = PyHoleVisitor().visit(tree)
     return generated_tree

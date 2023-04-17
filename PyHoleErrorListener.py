@@ -11,12 +11,7 @@ class Python3ErrorListener(ErrorListener):
         self._symbol = offending_symbol.text
         stack = recognizer.getRuleInvocationStack()
         stack.reverse()
-        print("rule stack: {}".format(str(stack)))
-        print("line {} : {} at {} : {}".format(str(line),
-                                               str(column),
-                                               str(offending_symbol).replace(" ", u'\u23B5'),
-                                               msg.replace(" ", u'\u23B5')))
-
+        
     @property
     def symbol(self):
         return self._symbol
