@@ -37,8 +37,11 @@ else:
 def multiplicatons(n):
     ?*
     ?var1 = ?       # We want to have a initial variable
+    ?*
     ?*:
+        ?*
         ?var1 = ?   # This variable has to be updated somewhere
+        ?*
     return ?var1    # And we want to return it
 ```
 
