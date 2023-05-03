@@ -9,6 +9,7 @@ from PyHoleParser import *
 from antlr.Python3Lexer import Python3Lexer
 from antlr.Python3Listener import Python3Listener
 from antlr.Python3Parser import Python3Parser
+from visualizer import Visualizer
 
 
 class Printer(ParseTreeListener):
@@ -174,17 +175,15 @@ class TestASTHole(TestCase):
 
     @pytest.mark.timeout(10)
     def test_ast_equal_match(self):
-        val = match_files("test/q1_3.py", "test/q1_3.py")
-        self.assertTrue(val)
+        nbr = [3, 254, 560]
 
-        val = match_files("test/q1_254.py", "test/q1_254.py")
-        self.assertTrue(val)
-
-        val = match_files("test/q1_3.py", "test/q1_254.py")
-        self.assertFalse(val)
-
-        val = match_files("test/q1_254.py", "test/q1_3.py")
-        self.assertFalse(val)
+        for n1 in nbr:
+            for n2 in nbr:
+                val, details = match_files(f"test/q1_{n1}.py", f"test/q1_{n2}.py", True)
+                if n1 == n2:
+                    self.assertTrue(val, f"{n1} != {n2}: {details}")
+                else:
+                    self.assertFalse(val, f"{n1} = {n2}: {details}")
 
     @pytest.mark.timeout(10)
     def test_ast_simple_hole(self):
@@ -228,3 +227,37 @@ class TestASTHole(TestCase):
     def test_ast_multiple_depth(self):
         val = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py")
         self.assertTrue(val)
+
+    @pytest.mark.timeout(10)
+    def test_pattern_13(self):
+        val = match_files("test/Pattern13.pyh", "test/q1_560.py")
+        self.assertTrue(val)
+
+    def test_pattern_different_size(self):
+        val = match_files("test/Small.pyh", "test/q1_3.py")
+        self.assertFalse(val)
+
+        val = match_files("test/Small.pyh", "test/q1_254.py")
+        self.assertFalse(val)
+
+        val = match_files("test/Small.pyh", "test/q1_560.py")
+        self.assertFalse(val)
+
+    def test_pattern_match_details(self):
+        val, match = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py", True)
+        self.assertTrue(val)
+
+        with open("test/q1_254.py") as file:
+            code = file.read()
+            html = Visualizer.match_to_hml(match, code)
+            html.write("match.html")
+            b_elements = html.findall(".//b")
+
+            self.assertEqual(6, len(b_elements))
+
+            first_match = b_elements[0].text
+            self.assertEqual(first_match, "def multiplications(n)")
+            second_match = b_elements[-2].text
+            self.assertRegex(second_match, r"\w+\s*\+=\s*1\s*")
+            third_match = b_elements[-1].text
+            self.assertRegex(third_match, expected_regex=r"return \(?\w+\)?")

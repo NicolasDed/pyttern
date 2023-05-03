@@ -1,4 +1,4 @@
-def multiplications(n):
+def ?(n):
     ?:
         for ? in ?:
             ?*

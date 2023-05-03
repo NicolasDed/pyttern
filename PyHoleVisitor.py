@@ -138,7 +138,10 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#funcdef.
     def visitFuncdef(self, ctx: Python3Parser.FuncdefContext):
-        name = ctx.NAME().accept(self)
+        if ctx.NAME() is not None:
+            name = ctx.NAME().accept(self)
+        else:
+            name = ctx.simple_hole().accept(self)
         args = ctx.parameters().accept(self)
 
         returns = ctx.test().accept(self) if ctx.test() is not None else None

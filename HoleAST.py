@@ -20,6 +20,7 @@ class SimpleHole(HoleAST):
         return 'ANY'
 
     def visit(self, matcher, current_node):
+        # matcher.pattern_match.add_match(self, current_node)
         pattern_node = matcher.pattern_walker.next()
         if pattern_node is None:
             code_node = matcher.code_walker.next_sibling()
@@ -46,6 +47,8 @@ class DoubleHole(HoleAST):
         return 'ANY*'
 
     def visit(self, matcher, current_node):
+        # matches = []
+
         next_pattern_node = matcher.pattern_walker.next_sibling()
         while isinstance(next_pattern_node, DoubleHole):
             next_pattern_node = matcher.pattern_walker.next_sibling()
@@ -65,7 +68,9 @@ class DoubleHole(HoleAST):
         while code_node is not None:
             matcher.save_walkers_state()
             if matcher.rec_match(next_pattern_node, code_node):
+                # matcher.pattern_match.add_match(self, matches)
                 return True
+            # matches.append(code_node)
             matcher.load_walkers_state()
             code_node = matcher.code_walker.next_sibling()
 
@@ -82,6 +87,7 @@ class CompoundHole(HoleAST):
         return 'ANY:'
 
     def visit(self, matcher, current_node):
+        # matcher.pattern_match.add_match(self, current_node)
         matcher.code_walker.select_specific_child('body')
         return matcher.simple_match()
 
@@ -99,7 +105,9 @@ class VarHole(HoleAST):
         if self.name in matcher.variables:
             pattern_node = matcher.variables[self.name]
             from Matcher import Matcher
-            return Matcher().match(pattern_node, current_node)
+            if not Matcher().match(pattern_node, current_node):
+                return False
+            return matcher.simple_match()
 
         matcher.variables[self.name] = current_node
 
@@ -123,6 +131,7 @@ class VarHole(HoleAST):
 
         return True
 
+
 class MultipleCompoundHole(HoleAST):
     def __init__(self, body):
         super().__init__()
@@ -140,35 +149,14 @@ class MultipleCompoundHole(HoleAST):
             if matcher.rec_match(next_pattern_node, code_node):
                 return True
             matcher.load_walkers_state()
-            if hasattr(code_node, 'body'):
-                matcher.code_walker.select_specific_child('body')
-                code_node = matcher.code_walker.next()
-            else:
-                code_node = matcher.code_walker.next_sibling()
+            matcher.pattern_match.add_line_skip_match(self, code_node)
+            matcher.code_walker.select_body_children()
+            code_node = matcher.code_walker.next()
 
         return False
 
 
-
-
 # Static methods #
-
-def walk(node):
-    """
-    Recursively yield all descendant nodes in the tree starting at *node*
-    (including *node* itself), in no specified order.  This is useful if you
-    only want to modify nodes in place and don't care about the context.
-    """
-    from collections import deque
-    todo = deque([node])
-    while todo:
-        node = todo.popleft()
-        # todo.extend(iter_child_nodes(node))
-        to_add = list(iter_child_nodes(node))
-        to_add.reverse()
-        todo.extendleft(to_add)
-        yield node
-
 
 def iter_child_nodes(node):
     """
@@ -190,7 +178,8 @@ def iter_child_nodes(node):
 
 def iter_constant_field(node):
     for name, field in iter_fields(node):
-        if not (isinstance(field, AST) or isinstance(field, HoleAST) or isinstance(field, list)):
+        if isinstance(field, SimpleHole) or not (
+                isinstance(field, AST) or isinstance(field, HoleAST) or isinstance(field, list)):
             if field is not None:
                 yield field
 

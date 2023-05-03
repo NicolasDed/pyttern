@@ -1,3 +1,5 @@
+import ast
+
 import HoleAST
 
 
@@ -28,6 +30,13 @@ class AstWalker:
     def select_specific_child(self, field):
         self._node.children = getattr(self._node.node, field, [])
 
+    def select_body_children(self):
+        children = []
+        for _, vals in ast.iter_fields(self._node.node):
+            if isinstance(vals, list) and len(vals) > 0 and isinstance(vals[0], ast.stmt):
+                children.extend(vals)
+        self._node.children = children
+
     def next_child(self):
         nxt = self._node.next_child()
         if nxt is None:
@@ -43,8 +52,15 @@ class AstWalker:
         if next_parent is None:
             return None
         next_child = next_parent.next_child()
-        if next_child is None:
-            return None
+        while next_child is None:
+            parent = next_parent
+            if parent is None:
+                return None
+            next_parent = parent.parent
+            if next_parent is None:
+                return None
+            next_child = next_parent.next_child()
+
         self._set_node(next_child, next_parent)
         return next_child
 
@@ -59,11 +75,15 @@ class AstWalker:
         return next_child
 
 
+def _is_load_store(obj):
+    return not (isinstance(obj, ast.Store) or isinstance(obj, ast.Load))
+
+
 class _Node:
     def __init__(self, node, parent):
         self.node = node
         self.parent = parent
-        self.children = list(HoleAST.iter_child_nodes(node))
+        self.children = list(filter(_is_load_store, HoleAST.iter_child_nodes(node)))
         self.child_index = 0
 
     def next_child(self):

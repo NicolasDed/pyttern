@@ -1,17 +1,28 @@
+import ast
 from copy import deepcopy
 
 import AstWalker
 from HoleAST import *
+from PatternMatch import PatternMatch
 from PyHoleParser import parse_pyhole
 
 
-def match_files(path_pattern, path_python):
+def match_files(path_pattern, path_python, match_details=False):
     pattern = parse_pyhole(path_pattern)
-    python = parse_pyhole(path_python)
+    with open(path_python) as file:
+        source = file.read()
+        python = ast.parse(source, path_python)
 
-    res = Matcher().match(pattern, python)
+    matcher = Matcher()
+    res = matcher.match(pattern, python)
 
-    return res
+    if not match_details:
+        return res
+
+    if res:
+        return res, matcher.pattern_match
+    else:
+        return res, matcher.error
 
 
 class Matcher:
@@ -21,6 +32,8 @@ class Matcher:
         self.saved_pattern_walkers = []
         self.saved_code_walkers = []
         self.variables = {}
+        self.pattern_match = PatternMatch()
+        self.error = None
 
     def save_walkers_state(self):
         saved_pattern = deepcopy(self.pattern_walker)
@@ -60,11 +73,20 @@ class Matcher:
             return pattern_node.visit(self, code_node)
 
         if type(pattern_node) != type(code_node):
+            self.error = f"Cannot match {pattern_node} with {code_node}"
             return False
 
         if isinstance(pattern_node, AST):
             for const_pattern, const_code in zip(iter_constant_field(pattern_node), iter_constant_field(code_node)):
+                if isinstance(const_pattern, SimpleHole):
+                    self.pattern_walker.next()
+                    continue
                 if const_pattern != const_code:
+                    if isinstance(const_code, ast.Load) or isinstance(const_code, ast.Store):
+                        continue
+                    self.error = f"Cannot match const {const_pattern} with {const_code}"
                     return False
+
+        self.pattern_match.add_match(pattern_node, code_node)
 
         return self.simple_match()
