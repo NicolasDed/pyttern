@@ -11,5 +11,4 @@ class PatternMatch:
         self.line_skip_matches.append((pattern, code))
 
     def add_pattern_match(self, line, pattern):
-        print(f"Added pattern {pattern} at line {line}")
         self.pattern_match[line-1] = pattern

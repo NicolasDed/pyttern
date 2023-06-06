@@ -225,8 +225,8 @@ class TestASTHole(TestCase):
 
     @pytest.mark.timeout(10)
     def test_ast_multiple_depth(self):
-        val = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py")
-        self.assertTrue(val)
+        val, msg = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py", True)
+        self.assertTrue(val, msg)
 
     @pytest.mark.timeout(10)
     def test_pattern_13(self):

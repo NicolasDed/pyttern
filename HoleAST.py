@@ -53,8 +53,6 @@ class DoubleHole(HoleAST):
         return 'ANY*'
 
     def visit(self, matcher, current_node):
-        print("any")
-
         next_pattern_node = matcher.pattern_walker.next_sibling()
         while isinstance(next_pattern_node, DoubleHole):
             next_pattern_node = matcher.pattern_walker.next_sibling()
@@ -168,9 +166,9 @@ class MultipleCompoundHole(HoleAST):
 
         code_node = current_node
         lineno = code_node.lineno if hasattr(code_node, "lineno") else None
+        if not has_body_elements(code_node):
+            return False
         while code_node is not None:
-            if not has_body_elements(code_node):
-                return False
             matcher.save_walkers_state()
             if matcher.rec_match(next_pattern_node, code_node):
                 return True

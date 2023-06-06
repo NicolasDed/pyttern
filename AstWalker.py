@@ -32,7 +32,7 @@ class AstWalker:
 
     def select_body_children(self):
         children = []
-        for _, vals in ast.iter_fields(self._node.node):
+        for name, vals in ast.iter_fields(self._node.node):
             if isinstance(vals, list) and len(vals) > 0 and isinstance(vals[0], ast.stmt):
                 children.extend(vals)
         self._node.children = children
