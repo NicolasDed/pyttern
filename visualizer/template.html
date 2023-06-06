@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Match</title>
+    <style>
+        b {
+            color: red;
+        }
+
+        .row {
+            display: flex;
+        }
+
+        .column {
+            padding: 5px;
+            flex: 50%;
+        }
+
+        .left {
+            border-right: 1px solid black;
+        }
+
+        .right {
+            border-left: 1px solid black;
+        }
+
+        .column pre{
+            border-bottom: 1px solid lightgray;
+        }
+    </style>
+</head>
+<body>
+<div class="row">
+    <div id="code" class="column left">
+    </div>
+    <div id="pattern" class="column right">
+    </div>
+</div>
+</body>
+</html>

@@ -249,15 +249,17 @@ class TestASTHole(TestCase):
 
         with open("test/q1_254.py") as file:
             code = file.read()
-            html = Visualizer.match_to_hml(match, code)
-            html.write("match.html")
-            b_elements = html.findall(".//b")
+            with open("test/pyHoleMultipleDepth.py") as pattern_file:
+                pattern = pattern_file.read()
+                html = Visualizer.match_to_hml(match, code, pattern)
+                html.write("match.html")
+                b_elements = html.findall(".//b")
 
-            self.assertEqual(6, len(b_elements))
+                self.assertEqual(3, len(b_elements))
 
-            first_match = b_elements[0].text
-            self.assertEqual(first_match, "def multiplications(n)")
-            second_match = b_elements[-2].text
-            self.assertRegex(second_match, r"\w+\s*\+=\s*1\s*")
-            third_match = b_elements[-1].text
-            self.assertRegex(third_match, expected_regex=r"return \(?\w+\)?")
+                first_match = b_elements[0].text
+                self.assertEqual(first_match, "def multiplications(n)")
+                second_match = b_elements[1].text
+                self.assertRegex(second_match, r"\w+\s*\+=\s*1\s*")
+                third_match = b_elements[2].text
+                self.assertRegex(third_match, expected_regex=r"return \(?\w+\)?")

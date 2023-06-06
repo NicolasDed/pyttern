@@ -1,4 +1,3 @@
-import ast
 from copy import deepcopy
 
 import AstWalker
@@ -48,6 +47,7 @@ class Matcher:
         self.code_walker = saved_code
 
     def match(self, pattern, code):
+        ast.fix_missing_locations(pattern)
         self.pattern_walker = AstWalker.AstWalker(pattern)
         self.code_walker = AstWalker.AstWalker(code)
 
@@ -86,6 +86,9 @@ class Matcher:
                         continue
                     self.error = f"Cannot match const {const_pattern} with {const_code}"
                     return False
+
+        if hasattr(pattern_node, "lineno"):
+            self.pattern_match.add_pattern_match(pattern_node.lineno, pattern_node)
 
         self.pattern_match.add_match(pattern_node, code_node)
 
