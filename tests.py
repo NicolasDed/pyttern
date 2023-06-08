@@ -158,6 +158,16 @@ class AstGeneratorTests(TestCase):
             self.asts_equal(python_tree, generated_tree)
 
 
+def show_pattern(code_file, pattern_file, match, output_file):
+    with open(code_file) as file:
+        code = file.read()
+        with open(pattern_file) as pattern_file:
+            pattern = pattern_file.read()
+            html = Visualizer.match_to_hml(match, code, pattern)
+            html.write(output_file)
+            return html
+
+
 class TestASTHole(TestCase):
     def setup(self, path):
         input = FileStream(path, encoding="utf-8")
@@ -174,12 +184,24 @@ class TestASTHole(TestCase):
         return parser
 
     @pytest.mark.timeout(10)
-    def test_ast_equal_match(self):
+    def test_strict_ast_equal_match(self):
         nbr = [3, 254, 560]
 
         for n1 in nbr:
             for n2 in nbr:
-                val, details = match_files(f"test/q1_{n1}.py", f"test/q1_{n2}.py", True)
+                val, details = match_files(f"test/q1_{n1}.py", f"test/q1_{n2}.py", True, True)
+                if n1 == n2:
+                    self.assertTrue(val, f"{n1} != {n2}: {details}")
+                else:
+                    self.assertFalse(val, f"{n1} = {n2}: {details}")
+
+    @pytest.mark.timeout(10)
+    def test_soft_ast_equal_match(self):
+        nbr = [3, 254, 560]
+
+        for n1 in nbr:
+            for n2 in nbr:
+                val, details = match_files(f"test/q1_{n1}.py", f"test/q1_{n2}.py", False, True)
                 if n1 == n2:
                     self.assertTrue(val, f"{n1} != {n2}: {details}")
                 else:
@@ -220,46 +242,51 @@ class TestASTHole(TestCase):
 
     @pytest.mark.timeout(10)
     def test_ast_labeled_hole(self):
-        val = match_files("test/pyHoleLabeled.py", "test/q1_3.py")
+        val = match_files("test/pyHoleLabeled.py", "test/q1_3.py", strict_match=True)
         self.assertTrue(val)
 
     @pytest.mark.timeout(10)
     def test_ast_multiple_depth(self):
-        val, msg = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py", True)
+        val, msg = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py", strict_match=True, match_details=True)
         self.assertTrue(val, msg)
 
     @pytest.mark.timeout(10)
     def test_pattern_13(self):
-        val = match_files("test/Pattern13.pyh", "test/q1_560.py")
-        self.assertTrue(val)
+        val, match = match_files("test/Pattern13.pyh", "test/q1_560.py", strict_match=True, match_details=True)
+        self.assertTrue(val, match)
 
+        show_pattern("test/q1_560.py", "test/Pattern13.pyh", match, "p13.html")
+
+    @pytest.mark.timeout(10)
     def test_pattern_different_size(self):
-        val = match_files("test/Small.pyh", "test/q1_3.py")
+        val = match_files("test/Small.pyh", "test/q1_3.py", strict_match=True)
         self.assertFalse(val)
 
-        val = match_files("test/Small.pyh", "test/q1_254.py")
+        val = match_files("test/Small.pyh", "test/q1_254.py", strict_match=True)
         self.assertFalse(val)
 
-        val = match_files("test/Small.pyh", "test/q1_560.py")
+        val = match_files("test/Small.pyh", "test/q1_560.py", strict_match=True)
         self.assertFalse(val)
 
     def test_pattern_match_details(self):
-        val, match = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py", True)
+        val, match = match_files("test/pyHoleMultipleDepth.py", "test/q1_254.py", strict_match=True, match_details=True)
         self.assertTrue(val)
 
-        with open("test/q1_254.py") as file:
-            code = file.read()
-            with open("test/pyHoleMultipleDepth.py") as pattern_file:
-                pattern = pattern_file.read()
-                html = Visualizer.match_to_hml(match, code, pattern)
-                html.write("match.html")
-                b_elements = html.findall(".//b")
+        html = show_pattern("test/q1_254.py", "test/pyHoleMultipleDepth.py", match, "match.html")
+        b_elements = html.findall(".//b")
 
-                self.assertEqual(3, len(b_elements))
+        self.assertEqual(3, len(b_elements))
 
-                first_match = b_elements[0].text
-                self.assertEqual(first_match, "def multiplications(n)")
-                second_match = b_elements[1].text
-                self.assertRegex(second_match, r"\w+\s*\+=\s*1\s*")
-                third_match = b_elements[2].text
-                self.assertRegex(third_match, expected_regex=r"return \(?\w+\)?")
+        first_match = b_elements[0].text
+        self.assertEqual(first_match, "def multiplications(n)")
+        second_match = b_elements[1].text
+        self.assertRegex(second_match, r"\w+\s*\+=\s*1\s*")
+        third_match = b_elements[2].text
+        self.assertRegex(third_match, expected_regex=r"return \(?\w+\)?")
+
+    @pytest.mark.timeout(10)
+    def test_soft_pattern_match(self):
+        val, match = match_files("test/Pattern13soft.pyh", "test/q1_560.py", strict_match=False, match_details=True)
+        self.assertTrue(val)
+
+        show_pattern("test/q1_560.py", "test/Pattern13soft.pyh", match, "p13soft.html")

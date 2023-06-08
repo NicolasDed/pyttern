@@ -56,6 +56,13 @@ operators = {
     '//=': FloorDiv
 }
 
+def set_lineno(obj, ctx):
+    start = ctx.start.line
+    end = ctx.stop.line
+    if isinstance(obj, stmt) or isinstance(obj, HoleAST):
+        obj.lineno = start
+        obj.lineno_end = end
+
 
 # This class defines a complete generic visitor for a parse tree produced by Python3Parser.
 
@@ -78,7 +85,9 @@ class PyHoleVisitor(Python3Visitor):
 
     def visitChildren(self, ctx):
         children = super().visitChildren(ctx)
-        # print(type(ctx).__name__ + str(children))
+        if not isinstance(children, list):
+            set_lineno(children, ctx)
+        #print(type(ctx).__name__ + " " + str(children))
         return children
 
     # Visit a parse tree produced by Python3Parser#single_input.
@@ -1073,19 +1082,13 @@ class PyHoleVisitor(Python3Visitor):
     # Visit a parse tree produced by Python3Parser#simple_hole.
     def visitSimple_hole(self, ctx: Python3Parser.Simple_holeContext):
         hole = SimpleHole()
-        start = ctx.start.line
-        end = ctx.stop.line
-        hole.lineno = start
-        hole.lineno_end = end
+        set_lineno(hole, ctx)
         return hole
 
     # Visit a parse tree produced by Python3Parser#double_hole.
     def visitDouble_hole(self, ctx: Python3Parser.Double_holeContext):
         hole = DoubleHole()
-        start = ctx.start.line
-        end = ctx.stop.line
-        hole.lineno = start
-        hole.lineno_end = end
+        set_lineno(hole, ctx)
         return hole
 
     # Visit a parse tree produced by Python3Parser#compound_hole.
@@ -1095,28 +1098,19 @@ class PyHoleVisitor(Python3Visitor):
     def visitVar_hole(self, ctx: Python3Parser.Var_holeContext):
         name = ctx.NAME().accept(self)
         hole = VarHole(name)
-        start = ctx.start.line
-        end = ctx.stop.line
-        hole.lineno = start
-        hole.lineno_end = end
+        set_lineno(hole, ctx)
         return hole
 
     def visitSimple_compound_hole(self, ctx: Python3Parser.Simple_compound_holeContext):
         body = ctx.suite().accept(self)
         hole = CompoundHole(body)
-        start = ctx.start.line
-        end = ctx.stop.line
-        hole.lineno = start
-        hole.lineno_end = end
+        set_lineno(hole, ctx)
         return hole
 
     def visitMultiple_compound_hole(self, ctx: Python3Parser.Multiple_compound_holeContext):
         body = ctx.suite().accept(self)
         hole = MultipleCompoundHole(body)
-        start = ctx.start.line
-        end = ctx.stop.line
-        hole.lineno = start
-        hole.lineno_end = end
+        set_lineno(hole, ctx)
         return hole
 
 

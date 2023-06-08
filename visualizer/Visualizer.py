@@ -31,16 +31,6 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
         if code_node.lineno - 1 not in patterns:
             patterns[code_node.lineno - 1] = pattern_node
 
-    lines = []
-    for _, code_node in matcher.line_skip_matches:
-        if not hasattr(code_node, "lineno"):
-            continue
-        if not hasattr(code_node, "col_offset") or not hasattr(code_node, "end_col_offset"):
-            continue
-
-        if code_node.lineno - 1 not in lines:
-            lines.append(code_node.lineno - 1)
-
     code_line = code.splitlines(False)
     for i, line in enumerate(code_line):
         pre = ET.SubElement(code_div, "pre")
@@ -60,14 +50,24 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
 
     pattern_line = pattern.splitlines(False)
     pattern_div = template.find(".//*[@id='pattern']")
-    for i in range(len(code_line)):
+    for i, _ in enumerate(code_line):
         pre = ET.SubElement(pattern_div, "pre")
 
+        text = ""
         if i in matcher.pattern_match:
             line = matcher.pattern_match[i].lineno
-            pre.text = pattern_line[line-1]
+            txt = pattern_line[line-1]
+            text += txt
         else:
-            pre.text = '\t'
+            text += '\t'
+
+        if i+1 in matcher.line_skip_matches:
+            text += "{"
+
+        if i+1 in matcher.line_skip_matches.values():
+            text += "}"
+
+        pre.text = text
 
     return template
 

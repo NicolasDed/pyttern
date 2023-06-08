@@ -64,24 +64,30 @@ class DoubleHole(HoleAST):
             next_code_node = matcher.code_walker.next_parent()
             if next_pattern_node is None:
                 if next_code_node is None:
+                    if lineno and lineno not in matcher.pattern_match.pattern_match:
+                        matcher.pattern_match.add_pattern_match(lineno, self)
                     return True
                 else:
                     return False
             else:
                 if lineno and lineno not in matcher.pattern_match.pattern_match:
                     matcher.pattern_match.add_pattern_match(lineno, self)
+                    end_lineno = next_code_node.lineno - 1
+                    if lineno != end_lineno:
+                        matcher.pattern_match.add_line_skip_match(lineno, end_lineno)
                 return matcher.rec_match(next_pattern_node, next_code_node)
 
         code_node = current_node
         while code_node is not None:
             matcher.save_walkers_state()
             if matcher.rec_match(next_pattern_node, code_node):
-                # matcher.pattern_match.add_match(self, matches)
+                end_lineno = code_node.lineno
+                if end_lineno != lineno:
+                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno-1)
                 return True
-            # matches.append(code_node)
+            matcher.load_walkers_state()
             if lineno and lineno not in matcher.pattern_match.pattern_match:
                 matcher.pattern_match.add_pattern_match(lineno, self)
-            matcher.load_walkers_state()
             code_node = matcher.code_walker.next_sibling()
 
         return False
@@ -171,11 +177,13 @@ class MultipleCompoundHole(HoleAST):
         while code_node is not None:
             matcher.save_walkers_state()
             if matcher.rec_match(next_pattern_node, code_node):
+                end_lineno = code_node.lineno
+                if end_lineno != lineno:
+                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno-1)
                 return True
             matcher.load_walkers_state()
             if lineno and lineno not in matcher.pattern_match.pattern_match:
                 matcher.pattern_match.add_pattern_match(lineno, self)
-            matcher.pattern_match.add_line_skip_match(self, code_node)
             matcher.code_walker.select_body_children()
             code_node = matcher.code_walker.next()
 
