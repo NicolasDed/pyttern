@@ -4,6 +4,19 @@ from xml.etree.ElementTree import ElementTree
 from PatternMatch import PatternMatch
 
 
+def remove_overlap(intervals):
+    sorted_intervals = sorted(intervals, key=lambda x: x[0])
+    merged = []
+
+    for interval in sorted_intervals:
+        if not merged or interval[0] > merged[-1][1]:
+            merged.append(interval)
+        else:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], interval[1]))
+
+    return merged
+
+
 def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
     template = load_template()
     code_div = template.find(".//*[@id='code']")
@@ -18,14 +31,8 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
 
         # Add red to line
         if code_node.lineno - 1 not in matches:
-            matches[code_node.lineno - 1] = (code_node.col_offset, code_node.end_col_offset)
-        else:
-            start, end = matches[code_node.lineno - 1]
-            if code_node.col_offset < start:
-                start = code_node.col_offset
-            if code_node.end_col_offset > start:
-                end = code_node.end_col_offset
-            matches[code_node.lineno - 1] = (start, end)
+            matches[code_node.lineno - 1] = []
+        matches[code_node.lineno - 1].append((code_node.col_offset, code_node.end_col_offset))
 
         # Add pattern line
         if code_node.lineno - 1 not in patterns:
@@ -36,11 +43,17 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
         pre = ET.SubElement(code_div, "pre")
 
         if i in matches:
-            start, end = matches[i]
-            pre.text = line[:start]
-            b = ET.SubElement(pre, "b")
-            b.text = line[start:end + 1]
-            b.tail = line[end + 1:]
+            start = 0
+            match_i = remove_overlap(matches[i])
+            print(f"{matches[i]} -> {match_i}")
+            for match in remove_overlap(match_i):
+                text = ET.SubElement(pre, "span")
+                text.text = line[start:match[0]]
+                b = ET.SubElement(pre, "b")
+                b.text = line[match[0]:match[1]]
+                start = match[1]
+            text = ET.SubElement(pre, 'span')
+            text.text = line[start:]
         else:
             pre.text = line
 
@@ -52,15 +65,15 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
         text = ""
         if i in matcher.pattern_match:
             line = matcher.pattern_match[i].lineno
-            txt = pattern_line[line-1]
+            txt = pattern_line[line - 1]
             text += txt
         else:
             text += '\t'
 
-        if i+1 in matcher.line_skip_matches:
+        if i + 1 in matcher.line_skip_matches:
             text += "{"
 
-        if i+1 in matcher.line_skip_matches.values():
+        if i + 1 in matcher.line_skip_matches.values():
             text += "}"
 
         pre.text = text

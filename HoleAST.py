@@ -64,9 +64,7 @@ class DoubleHole(HoleAST):
             next_code_node = matcher.code_walker.next_parent()
 
             if next_pattern_node is None:
-                if not matcher.strict:
-                    return True
-                if next_code_node is None:
+                if next_code_node is None or not matcher.strict:
                     if lineno and lineno not in matcher.pattern_match.pattern_match:
                         matcher.pattern_match.add_pattern_match(lineno, self)
                     return True
