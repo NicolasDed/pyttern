@@ -287,6 +287,21 @@ class TestASTHole(TestCase):
     @pytest.mark.timeout(10)
     def test_soft_pattern_match(self):
         val, match = match_files("test/Pattern13soft.pyh", "test/q1_560.py", strict_match=False, match_details=True)
-        self.assertTrue(val)
+        self.assertTrue(val, match)
 
         show_pattern("test/q1_560.py", "test/Pattern13soft.pyh", match, "p13soft.html")
+
+        val, match = match_files("test/Pattern13soft.pyh", "test/q1_560.py", strict_match=True, match_details=True)
+        self.assertFalse(val, match)
+
+    @pytest.mark.timeout(10)
+    def test_soft_ast_compound_hole(self):
+        val, match = match_files("test/pyHoleCompoundSoft.pyh", "test/q1_254.py", strict_match=False,
+                                 match_details=True)
+        self.assertTrue(val, msg=match)
+
+        show_pattern("test/q1_254.py", "test/pyHoleCompoundSoft.pyh", match, "pyHoleCompoundSoft.html")
+
+        val, match = match_files("test/pyHoleCompoundSoft.pyh", "test/q1_254.py", strict_match=True,
+                                 match_details=True)
+        self.assertFalse(val, msg=match)

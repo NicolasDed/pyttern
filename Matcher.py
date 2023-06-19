@@ -27,8 +27,8 @@ def match_files(path_pattern, path_python, strict_match=False, match_details=Fal
 
 class Matcher:
     def __init__(self):
-        self.pattern_walker = None
-        self.code_walker = None
+        self.pattern_walker: AstWalker.AstWalker = None
+        self.code_walker: AstWalker.AstWalker = None
         self.saved_pattern_walkers = []
         self.saved_code_walkers = []
         self.saved_patten_matches = []
@@ -96,8 +96,10 @@ class Matcher:
         return self.simple_match()
 
     def soft_next_node_match(self, pattern_node):
+        self.code_walker.select_body_children()
         next_code_node = self.code_walker.next()
         if next_code_node is None:
+            self.error = f"No next match node"
             return False
         return self.soft_rec_match(pattern_node, next_code_node)
 
@@ -118,14 +120,20 @@ class Matcher:
                 if const_pattern != const_code:
                     if isinstance(const_code, ast.Load) or isinstance(const_code, ast.Store):
                         continue
-                    return self.soft_next_node_match(pattern_node)
+                    self.error = f"Cannot match const {const_pattern} with {const_code}"
+                    return False
 
         if hasattr(code_node, "lineno") and hasattr(pattern_node, "lineno"):
             self.pattern_match.add_pattern_match(code_node.lineno, pattern_node)
 
         self.pattern_match.add_match(pattern_node, code_node)
 
-        return self.simple_match()
+        self.save_walkers_state()
+        if not self.simple_match():
+            self.load_walkers_state()
+            return self.soft_next_node_match(pattern_node)
+        else:
+            return True
 
     def match_strict(self, pattern, code):
         ast.fix_missing_locations(pattern)
@@ -147,9 +155,8 @@ class Matcher:
                 if isinstance(const_pattern, SimpleHole):
                     self.pattern_walker.next()
                     continue
-                if const_pattern != const_code:
-                    if isinstance(const_code, ast.Load) or isinstance(const_code, ast.Store):
-                        continue
+                if const_pattern != const_code and not (
+                        isinstance(const_code, ast.Load) or isinstance(const_code, ast.Store)):
                     self.error = f"Cannot match const {const_pattern} with {const_code}"
                     return False
 

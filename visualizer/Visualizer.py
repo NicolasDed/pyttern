@@ -44,10 +44,6 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
         else:
             pre.text = line
 
-        #if i in lines:
-        #    skip = ET.SubElement(pre, "b")
-        #    skip.text = "\u21b2"
-
     pattern_line = pattern.splitlines(False)
     pattern_div = template.find(".//*[@id='pattern']")
     for i, _ in enumerate(code_line):

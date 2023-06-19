@@ -57,12 +57,15 @@ class DoubleHole(HoleAST):
         while isinstance(next_pattern_node, DoubleHole):
             next_pattern_node = matcher.pattern_walker.next_sibling()
 
-        lineno = current_node.lineno if hasattr(current_node, "lineno") else None
+        lineno = getattr(current_node, "lineno", None)
 
         if next_pattern_node is None:
             next_pattern_node = matcher.pattern_walker.next()
             next_code_node = matcher.code_walker.next_parent()
+
             if next_pattern_node is None:
+                if not matcher.strict:
+                    return True
                 if next_code_node is None:
                     if lineno and lineno not in matcher.pattern_match.pattern_match:
                         matcher.pattern_match.add_pattern_match(lineno, self)
@@ -83,7 +86,7 @@ class DoubleHole(HoleAST):
             if matcher.rec_match(next_pattern_node, code_node):
                 end_lineno = code_node.lineno
                 if end_lineno != lineno:
-                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno-1)
+                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno - 1)
                 return True
             matcher.load_walkers_state()
             if lineno and lineno not in matcher.pattern_match.pattern_match:
