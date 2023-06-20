@@ -105,7 +105,9 @@ class Matcher:
 
     def soft_rec_match(self, pattern_node, code_node):
         if isinstance(pattern_node, HoleAST):
+            self.save_walkers_state()
             if not pattern_node.visit(self, code_node):
+                self.load_walkers_state()
                 return self.soft_next_node_match(pattern_node)
             return True
 

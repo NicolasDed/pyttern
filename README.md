@@ -15,6 +15,7 @@ We extended the python syntax to create patterns file. Our new syntax include th
 | ?{name}  | Match 1 element and bind it to {``name``}         |
 | ?:       | Match 1 element with a body                       |
 | ?*:      | Match the body of the wildcard in any indentation |
+| ?!:      | Use strict match for the body of this wildcard    |
 
 ## Usage
 

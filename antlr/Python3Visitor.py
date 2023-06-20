@@ -474,5 +474,10 @@ class Python3Visitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by Python3Parser#strict_mode.
+    def visitStrict_mode(self, ctx:Python3Parser.Strict_modeContext):
+        return self.visitChildren(ctx)
+
+
 
 del Python3Parser

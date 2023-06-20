@@ -71,7 +71,7 @@ class DoubleHole(HoleAST):
                 else:
                     return False
             else:
-                if lineno and lineno not in matcher.pattern_match.pattern_match:
+                if lineno and lineno not in matcher.pattern_match.pattern_match and next_code_node is not None:
                     matcher.pattern_match.add_pattern_match(lineno, self)
                     end_lineno = next_code_node.lineno - 1
                     if lineno != end_lineno:
@@ -191,6 +191,27 @@ class MultipleCompoundHole(HoleAST):
         return False
 
 
+class StrictMode(HoleAST):
+    def __init__(self, body, enable):
+        super().__init__()
+        self.body = body
+        self._fields = ['body']
+        self.enable = enable
+
+    def __str__(self):
+        return "STRICT"
+
+    def visit(self, matcher, current_node):
+        matcher.set_strict(self.enable)
+        next_pattern_node = matcher.pattern_walker.next()
+        if next_pattern_node is None:
+            return True
+        if not matcher.rec_match(next_pattern_node, current_node):
+            matcher.set_strict(not self.enable)
+            return False
+        return True
+
+
 # Static methods #
 
 def has_body_elements(node):
@@ -199,6 +220,7 @@ def has_body_elements(node):
             if len(value) > 0 and isinstance(value[0], ast.stmt):
                 return True
     return False
+
 
 def iter_child_nodes(node):
     """

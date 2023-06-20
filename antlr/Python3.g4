@@ -293,9 +293,10 @@ expr_hole: simple_hole | double_hole;
 simple_hole: '?';
 double_hole: '?*';
 var_hole: '?' NAME;
-compound_hole: simple_compound_hole | multiple_compound_hole;
+compound_hole: simple_compound_hole | multiple_compound_hole | strict_mode;
 simple_compound_hole: '?' ':' suite;
 multiple_compound_hole: '?*' ':' suite;
+strict_mode: '?!' ':' suite;
 
 
 /*

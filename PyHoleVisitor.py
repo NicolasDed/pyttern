@@ -1113,5 +1113,14 @@ class PyHoleVisitor(Python3Visitor):
         set_lineno(hole, ctx)
         return hole
 
+    def visitStrict_mode(self, ctx: Python3Parser.Strict_modeContext):
+        body = ctx.suite().accept(self)
+        hole = StrictMode(body, True)
+        set_lineno(hole, ctx)
+
+        end_hole = StrictMode(None, False)
+        set_lineno(hole, ctx)
+        return [hole, end_hole]
+
 
 del Python3Parser

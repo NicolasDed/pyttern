@@ -290,6 +290,15 @@ class TestASTHole(TestCase):
                                  match_details=True)
         self.assertFalse(val, msg=match)
 
+    def test_strict_mode(self):
+        val, match = match_files("test/strictModeTest.pyh", "test/q1_254.py", strict_match=False, match_details=True)
+        self.assertTrue(val, msg=match)
+
+        show_pattern("test/q1_254.py", "test/strictModeTest.pyh", match, "strict.html")
+
+        val, match = match_files("test/strictModeTest.pyh", "test/q1_560.py", strict_match=False, match_details=True)
+        self.assertFalse(val, msg=match)
+
 
 class TestVisualizer(TestCase):
 
@@ -312,16 +321,28 @@ class TestVisualizer(TestCase):
         self.assertRegex(fourth_match, r"return \(?\w+\)?")
 
     def test_remove_overlap(self):
-        intervals1 = [(16, 24), (23, 24)]
-        res1 = Visualizer.remove_overlap(intervals1)
-        self.assertListEqual(res1, [(16, 24)])
+        intervals = [(1, 3), (2, 4), (5, 7), (6, 8)]
+        expected = [(1, 4), (5, 8)]
+        self.assertEqual(Visualizer.remove_overlap(intervals), expected)
 
-        intervals2 = [(0, 5), (3, 10)]
-        result2 = Visualizer.remove_overlap(intervals2)
-        self.assertListEqual(result2, [(0, 10)])
+        intervals = [(1, 5), (2, 3), (4, 6), (8, 9)]
+        expected = [(1, 6), (8, 9)]
+        self.assertEqual(Visualizer.remove_overlap(intervals), expected)
 
-        intervals3 = [(5, 74), (74, 100), (24, 25), (105, 107)]
-        result3 = Visualizer.remove_overlap(intervals3)
-        self.assertListEqual(result3, [(5, 100), (105, 107)])
+        intervals = [(1, 2), (3, 4), (5, 6)]
+        expected = [(1, 2), (3, 4), (5, 6)]
+        self.assertEqual(Visualizer.remove_overlap(intervals), expected)
+
+        intervals = []
+        expected = []
+        self.assertEqual(Visualizer.remove_overlap(intervals), expected)
+
+        intervals = [(1, 5)]
+        expected = [(1, 5)]
+        self.assertEqual(Visualizer.remove_overlap(intervals), expected)
+
+        intervals = [(1, 3), (4, 6), (7, 9)]
+        expected = [(1, 3), (4, 6), (7, 9)]
+        self.assertEqual(Visualizer.remove_overlap(intervals), expected)
 
 

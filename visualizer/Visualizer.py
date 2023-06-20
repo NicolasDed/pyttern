@@ -8,11 +8,11 @@ def remove_overlap(intervals):
     sorted_intervals = sorted(intervals, key=lambda x: x[0])
     merged = []
 
-    for interval in sorted_intervals:
-        if not merged or interval[0] > merged[-1][1]:
-            merged.append(interval)
+    for start, end in sorted_intervals:
+        if not merged or start > merged[-1][1]:
+            merged.append((start, end))
         else:
-            merged[-1] = (merged[-1][0], max(merged[-1][1], interval[1]))
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
 
     return merged
 
@@ -45,7 +45,6 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
         if i in matches:
             start = 0
             match_i = remove_overlap(matches[i])
-            print(f"{matches[i]} -> {match_i}")
             for match in remove_overlap(match_i):
                 text = ET.SubElement(pre, "span")
                 text.text = line[start:match[0]]
