@@ -296,7 +296,7 @@ var_hole: '?' NAME;
 compound_hole: simple_compound_hole | multiple_compound_hole | strict_mode;
 simple_compound_hole: '?' ':' suite;
 multiple_compound_hole: '?*' ':' suite;
-strict_mode: '?!' ':' suite;
+strict_mode: '?![' (simple_stmt | NEWLINE stmt+) ']' NEWLINE;
 
 
 /*

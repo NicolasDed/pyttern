@@ -11,7 +11,7 @@ from PyHole.antlr.Python3Lexer import Python3Lexer
 from PyHole.antlr.Python3Listener import Python3Listener
 from PyHole.antlr.Python3Parser import Python3Parser
 from PyHole.visualizer import Visualizer
-from . import tests_files
+from . import tests_files, visu
 
 
 class Printer(ParseTreeListener):
@@ -240,7 +240,7 @@ class TestASTHole(PyHoleTest):
         self.assertTrue(val, match)
 
         show_pattern((pkg_resources.files(tests_files) / "q1_560.py"), (pkg_resources.files(tests_files) / "Pattern13.pyh"), match,
-                     "visu/p13.html")
+                     (pkg_resources.files(visu) / "p13.html"))
 
     @pytest.mark.timeout(10)
     def test_pattern_different_size(self):
@@ -260,7 +260,7 @@ class TestASTHole(PyHoleTest):
         self.assertTrue(val, match)
 
         show_pattern((pkg_resources.files(tests_files) / "q1_560.py"), (pkg_resources.files(tests_files) / "Pattern13soft.pyh"), match,
-                     "visu/p13soft.html")
+                     (pkg_resources.files(visu) / "p13soft.html"))
 
         val, match = match_files((pkg_resources.files(tests_files) / "Pattern13soft.pyh"), (pkg_resources.files(tests_files) / "q1_560.py"),
                                  strict_match=True, match_details=True)
@@ -273,7 +273,7 @@ class TestASTHole(PyHoleTest):
         self.assertTrue(val, msg=match)
 
         show_pattern((pkg_resources.files(tests_files) / "q1_254.py"), (pkg_resources.files(tests_files) / "pyHoleCompoundSoft.pyh"), match,
-                     "visu/pyHoleCompoundSoft.html")
+                     (pkg_resources.files(visu) / "pyHoleCompoundSoft.html"))
 
         val, match = match_files((pkg_resources.files(tests_files) / "pyHoleCompoundSoft.pyh"), (pkg_resources.files(tests_files) / "q1_254.py"),
                                  strict_match=True, match_details=True)
@@ -285,7 +285,7 @@ class TestASTHole(PyHoleTest):
         self.assertTrue(val, msg=match)
 
         show_pattern((pkg_resources.files(tests_files) / "q1_254.py"), (pkg_resources.files(tests_files) / "strictModeTest.pyh"), match,
-                     "visu/strict.html")
+                     (pkg_resources.files(visu) / "strict.html"))
 
         val, match = match_files((pkg_resources.files(tests_files) / "strictModeTest.pyh"), (pkg_resources.files(tests_files) / "q1_560.py"),
                                  strict_match=False, match_details=True)
@@ -300,7 +300,7 @@ class TestVisualizer(TestCase):
         self.assertTrue(val)
 
         html = show_pattern((pkg_resources.files(tests_files) / "q1_254.py"), (pkg_resources.files(tests_files) / "pyHoleMultipleDepth.py"),
-                            match, "visu/match.html")
+                            match, (pkg_resources.files(visu) / "match.html"))
         b_elements = html.findall(".//b")
 
         self.assertEqual(4, len(b_elements))

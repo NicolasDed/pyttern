@@ -1,4 +1,5 @@
 def facteurs(?*):
-    for ? in range(?*):
-        if ? == 0:
-            ?*
+    ?*:
+        for ? in range(?*):
+            if ? == 0:
+                ?*

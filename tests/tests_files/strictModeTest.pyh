@@ -1,5 +1,7 @@
 def ?(n):
-    for ? in range(?*):
-        ?!:
+    ?*:
+        for ? in range(?*):
+            ?![
             if ?:
                 count=?
+            ]

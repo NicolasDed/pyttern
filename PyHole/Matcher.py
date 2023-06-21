@@ -96,8 +96,7 @@ class Matcher:
         return self.simple_match()
 
     def soft_next_node_match(self, pattern_node):
-        self.code_walker.select_body_children()
-        next_code_node = self.code_walker.next()
+        next_code_node = self.code_walker.next_sibling()
         if next_code_node is None:
             self.error = f"No next match node"
             return False

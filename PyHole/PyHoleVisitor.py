@@ -1096,7 +1096,7 @@ class PyHoleVisitor(Python3Visitor):
         return hole
 
     def visitStrict_mode(self, ctx: Python3Parser.Strict_modeContext):
-        body = ctx.suite().accept(self)
+        body = self.visitChildren(ctx)
         hole = StrictMode(body, True)
         set_lineno(hole, ctx)
 
