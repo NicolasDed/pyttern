@@ -2,10 +2,10 @@ import io
 
 from antlr4 import FileStream, CommonTokenStream
 
-from PyHoleErrorListener import Python3ErrorListener
-from PyHoleVisitor import PyHoleVisitor
-from antlr.Python3Lexer import Python3Lexer
-from antlr.Python3Parser import Python3Parser
+from .PyHoleErrorListener import Python3ErrorListener
+from .PyHoleVisitor import PyHoleVisitor
+from .antlr.Python3Lexer import Python3Lexer
+from .antlr.Python3Parser import Python3Parser
 
 
 def parse_pyhole(path):

@@ -1,9 +1,9 @@
 from copy import deepcopy
 
-import AstWalker
-from HoleAST import *
-from PatternMatch import PatternMatch
-from PyHoleParser import parse_pyhole
+from .AstWalker import AstWalker
+from .HoleAST import *
+from .PatternMatch import PatternMatch
+from .PyHoleParser import parse_pyhole
 
 
 def match_files(path_pattern, path_python, strict_match=False, match_details=False):
@@ -27,8 +27,8 @@ def match_files(path_pattern, path_python, strict_match=False, match_details=Fal
 
 class Matcher:
     def __init__(self):
-        self.pattern_walker: AstWalker.AstWalker = None
-        self.code_walker: AstWalker.AstWalker = None
+        self.pattern_walker: AstWalker = None
+        self.code_walker: AstWalker = None
         self.saved_pattern_walkers = []
         self.saved_code_walkers = []
         self.saved_patten_matches = []
@@ -90,8 +90,8 @@ class Matcher:
 
     def match_soft(self, pattern, code):
         ast.fix_missing_locations(pattern)
-        self.pattern_walker = AstWalker.AstWalker(pattern)
-        self.code_walker = AstWalker.AstWalker(code)
+        self.pattern_walker = AstWalker(pattern)
+        self.code_walker = AstWalker(code)
 
         return self.simple_match()
 
@@ -139,8 +139,8 @@ class Matcher:
 
     def match_strict(self, pattern, code):
         ast.fix_missing_locations(pattern)
-        self.pattern_walker = AstWalker.AstWalker(pattern)
-        self.code_walker = AstWalker.AstWalker(code)
+        self.pattern_walker = AstWalker(pattern)
+        self.code_walker = AstWalker(code)
 
         return self.simple_match()
 

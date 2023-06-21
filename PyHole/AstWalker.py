@@ -1,6 +1,6 @@
 import ast
 
-import HoleAST
+from .HoleAST import iter_child_nodes
 
 
 class AstWalker:
@@ -83,7 +83,7 @@ class _Node:
     def __init__(self, node, parent):
         self.node = node
         self.parent = parent
-        self.children = list(filter(_is_load_store, HoleAST.iter_child_nodes(node)))
+        self.children = list(filter(_is_load_store, iter_child_nodes(node)))
         self.child_index = 0
 
     def next_child(self):

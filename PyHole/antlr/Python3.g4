@@ -264,14 +264,14 @@ classdef: 'class' NAME ('(' (arglist)? ')')? ':' suite;
 
 arglist: argument (',' argument)*  (',')?;
 
-// The reason that keywords are test nodes instead of NAME is that using NAME
+// The reason that keywords are tests nodes instead of NAME is that using NAME
 // results in an ambiguity. ast.c makes sure it's a NAME.
-// "test '=' test" is really "keyword '=' test", but we have no such token.
+// "tests '=' tests" is really "keyword '=' tests", but we have no such token.
 // These need to be in a single rule to avoid grammar that is ambiguous
-// to our LL(1) parser. Even though 'test' includes '*expr' in star_expr,
+// to our LL(1) parser. Even though 'tests' includes '*expr' in star_expr,
 // we explicitly match '*' here, too, to give it proper precedence.
 // Illegal combinations and orderings are blocked in ast.c:
-// multiple (test comp_for) arguments are blocked; keyword unpackings
+// multiple (tests comp_for) arguments are blocked; keyword unpackings
 // that precede iterable unpackings are blocked; etc.
 argument: ( test (comp_for)? |
             test '=' test |

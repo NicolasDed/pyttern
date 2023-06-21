@@ -1,16 +1,11 @@
 # Generated from Python3.g4 by ANTLR 4.7.2
 
-if __name__ is not None and "." in __name__:
-    from .antlr.Python3Parser import Python3Parser
-    from .antlr.Python3Visitor import Python3Visitor
-else:
-    from antlr.Python3Parser import Python3Parser
-    from antlr.Python3Visitor import Python3Visitor
-
 import re
 from ast import *
 
-from HoleAST import *
+from .HoleAST import *
+from .antlr.Python3Parser import Python3Parser
+from .antlr.Python3Visitor import Python3Visitor
 
 # Bind operator to their classes
 operators = {
@@ -579,7 +574,7 @@ class PyHoleVisitor(Python3Visitor):
 
         return body
 
-    # Visit a parse tree produced by Python3Parser#test.
+    # Visit a parse tree produced by Python3Parser#tests.
     def visitTest(self, ctx: Python3Parser.TestContext):
         if ctx.IF() is not None:
             body = ctx.or_test(0).accept(self)
@@ -708,8 +703,7 @@ class PyHoleVisitor(Python3Visitor):
 
         return left
 
-    # Visit a parse tree produced by Python3Parser#shift_expr.
-    def visitShift_expr(self, ctx: Python3Parser.Shift_exprContext):
+    def visitMulti_expr(self, ctx):
         children = list(ctx.getChildren())
         left = children.pop(0).accept(self)
         while len(children) > 0:
@@ -719,6 +713,10 @@ class PyHoleVisitor(Python3Visitor):
             left = BinOp(left, op, right)
 
         return left
+
+    # Visit a parse tree produced by Python3Parser#shift_expr.
+    def visitShift_expr(self, ctx: Python3Parser.Shift_exprContext):
+        return self.visitMulti_expr(ctx)
 
     # Visit a parse tree produced by Python3Parser#arith_expr.
     def visitArith_expr(self, ctx: Python3Parser.Arith_exprContext):
@@ -734,15 +732,7 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#term.
     def visitTerm(self, ctx: Python3Parser.TermContext):
-        children = list(ctx.getChildren())
-        left = children.pop(0).accept(self)
-        while len(children) > 0:
-            op_sign = children.pop(0).accept(self)
-            op = operators.get(op_sign)()
-            right = children.pop(0).accept(self)
-            left = BinOp(left, op, right)
-
-        return left
+        return self.visitMulti_expr(ctx)
 
     # Visit a parse tree produced by Python3Parser#factor.
     def visitFactor(self, ctx: Python3Parser.FactorContext):
@@ -757,15 +747,7 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#power.
     def visitPower(self, ctx: Python3Parser.PowerContext):
-        children = list(ctx.getChildren())
-        left = children.pop(0).accept(self)
-        while len(children) > 0:
-            op_sign = children.pop(0).accept(self)
-            op = operators.get(op_sign)()
-            right = children.pop(0).accept(self)
-            left = BinOp(left, op, right)
-
-        return left
+        return self.visitMulti_expr(ctx)
 
     # Visit a parse tree produced by Python3Parser#atom_expr.
     def visitAtom_expr(self, ctx: Python3Parser.Atom_exprContext):

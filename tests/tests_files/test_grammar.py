@@ -1,12 +1,13 @@
 # Test grammar file Python v3.3.7
-# Python test set -- part 1, grammar.
+# Python tests set -- part 1, grammar.
 # This just tests whether the parser accepts them all.
 
-from tests.support import run_unittest, check_syntax_error
 import unittest
-import sys
+
+from tests.tests import run_unittest, check_syntax_error
+
+
 # testing import *
-from sys import *
 
 
 class TokenTests(unittest.TestCase):
@@ -130,36 +131,36 @@ the \'lazy\' dog.\n\
         samples = ("def foo(", "\ndef foo(", "def foo(\n")
         for s in samples:
             with self.assertRaises(SyntaxError) as cm:
-                compile(s, "<test>", "exec")
+                compile(s, "<tests>", "exec")
             self.assertIn("unexpected EOF", str(cm.exception))
 
 class GrammarTests(unittest.TestCase):
 
     # single_input: NEWLINE | simple_stmt | compound_stmt NEWLINE
-    # XXX can't test in a script -- this rule is only used when interactive
+    # XXX can't tests in a script -- this rule is only used when interactive
 
     # file_input: (NEWLINE | stmt)* ENDMARKER
     # Being tested as this very moment this very module
 
     # expr_input: testlist NEWLINE
-    # XXX Hard to test -- used only in calls to input()
+    # XXX Hard to tests -- used only in calls to input()
 
     def test_eval_input(self):
         # testlist ENDMARKER
         x = eval('1, 0 or 1')
 
     def test_funcdef(self):
-        ### [decorators] 'def' NAME parameters ['->' test] ':' suite
+        ### [decorators] 'def' NAME parameters ['->' tests] ':' suite
         ### decorator: '@' dotted_name [ '(' [arglist] ')' ] NEWLINE
         ### decorators: decorator+
         ### parameters: '(' [typedargslist] ')'
-        ### typedargslist: ((tfpdef ['=' test] ',')*
-        ###                ('*' [tfpdef] (',' tfpdef ['=' test])* [',' '**' tfpdef] | '**' tfpdef)
-        ###                | tfpdef ['=' test] (',' tfpdef ['=' test])* [','])
-        ### tfpdef: NAME [':' test]
-        ### varargslist: ((vfpdef ['=' test] ',')*
-        ###              ('*' [vfpdef] (',' vfpdef ['=' test])*  [',' '**' vfpdef] | '**' vfpdef)
-        ###              | vfpdef ['=' test] (',' vfpdef ['=' test])* [','])
+        ### typedargslist: ((tfpdef ['=' tests] ',')*
+        ###                ('*' [tfpdef] (',' tfpdef ['=' tests])* [',' '**' tfpdef] | '**' tfpdef)
+        ###                | tfpdef ['=' tests] (',' tfpdef ['=' tests])* [','])
+        ### tfpdef: NAME [':' tests]
+        ### varargslist: ((vfpdef ['=' tests] ',')*
+        ###              ('*' [vfpdef] (',' vfpdef ['=' tests])*  [',' '**' vfpdef] | '**' vfpdef)
+        ###              | vfpdef ['=' tests] (',' vfpdef ['=' tests])* [','])
         ### vfpdef: NAME
         def f1(): pass
         f1()
@@ -321,7 +322,7 @@ class GrammarTests(unittest.TestCase):
         def f(x) -> list: pass
         self.assertEqual(f.__annotations__, {'return': list})
 
-        # test MAKE_CLOSURE with a variety of oparg's
+        # tests MAKE_CLOSURE with a variety of oparg's
         closure = 1
         def f(): return closure
         def f(x=1): return closure
@@ -333,7 +334,7 @@ class GrammarTests(unittest.TestCase):
         check_syntax_error(self, "f(**g(1=2))")
 
     def test_lambdef(self):
-        ### lambdef: 'lambda' [varargslist] ':' test
+        ### lambdef: 'lambda' [varargslist] ':' tests
         l1 = lambda : 0
         self.assertEqual(l1(), 0)
         l2 = lambda : a[d] # XXX just testing the expression
@@ -425,14 +426,14 @@ class GrammarTests(unittest.TestCase):
             self.fail(msg)
 
     def test_break_continue_loop(self):
-        # This test warrants an explanation. It is a test specifically for SF bugs
+        # This tests warrants an explanation. It is a tests specifically for SF bugs
         # #463359 and #462937. The bug is that a 'break' statement executed or
         # exception raised inside a try/except inside a loop, *after* a continue
         # statement has been executed in that loop, will cause the wrong number of
         # arguments to be popped off the stack and the instruction pointer reset to
-        # a very small number (usually 0.) Because of this, the following test
+        # a very small number (usually 0.) Because of this, the following tests
         # *must* written as a function, and the tracking vars *must* be function
-        # arguments with default values. Otherwise, the test will loop and loop.
+        # arguments with default values. Otherwise, the tests will loop and loop.
 
         def test_inner(extra_burning_oil = 1, count=0):
             big_hippo = 2
@@ -494,7 +495,7 @@ class GrammarTests(unittest.TestCase):
 
 
     def test_raise(self):
-        # 'raise' test [',' test]
+        # 'raise' tests [',' tests]
         try: raise RuntimeError('just testing')
         except RuntimeError: pass
         try: raise KeyboardInterrupt
@@ -502,16 +503,10 @@ class GrammarTests(unittest.TestCase):
 
     def test_import(self):
         # 'import' dotted_as_names
-        import sys
-        import time, sys
+        pass
         # 'from' dotted_name 'import' ('*' | '(' import_as_names ')' | import_as_names)
-        from time import time
-        from time import (time)
         # not testable inside a function, but already done at top of the module
         # from sys import *
-        from sys import path, argv
-        from sys import (path, argv)
-        from sys import (path, argv,)
 
     def test_global(self):
         # 'global' NAME (',' NAME)*
@@ -528,7 +523,7 @@ class GrammarTests(unittest.TestCase):
             nonlocal x, y
 
     def test_assert(self):
-        # assertTruestmt: 'assert' test [',' test]
+        # assertTruestmt: 'assert' tests [',' tests]
         assert 1
         assert 1, 1
         assert lambda x:x
@@ -567,7 +562,7 @@ class GrammarTests(unittest.TestCase):
     # Tested below
 
     def test_if(self):
-        # 'if' test ':' suite ('elif' test ':' suite)* ['else' ':' suite]
+        # 'if' tests ':' suite ('elif' tests ':' suite)* ['else' ':' suite]
         if 1: pass
         if 1: pass
         else: pass
@@ -580,7 +575,7 @@ class GrammarTests(unittest.TestCase):
         else: pass
 
     def test_while(self):
-        # 'while' test ':' suite ['else' ':' suite]
+        # 'while' tests ':' suite ['else' ':' suite]
         while 0: pass
         while 0: pass
         else: pass
@@ -734,7 +729,7 @@ class GrammarTests(unittest.TestCase):
         s = a[-5:]
         s = a[:-1]
         s = a[-4:-3]
-        # A rough test of SF bug 1333982.  http://python.org/sf/1333982
+        # A rough tests of SF bug 1333982.  http://python.org/sf/1333982
         # The testing here is fairly incomplete.
         # Test cases should include: commas with 1 and 2 colons
         d = {}
@@ -748,7 +743,7 @@ class GrammarTests(unittest.TestCase):
 
     def test_atoms(self):
         ### atom: '(' [testlist] ')' | '[' [testlist] ']' | '{' [dictsetmaker] '}' | NAME | NUMBER | STRING
-        ### dictsetmaker: (test ':' test (',' test ':' test)* [',']) | (test (',' test)* [','])
+        ### dictsetmaker: (tests ':' tests (',' tests ':' tests)* [',']) | (tests (',' tests)* [','])
 
         x = (1)
         x = (1 or 2 or 3)
@@ -778,7 +773,7 @@ class GrammarTests(unittest.TestCase):
         x = 123
 
     ### exprlist: expr (',' expr)* [',']
-    ### testlist: test (',' test)* [',']
+    ### testlist: tests (',' tests)* [',']
     # These have been exercised enough above
 
     def test_classdef(self):
@@ -801,9 +796,9 @@ class GrammarTests(unittest.TestCase):
         class G: pass
 
     def test_dictcomps(self):
-        # dictorsetmaker: ( (test ':' test (comp_for |
-        #                                   (',' test ':' test)* [','])) |
-        #                   (test (comp_for | (',' test)* [','])) )
+        # dictorsetmaker: ( (tests ':' tests (comp_for |
+        #                                   (',' tests ':' tests)* [','])) |
+        #                   (tests (comp_for | (',' tests)* [','])) )
         nums = [1, 2, 3]
         self.assertEqual({i:i+1 for i in nums}, {1: 2, 2: 3, 3: 4})
 
@@ -906,7 +901,7 @@ class GrammarTests(unittest.TestCase):
         check_syntax_error(self, "foo(100, x for x in range(10))")
 
     def test_comprehension_specials(self):
-        # test for outmost iterable precomputation
+        # tests for outmost iterable precomputation
         x = 10; g = (i for i in range(x)); x = 5
         self.assertEqual(len(list(g)), 10)
 

@@ -24,7 +24,6 @@ class SimpleHole(HoleAST):
         return 'ANY'
 
     def visit(self, matcher, current_node):
-        # matcher.pattern_match.add_match(self, current_node)
         pattern_node = matcher.pattern_walker.next()
         if pattern_node is None:
             code_node = matcher.code_walker.next_sibling()
@@ -44,7 +43,7 @@ class SimpleHole(HoleAST):
                 return False
 
         if hasattr(code_node, "lineno"):
-            matcher.pattern_match.add_pattern_match(code_node.lineno, self)
+            matcher.pattern_match.add_pattern_match(code_node.lineno-1, self)
         return matcher.rec_match(pattern_node, code_node)
 
 
@@ -125,7 +124,7 @@ class VarHole(HoleAST):
     def visit(self, matcher, current_node):
         if self.name in matcher.variables:
             pattern_node = matcher.variables[self.name]
-            from Matcher import Matcher
+            from .Matcher import Matcher
             if not Matcher().match(pattern_node, current_node):
                 return False
             if hasattr(current_node, "lineno"):

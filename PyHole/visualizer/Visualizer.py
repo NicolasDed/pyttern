@@ -1,7 +1,8 @@
+import pkgutil
 from xml.etree import ElementTree as ET
-from xml.etree.ElementTree import ElementTree
+from xml.etree.ElementTree import ElementTree, Element
 
-from PatternMatch import PatternMatch
+from PyHole.PatternMatch import PatternMatch
 
 
 def remove_overlap(intervals):
@@ -77,7 +78,7 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
 
         pre.text = text
 
-    return template
+    return ElementTree(template)
 
 
 def __str_to_pre(string):
@@ -86,6 +87,7 @@ def __str_to_pre(string):
     return pre
 
 
-def load_template() -> ElementTree:
-    template = ET.parse("visualizer/template.html")
+def load_template() -> Element:
+    data = pkgutil.get_data(__name__, "template.html")
+    template = ET.fromstring(data)
     return template
