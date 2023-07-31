@@ -84,7 +84,8 @@ class Matcher:
 
     def rec_match(self, pattern, code):
         if self.strict:
-            return self.strict_rec_match(pattern, code)
+            self.match = self.strict_rec_match(pattern, code)
+            return self.match
         else:
             return self.soft_rec_match(pattern, code)
 
@@ -128,6 +129,7 @@ class Matcher:
             self.pattern_match.add_pattern_match(code_node.lineno, pattern_node)
 
         self.pattern_match.add_match(pattern_node, code_node)
+        self.pattern_match.match(code_node, pattern_node)
 
         self.save_walkers_state()
         if not self.simple_match():
@@ -165,5 +167,6 @@ class Matcher:
             self.pattern_match.add_pattern_match(code_node.lineno, pattern_node)
 
         self.pattern_match.add_match(pattern_node, code_node)
+        self.pattern_match.match(code_node, pattern_node)
 
         return self.simple_match()

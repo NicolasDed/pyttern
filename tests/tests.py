@@ -1,16 +1,18 @@
 import ast
 import importlib.resources as pkg_resources
+import io
 from unittest import TestCase
 
 import pytest
 from antlr4 import *
 
-from PyHole.Matcher import Matcher, match_files
-from PyHole.PyHoleParser import *
-from PyHole.antlr.Python3Lexer import Python3Lexer
-from PyHole.antlr.Python3Listener import Python3Listener
-from PyHole.antlr.Python3Parser import Python3Parser
-from PyHole.visualizer import Visualizer
+from pyhole.Matcher import Matcher, match_files
+from pyhole.PyHoleErrorListener import Python3ErrorListener
+from pyhole.PyHoleVisitor import PyHoleVisitor
+from pyhole.antlr.Python3Lexer import Python3Lexer
+from pyhole.antlr.Python3Listener import Python3Listener
+from pyhole.antlr.Python3Parser import Python3Parser
+from pyhole.visualizer import Visualizer
 from . import tests_files, visu
 
 
@@ -60,7 +62,7 @@ class Python3ParserTests(PyHoleTest):
     def test_python3_test_student(self):
         parser = self.setup((pkg_resources.files(tests_files) / "q1_3.py"))
         tree = parser.file_input()
-        listener = Printer()
+        listener = Python3Listener()  # Printer()
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
         self.assertEqual(len(self.errorListener.symbol), 0)
@@ -113,13 +115,10 @@ class AstGeneratorTests(PyHoleTest):
         tree = parser.file_input()
 
         generated_tree = PyHoleVisitor().visit(tree)
-        print(ast.dump(generated_tree, indent=1))
 
         inp_file = (pkg_resources.files(tests_files) / "q1_3.py")
         with open(inp_file) as file:
             python_tree = ast.parse(file.read(), (pkg_resources.files(tests_files) / "q1_3.py"))
-            print()
-            print(ast.dump(python_tree, indent=1))
             self.asts_equal(python_tree, generated_tree)
 
     def test_ast_generator_student2(self):
@@ -127,13 +126,10 @@ class AstGeneratorTests(PyHoleTest):
         tree = parser.file_input()
 
         generated_tree = PyHoleVisitor().visit(tree)
-        print(ast.dump(generated_tree, indent=1))
 
         inp_file = (pkg_resources.files(tests_files) / "q1_254.py")
         with open(inp_file) as file:
             python_tree = ast.parse(file.read(), (pkg_resources.files(tests_files) / "q1_254.py"))
-            print()
-            print(ast.dump(python_tree, indent=1))
             self.asts_equal(python_tree, generated_tree)
 
     def test_ast_generator_complex(self):
@@ -141,13 +137,10 @@ class AstGeneratorTests(PyHoleTest):
         tree = parser.file_input()
 
         generated_tree = PyHoleVisitor().visit(tree)
-        print(ast.dump(generated_tree, indent=1))
 
         inp_file = (pkg_resources.files(tests_files) / "test_grammar.py")
         with open(inp_file) as file:
             python_tree = ast.parse(file.read(), (pkg_resources.files(tests_files) / "test_grammar.py"))
-            print()
-            print(ast.dump(python_tree, indent=1))
             self.asts_equal(python_tree, generated_tree)
 
 
@@ -169,7 +162,8 @@ class TestASTHole(PyHoleTest):
 
         for n1 in nbr:
             for n2 in nbr:
-                val, details = match_files((pkg_resources.files(tests_files) / f"q1_{n1}.py"), (pkg_resources.files(tests_files) / f"q1_{n2}.py"),
+                val, details = match_files((pkg_resources.files(tests_files) / f"q1_{n1}.py"),
+                                           (pkg_resources.files(tests_files) / f"q1_{n2}.py"),
                                            True, True)
                 if n1 == n2:
                     self.assertTrue(val, f"{n1} != {n2}: {details}")
@@ -182,7 +176,8 @@ class TestASTHole(PyHoleTest):
 
         for n1 in nbr:
             for n2 in nbr:
-                val, details = match_files((pkg_resources.files(tests_files) / f"q1_{n1}.py"), (pkg_resources.files(tests_files) / f"q1_{n2}.py"),
+                val, details = match_files((pkg_resources.files(tests_files) / f"q1_{n1}.py"),
+                                           (pkg_resources.files(tests_files) / f"q1_{n2}.py"),
                                            False, True)
                 if n1 == n2:
                     self.assertTrue(val, f"{n1} != {n2}: {details}")
@@ -191,12 +186,12 @@ class TestASTHole(PyHoleTest):
 
     @pytest.mark.timeout(10)
     def test_ast_simple_hole(self):
-        parser = self.setup((pkg_resources.files(tests_files) / "pyHoleTest.py"))
+        parser = self.setup((pkg_resources.files(tests_files) / "pyHoleTest.pyh"))
         tree = parser.file_input()
 
         generated_tree = PyHoleVisitor().visit(tree)
 
-        wrong_parser = self.setup((pkg_resources.files(tests_files) / "pyHoleNok.py"))
+        wrong_parser = self.setup((pkg_resources.files(tests_files) / "pyHoleNok.pyh"))
         wrong_tree = wrong_parser.file_input()
 
         wrong_generated_tree = PyHoleVisitor().visit(wrong_tree)
@@ -212,7 +207,7 @@ class TestASTHole(PyHoleTest):
 
     @pytest.mark.timeout(10)
     def test_ast_compound_hole(self):
-        parser_ok = self.setup((pkg_resources.files(tests_files) / "pyHoleCompoundOk.py"))
+        parser_ok = self.setup((pkg_resources.files(tests_files) / "pyHoleCompoundOk.pyh"))
         tree_ok = parser_ok.file_input()
 
         generated_tree_ok = PyHoleVisitor().visit(tree_ok)
@@ -226,68 +221,85 @@ class TestASTHole(PyHoleTest):
 
     @pytest.mark.timeout(10)
     def test_ast_labeled_hole(self):
-        val = match_files((pkg_resources.files(tests_files) / "pyHoleLabeled.py"), (pkg_resources.files(tests_files) / "q1_3.py"), strict_match=True)
+        val = match_files((pkg_resources.files(tests_files) / "pyHoleLabeled.pyh"),
+                          (pkg_resources.files(tests_files) / "q1_3.py"), strict_match=True)
         self.assertTrue(val)
 
     @pytest.mark.timeout(10)
     def test_ast_multiple_depth(self):
-        val, msg = match_files((pkg_resources.files(tests_files) / "pyHoleMultipleDepth.py"), (pkg_resources.files(tests_files) / "q1_254.py"), strict_match=True, match_details=True)
+        val, msg = match_files((pkg_resources.files(tests_files) / "pyHoleMultipleDepth.pyh"),
+                               (pkg_resources.files(tests_files) / "q1_254.py"), strict_match=True, match_details=True)
         self.assertTrue(val, msg)
 
     @pytest.mark.timeout(10)
     def test_pattern_13(self):
-        val, match = match_files((pkg_resources.files(tests_files) / "Pattern13.pyh"), (pkg_resources.files(tests_files) / "q1_560.py"), strict_match=True, match_details=True)
+        val, match = match_files((pkg_resources.files(tests_files) / "Pattern13.pyh"),
+                                 (pkg_resources.files(tests_files) / "q1_560.py"), strict_match=True,
+                                 match_details=True)
         self.assertTrue(val, match)
 
-        show_pattern((pkg_resources.files(tests_files) / "q1_560.py"), (pkg_resources.files(tests_files) / "Pattern13.pyh"), match,
+        show_pattern((pkg_resources.files(tests_files) / "q1_560.py"),
+                     (pkg_resources.files(tests_files) / "Pattern13.pyh"), match,
                      (pkg_resources.files(visu) / "p13.html"))
 
     @pytest.mark.timeout(10)
     def test_pattern_different_size(self):
-        val = match_files((pkg_resources.files(tests_files) / "Small.pyh"), (pkg_resources.files(tests_files) / "q1_3.py"), strict_match=True)
+        val = match_files((pkg_resources.files(tests_files) / "Small.pyh"),
+                          (pkg_resources.files(tests_files) / "q1_3.py"), strict_match=True)
         self.assertFalse(val)
 
-        val = match_files((pkg_resources.files(tests_files) / "Small.pyh"), (pkg_resources.files(tests_files) / "q1_254.py"), strict_match=True)
+        val = match_files((pkg_resources.files(tests_files) / "Small.pyh"),
+                          (pkg_resources.files(tests_files) / "q1_254.py"), strict_match=True)
         self.assertFalse(val)
 
-        val = match_files((pkg_resources.files(tests_files) / "Small.pyh"), (pkg_resources.files(tests_files) / "q1_560.py"), strict_match=True)
+        val = match_files((pkg_resources.files(tests_files) / "Small.pyh"),
+                          (pkg_resources.files(tests_files) / "q1_560.py"), strict_match=True)
         self.assertFalse(val)
 
     @pytest.mark.timeout(10)
     def test_soft_pattern_match(self):
-        val, match = match_files((pkg_resources.files(tests_files) / "Pattern13soft.pyh"), (pkg_resources.files(tests_files) / "q1_560.py"),
+        val, match = match_files((pkg_resources.files(tests_files) / "Pattern13soft.pyh"),
+                                 (pkg_resources.files(tests_files) / "q1_560.py"),
                                  strict_match=False, match_details=True)
         self.assertTrue(val, match)
 
-        show_pattern((pkg_resources.files(tests_files) / "q1_560.py"), (pkg_resources.files(tests_files) / "Pattern13soft.pyh"), match,
+        show_pattern((pkg_resources.files(tests_files) / "q1_560.py"),
+                     (pkg_resources.files(tests_files) / "Pattern13soft.pyh"), match,
                      (pkg_resources.files(visu) / "p13soft.html"))
 
-        val, match = match_files((pkg_resources.files(tests_files) / "Pattern13soft.pyh"), (pkg_resources.files(tests_files) / "q1_560.py"),
+        val, match = match_files((pkg_resources.files(tests_files) / "Pattern13soft.pyh"),
+                                 (pkg_resources.files(tests_files) / "q1_560.py"),
                                  strict_match=True, match_details=True)
         self.assertFalse(val, match)
 
     @pytest.mark.timeout(10)
     def test_soft_ast_compound_hole(self):
-        val, match = match_files((pkg_resources.files(tests_files) / "pyHoleCompoundSoft.pyh"), (pkg_resources.files(tests_files) / "q1_254.py"),
+        val, match = match_files((pkg_resources.files(tests_files) / "pyHoleCompoundSoft.pyh"),
+                                 (pkg_resources.files(tests_files) / "q1_254.py"),
                                  strict_match=False, match_details=True)
         self.assertTrue(val, msg=match)
 
-        show_pattern((pkg_resources.files(tests_files) / "q1_254.py"), (pkg_resources.files(tests_files) / "pyHoleCompoundSoft.pyh"), match,
+        show_pattern((pkg_resources.files(tests_files) / "q1_254.py"),
+                     (pkg_resources.files(tests_files) / "pyHoleCompoundSoft.pyh"), match,
                      (pkg_resources.files(visu) / "pyHoleCompoundSoft.html"))
 
-        val, match = match_files((pkg_resources.files(tests_files) / "pyHoleCompoundSoft.pyh"), (pkg_resources.files(tests_files) / "q1_254.py"),
+        val, match = match_files((pkg_resources.files(tests_files) / "pyHoleCompoundSoft.pyh"),
+                                 (pkg_resources.files(tests_files) / "q1_254.py"),
                                  strict_match=True, match_details=True)
         self.assertFalse(val, msg=match)
 
     def test_strict_mode(self):
-        val, match = match_files((pkg_resources.files(tests_files) / "strictModeTest.pyh"), (pkg_resources.files(tests_files) / "q1_254.py"),
+        val, match = match_files((pkg_resources.files(tests_files) / "strictModeTest.pyh"),
+                                 (pkg_resources.files(tests_files) / "q1_254.py"),
                                  strict_match=False, match_details=True)
         self.assertTrue(val, msg=match)
 
-        show_pattern((pkg_resources.files(tests_files) / "q1_254.py"), (pkg_resources.files(tests_files) / "strictModeTest.pyh"), match,
+        show_pattern((pkg_resources.files(tests_files) / "q1_254.py"),
+                     (pkg_resources.files(tests_files) / "strictModeTest.pyh"), match,
                      (pkg_resources.files(visu) / "strict.html"))
 
-        val, match = match_files((pkg_resources.files(tests_files) / "strictModeTest.pyh"), (pkg_resources.files(tests_files) / "q1_560.py"),
+        val, match = match_files((pkg_resources.files(tests_files) / "strictModeTest.pyh"),
+                                 (pkg_resources.files(tests_files) / "q1_560.py"),
                                  strict_match=False, match_details=True)
         self.assertFalse(val, msg=match)
 
@@ -295,18 +307,20 @@ class TestASTHole(PyHoleTest):
 class TestVisualizer(TestCase):
 
     def test_pattern_visualizer(self):
-        val, match = match_files((pkg_resources.files(tests_files) / "pyHoleMultipleDepth.py"), (pkg_resources.files(tests_files) / "q1_254.py"),
+        val, match = match_files((pkg_resources.files(tests_files) / "pyHoleMultipleDepth.pyh"),
+                                 (pkg_resources.files(tests_files) / "q1_254.py"),
                                  strict_match=True, match_details=True)
         self.assertTrue(val)
 
-        html = show_pattern((pkg_resources.files(tests_files) / "q1_254.py"), (pkg_resources.files(tests_files) / "pyHoleMultipleDepth.py"),
+        html = show_pattern((pkg_resources.files(tests_files) / "q1_254.py"),
+                            (pkg_resources.files(tests_files) / "pyHoleMultipleDepth.pyh"),
                             match, (pkg_resources.files(visu) / "match.html"))
         b_elements = html.findall(".//b")
 
         self.assertEqual(4, len(b_elements))
 
         first_match = b_elements[0].text
-        #self.assertRegex(first_match, r"def\s+multiplications") # Python ast seems buggy IDK why
+        # self.assertRegex(first_match, r"def\s+multiplications") # Python ast seems buggy IDK why
         second_match = b_elements[1].text
         self.assertEqual(second_match, "n")
         third_match = b_elements[2].text
@@ -338,5 +352,3 @@ class TestVisualizer(TestCase):
         intervals = [(1, 3), (4, 6), (7, 9)]
         expected = [(1, 3), (4, 6), (7, 9)]
         self.assertEqual(Visualizer.remove_overlap(intervals), expected)
-
-

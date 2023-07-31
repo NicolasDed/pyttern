@@ -20,7 +20,8 @@ We extended the python syntax to create patterns file. Our new syntax include th
 ## Usage
 
 ```python
-from pyhole import Matcher
+
+import Matcher
 
 code = "code_file.py"
 pattern = "pattern_file.py"
@@ -136,8 +137,10 @@ specific code sections. This helps in creating adaptable code patterns that can 
 
 ## Visualization
 You can visualize the pattern match using the `match_details` argument and the visualiser.
+
 ```python
-from pyhole import Matcher, Visualizer
+from src.pyhole import Visualizer
+import Matcher
 
 code = "code_file.py"
 pattern = "pattern_file.py"

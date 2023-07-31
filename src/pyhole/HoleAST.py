@@ -34,6 +34,8 @@ class SimpleHole(HoleAST):
             if code_node is not None:
                 return False
 
+            if hasattr(current_node, "lineno"):
+                matcher.pattern_match.add_pattern_match(current_node.lineno, self)
             return True
 
         code_node = matcher.code_walker.next_sibling()
@@ -42,8 +44,9 @@ class SimpleHole(HoleAST):
             if code_node is None:
                 return False
 
-        if hasattr(code_node, "lineno"):
-            matcher.pattern_match.add_pattern_match(code_node.lineno-1, self)
+        if hasattr(current_node, "lineno"):
+            matcher.pattern_match.add_pattern_match(current_node.lineno, self)
+        matcher.pattern_match.match(code_node, self)
         return matcher.rec_match(pattern_node, code_node)
 
 
@@ -86,6 +89,7 @@ class DoubleHole(HoleAST):
                     matcher.pattern_match.add_line_skip_match(lineno, end_lineno - 1)
                 return True
             matcher.load_walkers_state()
+            matcher.pattern_match.match(code_node, self)
             if lineno and lineno not in matcher.pattern_match.pattern_match:
                 matcher.pattern_match.add_pattern_match(lineno, self)
             code_node = matcher.code_walker.next_sibling()
@@ -105,10 +109,15 @@ class CompoundHole(HoleAST):
     def visit(self, matcher, current_node):
         # matcher.pattern_match.add_match(self, current_node)
         matcher.code_walker.select_specific_child('body')
-        if not matcher.simple_match():
+        next_code_node = matcher.code_walker.next_child()
+        if next_code_node is None:
+            return False
+        next_pattern_node = matcher.pattern_walker.next()
+        if not matcher.rec_match(next_pattern_node, next_code_node):
             return False
         if hasattr(current_node, "lineno"):
             matcher.pattern_match.add_pattern_match(current_node.lineno, self)
+        matcher.pattern_match.match(current_node, self)
         return True
 
 
@@ -129,6 +138,7 @@ class VarHole(HoleAST):
                 return False
             if hasattr(current_node, "lineno"):
                 matcher.pattern_match.add_pattern_match(current_node.lineno, self)
+            matcher.pattern_match.match(current_node, self)
             return matcher.simple_match()
 
         matcher.variables[self.name] = current_node
@@ -153,6 +163,7 @@ class VarHole(HoleAST):
 
         if hasattr(current_node, "lineno"):
             matcher.pattern_match.add_pattern_match(current_node.lineno, self)
+        matcher.pattern_match.match(current_node, self)
         return True
 
 
@@ -184,6 +195,7 @@ class MultipleCompoundHole(HoleAST):
             matcher.load_walkers_state()
             if lineno and lineno not in matcher.pattern_match.pattern_match:
                 matcher.pattern_match.add_pattern_match(lineno, self)
+            matcher.pattern_match.match(code_node, self)
             matcher.code_walker.select_body_children()
             code_node = matcher.code_walker.next()
 
@@ -256,4 +268,4 @@ def iter_fields(node):
         try:
             yield field, getattr(node, field)
         except AttributeError:
-            print("No such attribute")
+            print(f"No such attribute: {field} in {node} with attributes: {node.__dict__}")
