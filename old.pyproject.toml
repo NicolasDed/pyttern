@@ -4,22 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyhole"
-version = "0.0.1"
 authors = [
   { name="Julien Lienard", email="julien.lienard@uclouvain.be" },
 ]
 description = "Python package to build code patterns"
-readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dynamic = ["dependencies", "version", "license", "readme"]
 
 [project.urls]
 "Homepage" = "https://github.com/JulienLie/python-hole"
 "Bug Tracker" = "https://github.com/JulienLie/python-hole/issues"
 
-[dynamic]
-"license" = "MIT"
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+readme = {file = ["README.md"], content-type = "text/markdown"}
