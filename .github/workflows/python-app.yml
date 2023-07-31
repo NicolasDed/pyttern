@@ -34,4 +34,4 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude="tests/tests_files PyHole/antlr/"
     - name: Test with pytest
       run: |
-        pytest tests/tests.py
+        python3 setup.py test -s tests
