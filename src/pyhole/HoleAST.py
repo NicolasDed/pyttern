@@ -70,8 +70,7 @@ class DoubleHole(HoleAST):
                     if lineno and lineno not in matcher.pattern_match.pattern_match:
                         matcher.pattern_match.add_pattern_match(lineno, self)
                     return True
-                else:
-                    return False
+                return False
             else:
                 if lineno and lineno not in matcher.pattern_match.pattern_match and next_code_node is not None:
                     matcher.pattern_match.add_pattern_match(lineno, self)

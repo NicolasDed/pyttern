@@ -51,10 +51,11 @@ operators = {
     '//=': FloorDiv
 }
 
+
 def set_lineno(obj, ctx):
     start = ctx.start.line
     end = ctx.stop.line
-    if isinstance(obj, stmt) or isinstance(obj, HoleAST):
+    if isinstance(obj, (stmt, HoleAST)):
         obj.lineno = start
         obj.lineno_end = end
 
@@ -82,7 +83,7 @@ class PyHoleVisitor(Python3Visitor):
         children = super().visitChildren(ctx)
         if not isinstance(children, list):
             set_lineno(children, ctx)
-        #print(type(ctx).__name__ + " " + str(children))
+        # print(type(ctx).__name__ + " " + str(children))
         return children
 
     # Visit a parse tree produced by Python3Parser#single_input.
