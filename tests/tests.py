@@ -6,7 +6,7 @@ from unittest import TestCase
 import pytest
 from antlr4 import *
 
-from pyhole.Matcher import Matcher, match_files
+from pyhole.Matcher import Matcher, match_files, match_wildcards
 from pyhole.PyHoleErrorListener import Python3ErrorListener
 from pyhole.PyHoleVisitor import PyHoleVisitor
 from pyhole.antlr.Python3Lexer import Python3Lexer
@@ -15,6 +15,9 @@ from pyhole.antlr.Python3Parser import Python3Parser
 from pyhole.visualizer import Visualizer
 from . import tests_files, visu
 
+
+def get_test_file(path):
+    return str(pkg_resources.files(tests_files) / path)
 
 class Printer(ParseTreeListener):
     def __init__(self):
@@ -302,6 +305,34 @@ class TestASTHole(PyHoleTest):
                                  (pkg_resources.files(tests_files) / "q1_560.py"),
                                  strict_match=False, match_details=True)
         self.assertFalse(val, msg=match)
+
+    def test_match_wildcards_unique(self):
+        pattern_path = get_test_file("pyHoleCompoundSoft.pyh")
+        code_path = get_test_file("q1_254.py")
+        matches = match_wildcards(pattern_path, code_path)
+        self.assertTrue(matches[code_path][pattern_path], msg=matches)
+
+    def test_match_wildcards_multiple_pattern(self):
+        pattern_path = get_test_file("pyHoleCompound*.pyh")
+        code_path = get_test_file("q1_254.py")
+        matches = match_wildcards(pattern_path, code_path, strict_match=True)
+        for match in matches:
+            for pattern in matches[match]:
+                if "Ok" in pattern:
+                    self.assertTrue(matches[match][pattern], f"{pattern} on {match} should match")
+                else:
+                    self.assertFalse(matches[match][pattern], f"{pattern} on {match} should not match")
+
+    def test_match_wildcards_multiple_code(self):
+        pattern_path = get_test_file("Pattern13soft.pyh")
+        code_path = get_test_file("q1_*.py")
+        matches = match_wildcards(pattern_path, code_path)
+        for match in matches:
+            for pattern in matches[match]:
+                if "q1_560.py" in match:
+                    self.assertTrue(matches[match][pattern], f"{pattern} on {match} should match")
+                else:
+                    self.assertFalse(matches[match][pattern], f"{pattern} on {match} should not match")
 
 
 class TestVisualizer(TestCase):

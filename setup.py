@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='python-hole',
-    version='0.0.6',
+    version='0.0.7',
     packages=['pyhole', 'pyhole.antlr', 'pyhole.visualizer'],
     package_dir={'': 'src'},
     url='https://github.com/JulienLie/python-hole',

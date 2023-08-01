@@ -1,9 +1,23 @@
+import glob
 from copy import deepcopy
 
 from .AstWalker import AstWalker
 from .HoleAST import *
 from .PatternMatch import PatternMatch
 from .PyHoleParser import parse_pyhole
+
+
+def match_wildcards(path_pattern_with_wildcards, path_python_with_wildcard, strict_match=False, match_details=False):
+    ret = {}
+    patterns_filespath = glob.glob(str(path_pattern_with_wildcards))
+    pythons_filespath = glob.glob(str(path_python_with_wildcard))
+    for python_filepath in pythons_filespath:
+        for pattern_filepath in patterns_filespath:
+            result = match_files(pattern_filepath, python_filepath, strict_match, match_details)
+            if python_filepath not in ret:
+                ret[python_filepath] = {}
+            ret[python_filepath][pattern_filepath] = result
+    return ret
 
 
 def match_files(path_pattern, path_python, strict_match=False, match_details=False):
