@@ -209,6 +209,13 @@ class TestASTHole(PyHoleTest):
             wrong_val = Matcher().match(wrong_generated_tree, python_tree)
             self.assertFalse(wrong_val)
 
+    def test_ast_simple_addition(self):
+        pattern_path = get_test_file("piPattern.pyh")
+        code_path = get_test_file("piCode.py")
+
+        res = match_files(pattern_path, code_path)
+        self.assertTrue(res)
+
     @pytest.mark.timeout(10)
     def test_ast_compound_hole(self):
         parser_ok = self.setup(get_test_file("pyHoleCompoundOk.pyh"))

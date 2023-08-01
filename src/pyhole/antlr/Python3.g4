@@ -222,7 +222,7 @@ with_item: test ('as' expr)?;
 except_clause: 'except' (test ('as' NAME)?)?;
 suite: simple_stmt | NEWLINE INDENT stmt+ DEDENT;
 
-test: or_test ('if' or_test 'else' test)? | lambdef | var_hole;
+test: or_test ('if' or_test 'else' test)? | lambdef;
 test_nocond: or_test | lambdef_nocond;
 lambdef: 'lambda' (varargslist)? ':' test;
 lambdef_nocond: 'lambda' (varargslist)? ':' test_nocond;
@@ -289,7 +289,7 @@ yield_expr: 'yield' (yield_arg)?;
 yield_arg: 'from' test | testlist;
 
 // syntax of holes
-expr_hole: simple_hole | double_hole;
+expr_hole: simple_hole | double_hole | var_hole;
 simple_hole: '?';
 double_hole: '?*';
 var_hole: '?' NAME;
