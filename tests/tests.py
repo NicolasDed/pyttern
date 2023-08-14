@@ -342,6 +342,19 @@ class TestASTHole(PyHoleTest):
                 else:
                     self.assertFalse(result, f"{pattern} on {code} should not match")
 
+    def test_match_mult_and_div(self):
+        pattern_path = get_test_file("multAndDivPatterns/*.pyh")
+        code_path = get_test_file("multAndDiv.py")
+        matches = match_wildcards(pattern_path, code_path, match_details=True)
+        for _, match in matches.items():
+            for pattern, result in match.items():
+                do_match, details = result
+                if "patternMultPlusDIv" in pattern:
+                    self.assertTrue(do_match, details)
+                else:
+                    self.assertFalse(do_match, details)
+
+
 
 class TestVisualizer(TestCase):
 
