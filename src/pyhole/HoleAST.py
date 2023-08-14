@@ -27,11 +27,11 @@ class SimpleHole(HoleAST):
         pattern_node = matcher.pattern_walker.next()
         if pattern_node is None:
             code_node = matcher.code_walker.next_sibling()
-            if code_node is not None:
+            if matcher.strict and code_node is not None:
                 return False
 
             code_node = matcher.code_walker.next_parent()
-            if code_node is not None:
+            if matcher.strict and code_node is not None:
                 return False
 
             if hasattr(current_node, "lineno"):
