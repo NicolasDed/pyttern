@@ -128,6 +128,7 @@ class Matcher:
         if type(pattern_node) != type(code_node):
             return self.soft_next_node_match(pattern_node)
 
+        """
         if isinstance(pattern_node, AST):
             for const_pattern, const_code in zip(iter_constant_field(pattern_node), iter_constant_field(code_node)):
                 if isinstance(const_pattern, SimpleHole):
@@ -138,6 +139,13 @@ class Matcher:
                         continue
                     self.error = f"Cannot match const {const_pattern} with {const_code}"
                     return False
+        """
+        if not isinstance(pattern_node, (AST, HoleAST, list)):
+            if pattern_node == code_node:
+                return self.simple_match()
+            else:
+                self.error = f"Cannot match constant {pattern_node} and {code_node}."
+                return False
 
         if hasattr(code_node, "lineno") and hasattr(pattern_node, "lineno"):
             self.pattern_match.add_pattern_match(code_node.lineno, pattern_node)
@@ -166,7 +174,7 @@ class Matcher:
         if type(pattern_node) != type(code_node):
             self.error = f"Cannot match {pattern_node} with {code_node}"
             return False
-
+        """
         if isinstance(pattern_node, AST):
             for const_pattern, const_code in zip(iter_constant_field(pattern_node), iter_constant_field(code_node)):
                 if isinstance(const_pattern, SimpleHole):
@@ -176,6 +184,13 @@ class Matcher:
                         isinstance(const_code, ast.Load) or isinstance(const_code, ast.Store)):
                     self.error = f"Cannot match const {const_pattern} with {const_code}"
                     return False
+        """
+        if not isinstance(pattern_node, (AST, HoleAST, list)):
+            if pattern_node == code_node:
+                return self.simple_match()
+            else:
+                self.error = f"Cannot match constant {pattern_node} and {code_node}."
+                return False
 
         if hasattr(code_node, "lineno") and hasattr(pattern_node, "lineno"):
             self.pattern_match.add_pattern_match(code_node.lineno, pattern_node)

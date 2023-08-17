@@ -145,8 +145,10 @@ class PyHoleVisitor(Python3Visitor):
     def visitFuncdef(self, ctx: Python3Parser.FuncdefContext):
         if ctx.NAME() is not None:
             name = ctx.NAME().accept(self)
-        else:
+        elif ctx.simple_hole() is not None:
             name = ctx.simple_hole().accept(self)
+        else:
+            name = ctx.var_hole().accept(self)
         args = ctx.parameters().accept(self)
 
         returns = ctx.test().accept(self) if ctx.test() is not None else None

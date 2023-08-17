@@ -206,15 +206,17 @@ class TestASTHole(PyHoleTest):
             val = Matcher().match(generated_tree, python_tree)
             self.assertTrue(val)
 
-            wrong_val = Matcher().match(wrong_generated_tree, python_tree)
+            matcher = Matcher()
+            matcher.set_strict(True)
+            wrong_val = matcher.match(wrong_generated_tree, python_tree)
             self.assertFalse(wrong_val)
 
     def test_ast_simple_addition(self):
         pattern_path = get_test_file("piPattern.pyh")
         code_path = get_test_file("piCode.py")
 
-        res = match_files(pattern_path, code_path)
-        self.assertTrue(res)
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        self.assertTrue(res, det)
 
     @pytest.mark.timeout(10)
     def test_ast_compound_hole(self):
@@ -232,9 +234,9 @@ class TestASTHole(PyHoleTest):
 
     @pytest.mark.timeout(10)
     def test_ast_labeled_hole(self):
-        val = match_files(get_test_file("pyHoleLabeled.pyh"),
-                          get_test_file("q1_3.py"), strict_match=True)
-        self.assertTrue(val)
+        val, det = match_files(get_test_file("pyHoleLabeled.pyh"),
+                          get_test_file("q1_3.py"), strict_match=True, match_details=True)
+        self.assertTrue(val, det)
 
     @pytest.mark.timeout(10)
     def test_ast_multiple_depth(self):
@@ -354,6 +356,11 @@ class TestASTHole(PyHoleTest):
                 else:
                     self.assertFalse(do_match, details)
 
+    def test_match_recursion(self):
+        pattern_path = get_test_file("simpleRecursion.pyh")
+        code_path = get_test_file("factRec.py")
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        self.assertTrue(res, det)
 
 
 class TestVisualizer(TestCase):

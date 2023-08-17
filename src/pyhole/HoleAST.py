@@ -138,11 +138,32 @@ class VarHole(HoleAST):
             if hasattr(current_node, "lineno"):
                 matcher.pattern_match.add_pattern_match(current_node.lineno, self)
             matcher.pattern_match.match(current_node, self)
-            return matcher.simple_match()
+
+            pattern_node = matcher.pattern_walker.next_sibling()
+            if pattern_node is None:
+                code_node = matcher.code_walker.next_sibling()
+                if matcher.strict and code_node is not None:
+                    return False
+
+                code_node = matcher.code_walker.next_parent()
+                if matcher.strict and code_node is not None:
+                    return False
+
+                if hasattr(current_node, "lineno"):
+                    matcher.pattern_match.add_pattern_match(current_node.lineno, self)
+                return True
+
+            code_node = matcher.code_walker.next_sibling()
+            if code_node is None:
+                code_node = matcher.code_walker.next_parent()
+                if code_node is None:
+                    return False
+
+            return matcher.rec_match(pattern_node, code_node)
 
         matcher.variables[self.name] = current_node
 
-        next_pattern_node = matcher.pattern_walker.next()
+        next_pattern_node = matcher.pattern_walker.next_sibling()
         if next_pattern_node is None:
             next_code_node = matcher.code_walker.next_sibling()
             if next_code_node is None:
@@ -237,8 +258,16 @@ def iter_child_nodes(node):
     Yield all direct child nodes of *node*, that is, all fields that are nodes
     and all items of fields that are lists of nodes.
     """
-    for name, field in iter_fields(node):
-        if isinstance(field, AST):
+    for _, field in iter_fields(node):
+        if isinstance(field, list):
+            for item in field:
+                if isinstance(item, AST):
+                    yield item
+                elif isinstance(item, HoleAST):
+                    yield item
+        elif field is not None:
+            yield field
+        """if isinstance(field, AST):
             yield field
         elif isinstance(field, HoleAST):
             yield field
@@ -247,7 +276,7 @@ def iter_child_nodes(node):
                 if isinstance(item, AST):
                     yield item
                 elif isinstance(item, HoleAST):
-                    yield item
+                    yield item"""
 
 
 def iter_constant_field(node):
@@ -263,6 +292,8 @@ def iter_fields(node):
     Yield a tuple of ``(fieldname, value)`` for each field in ``node._fields``
     that is present on *node*.
     """
+    if not hasattr(node, "_fields"):
+        return
     for field in node._fields:
         try:
             yield field, getattr(node, field)

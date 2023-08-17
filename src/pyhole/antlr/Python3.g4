@@ -156,7 +156,7 @@ decorators: decorator+;
 decorated: decorators (classdef | funcdef | async_funcdef);
 
 async_funcdef: ASYNC funcdef;
-funcdef: 'def' (NAME | simple_hole) parameters ('->' test)? ':' suite;
+funcdef: 'def' (NAME | simple_hole | var_hole) parameters ('->' test)? ':' suite;
 
 parameters: '(' (typedargslist)? ')';
 typedargslist: (tfpdef ('=' test)? (',' tfpdef ('=' test)?)* (',' (
