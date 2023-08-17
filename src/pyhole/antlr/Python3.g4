@@ -260,7 +260,7 @@ dictorsetmaker: ( ((test ':' test | '**' expr)
                   ((test | star_expr)
                    (comp_for | (',' (test | star_expr))* (',')?)) );
 
-classdef: 'class' NAME ('(' (arglist)? ')')? ':' suite;
+classdef: 'class' (NAME | simple_hole | var_hole) ('(' (arglist)? ')')? ':' suite;
 
 arglist: argument (',' argument)*  (',')?;
 
@@ -273,7 +273,8 @@ arglist: argument (',' argument)*  (',')?;
 // Illegal combinations and orderings are blocked in ast.c:
 // multiple (tests comp_for) arguments are blocked; keyword unpackings
 // that precede iterable unpackings are blocked; etc.
-argument: ( test (comp_for)? |
+argument: ( expr_hole |
+            test (comp_for)? |
             test '=' test |
             '**' test |
             '*' test );

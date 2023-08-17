@@ -1,5 +1,5 @@
 import ast
-from ast import AST
+from ast import AST, Name, Load
 
 
 class HoleAST:
@@ -161,6 +161,9 @@ class VarHole(HoleAST):
 
             return matcher.rec_match(pattern_node, code_node)
 
+        # Handle func name and class name
+        if not isinstance(current_node, AST):
+            current_node = Name(current_node, Load())
         matcher.variables[self.name] = current_node
 
         next_pattern_node = matcher.pattern_walker.next_sibling()
