@@ -56,7 +56,7 @@ class PyHoleTest(TestCase):
 class Python3ParserTests(PyHoleTest):
 
     def test_python3_test_grammar(self):
-        parser = self.setup(get_test_file("test_grammar.py"))
+        parser = self.setup(get_test_file("grammar.py"))
         tree = parser.file_input()
         listener = Python3Listener()
         walker = ParseTreeWalker()
@@ -137,14 +137,14 @@ class AstGeneratorTests(PyHoleTest):
             self.asts_equal(python_tree, generated_tree)
 
     def test_ast_generator_complex(self):
-        parser = self.setup(get_test_file("test_grammar.py"))
+        parser = self.setup(get_test_file("grammar.py"))
         tree = parser.file_input()
 
         generated_tree = PyHoleVisitor().visit(tree)
 
-        inp_file = get_test_file("test_grammar.py")
+        inp_file = get_test_file("grammar.py")
         with open(inp_file) as file:
-            python_tree = ast.parse(file.read(), get_test_file("test_grammar.py"))
+            python_tree = ast.parse(file.read(), get_test_file("grammar.py"))
             self.asts_equal(python_tree, generated_tree)
 
 
