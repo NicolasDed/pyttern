@@ -3,16 +3,22 @@
 import re
 from ast import *
 
-from .HoleAST import *
+from .HoleAST import (HoleAST, StrictMode, MultipleCompoundHole,
+                      CompoundHole, VarHole, DoubleHole, SimpleHole)
 from .antlr.Python3Parser import Python3Parser
-from .antlr.Python3Visitor import Python3Visitor
+from .antlr.Python3ParserVisitor import Python3ParserVisitor
 
 # Bind operator to their classes
 operators = {
+    'unary': {
+        '+': UAdd,
+        '-': USub,
+        '~': Invert
+    },
     'and': And,
     'or': Or,
-    '+': UAdd,
-    '-': USub,
+    '+': Add,
+    '-': Sub,
     '*': Mult,
     '@': MatMult,
     '/': Div,
@@ -62,7 +68,7 @@ def set_lineno(obj, ctx):
 
 # This class defines a complete generic visitor for a parse tree produced by Python3Parser.
 
-class PyHoleVisitor(Python3Visitor):
+class PyHoleVisitor(Python3ParserVisitor):
 
     def __init__(self):
         super().__init__()
@@ -134,17 +140,17 @@ class PyHoleVisitor(Python3Visitor):
     # Visit a parse tree produced by Python3Parser#async_funcdef.
     def visitAsync_funcdef(self, ctx: Python3Parser.Async_funcdefContext):
         funcdef = ctx.funcdef()
-        name = funcdef.NAME().accept(self)
+        name = funcdef.name().accept(self)
         args = funcdef.parameters().accept(self)
         returns = funcdef.test().accept(self) if funcdef.test() is not None else None
-        suite = funcdef.suite().accept(self)
+        block = funcdef.block().accept(self)
 
-        return AsyncFunctionDef(name, args, suite, [], returns=returns)
+        return AsyncFunctionDef(name, args, block, [], returns=returns)
 
     # Visit a parse tree produced by Python3Parser#funcdef.
     def visitFuncdef(self, ctx: Python3Parser.FuncdefContext):
-        if ctx.NAME() is not None:
-            name = ctx.NAME().accept(self)
+        if ctx.name() is not None:
+            name = ctx.name().accept(self)
         elif ctx.simple_hole() is not None:
             name = ctx.simple_hole().accept(self)
         else:
@@ -153,15 +159,15 @@ class PyHoleVisitor(Python3Visitor):
 
         returns = ctx.test().accept(self) if ctx.test() is not None else None
 
-        suite = ctx.suite().accept(self)
+        block = ctx.block().accept(self)
 
-        return FunctionDef(name, args, suite, [], returns=returns)
+        return FunctionDef(name, args, block, [], returns=returns)
 
     # Visit a parse tree produced by Python3Parser#parameters.
     def visitParameters(self, ctx: Python3Parser.ParametersContext):
         args = ctx.typedargslist()
-        return args.accept(self) if args is not None else arguments(posonlyargs=[], args=[], kwonlyargs=[],
-                                                                    kw_defaults=[], defaults=[])
+        return args.accept(self) if args is not None \
+            else arguments(posonlyargs=[], args=[], kwonlyargs=[], kw_defaults=[], defaults=[])
 
     # Visit a parse tree produced by Python3Parser#typedargslist.
     def visitTypedargslist(self, ctx: Python3Parser.TypedargslistContext):
@@ -203,14 +209,19 @@ class PyHoleVisitor(Python3Visitor):
             kwonlyargs = []
             kw_defaults = []
 
-        return arguments(posonlyargs=[], args=args, vararg=vararg, kwonlyargs=kwonlyargs, kw_defaults=kw_defaults,
-                         kwarg=kwarg, defaults=defaults)
+        return arguments(posonlyargs=[],
+                         args=args,
+                         vararg=vararg,
+                         kwonlyargs=kwonlyargs,
+                         kw_defaults=kw_defaults,
+                         kwarg=kwarg,
+                         defaults=defaults)
 
     # Visit a parse tree produced by Python3Parser#tfpdef.
     def visitTfpdef(self, ctx: Python3Parser.TfpdefContext):
         if ctx.expr_hole() is not None:
             return ctx.expr_hole().accept(self)
-        val = ctx.NAME().accept(self)
+        val = ctx.name().accept(self)
         type_val = ctx.test().accept(self) if ctx.test() is not None else None
         return arg(val, annotation=type_val)
 
@@ -254,24 +265,30 @@ class PyHoleVisitor(Python3Visitor):
             kwonlyargs = []
             kw_defaults = []
 
-        return arguments(posonlyargs=[], args=args, vararg=vararg, kwonlyargs=kwonlyargs, kw_defaults=kw_defaults,
-                         kwarg=kwarg, defaults=defaults)
+        return arguments(
+            posonlyargs=[],
+            args=args,
+            vararg=vararg,
+            kwonlyargs=kwonlyargs,
+            kw_defaults=kw_defaults,
+            kwarg=kwarg,
+            defaults=defaults)
 
     # Visit a parse tree produced by Python3Parser#vfpdef.
     def visitVfpdef(self, ctx: Python3Parser.VfpdefContext):
-        return arg(ctx.NAME().accept(self))
+        return arg(ctx.name().accept(self))
 
     # Visit a parse tree produced by Python3Parser#stmt.
     def visitStmt(self, ctx: Python3Parser.StmtContext):
         return self.visitChildren(ctx)
 
     # Visit a parse tree produced by Python3Parser#simple_stmt.
-    def visitSimple_stmt(self, ctx: Python3Parser.Simple_stmtContext):
-        vals = list(map(lambda x: x.accept(self), ctx.small_stmt()))
+    def visitSimple_stmts(self, ctx: Python3Parser.Simple_stmtsContext):
+        vals = list(map(lambda x: x.accept(self), ctx.simple_stmt()))
         return vals if len(vals) > 1 else vals[0]
 
     # Visit a parse tree produced by Python3Parser#small_stmt.
-    def visitSmall_stmt(self, ctx: Python3Parser.Small_stmtContext):
+    def visitSimple_stmt(self, ctx: Python3Parser.Simple_stmtContext):
         return self.visitChildren(ctx)
 
     # Visit a parse tree produced by Python3Parser#expr_stmt.
@@ -395,7 +412,7 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#import_as_name.
     def visitImport_as_name(self, ctx: Python3Parser.Import_as_nameContext):
-        names = ctx.NAME()
+        names = ctx.name()
         name = names[0].accept(self)
         if len(names) == 2:
             al = names[1].accept(self)
@@ -405,7 +422,7 @@ class PyHoleVisitor(Python3Visitor):
     # Visit a parse tree produced by Python3Parser#dotted_as_name.
     def visitDotted_as_name(self, ctx: Python3Parser.Dotted_as_nameContext):
         name = ctx.dotted_name().accept(self)
-        asname_node = ctx.NAME()
+        asname_node = ctx.name()
         if asname_node is not None:
             asname = asname_node.accept(self)
             return alias(name, asname)
@@ -421,13 +438,13 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#dotted_name.
     def visitDotted_name(self, ctx: Python3Parser.Dotted_nameContext):
-        names = list(map(lambda x: x.accept(self), ctx.NAME()))
+        names = list(map(lambda x: x.accept(self), ctx.name()))
         return '.'.join(names)
 
     # Visit a parse tree produced by Python3Parser#global_stmt.
     def visitGlobal_stmt(self, ctx: Python3Parser.Global_stmtContext):
         names = []
-        name = ctx.NAME()
+        name = ctx.name()
         for i in range(len(name)):
             c = name[i]
             child_result = c.accept(self)
@@ -438,7 +455,7 @@ class PyHoleVisitor(Python3Visitor):
     # Visit a parse tree produced by Python3Parser#nonlocal_stmt.
     def visitNonlocal_stmt(self, ctx: Python3Parser.Nonlocal_stmtContext):
         names = []
-        name = ctx.NAME()
+        name = ctx.name()
         for i in range(len(name)):
             c = name[i]
             child_result = c.accept(self)
@@ -466,43 +483,43 @@ class PyHoleVisitor(Python3Visitor):
     # Visit a parse tree produced by Python3Parser#if_stmt.
     def visitIf_stmt(self, ctx: Python3Parser.If_stmtContext):
         tests = ctx.test()
-        suites = ctx.suite()
-        if len(suites) > len(tests):
-            cur_suite = suites.pop().accept(self)
+        blocks = ctx.block()
+        if len(blocks) > len(tests):
+            cur_block = blocks.pop().accept(self)
         else:
-            cur_suite = []
+            cur_block = []
         while len(tests) > 0:
             cur_test = tests.pop().accept(self)
-            body = suites.pop().accept(self)
-            ifstmt = If(cur_test, body, cur_suite)
-            cur_suite = [ifstmt]
+            body = blocks.pop().accept(self)
+            ifstmt = If(cur_test, body, cur_block)
+            cur_block = [ifstmt]
 
-        return cur_suite[0]
+        return cur_block[0]
 
     # Visit a parse tree produced by Python3Parser#while_stmt.
     def visitWhile_stmt(self, ctx: Python3Parser.While_stmtContext):
         test = ctx.test().accept(self)
-        suite = ctx.suite(0).accept(self)
+        block = ctx.block(0).accept(self)
 
         if ctx.ELSE() is None:
-            return While(test, suite, [])
+            return While(test, block, [])
 
-        else_body = ctx.suite(1).accept(self)
-        return While(test, suite, else_body)
+        else_body = ctx.block(1).accept(self)
+        return While(test, block, else_body)
 
     # Visit a parse tree produced by Python3Parser#for_stmt.
     def visitFor_stmt(self, ctx: Python3Parser.For_stmtContext):
         target = ctx.exprlist().accept(self)
         ite = ctx.testlist().accept(self)
-        body = ctx.suite(0).accept(self)
-        orelse = ctx.suite(1).accept(self) if ctx.suite(1) is not None else []
+        body = ctx.block(0).accept(self)
+        orelse = ctx.block(1).accept(self) if ctx.block(1) is not None else []
         return For(target, ite, body, orelse)
 
     # Visit a parse tree produced by Python3Parser#try_stmt.
     def visitTry_stmt(self, ctx: Python3Parser.Try_stmtContext):
-        suites = ctx.suite()
-        suites.reverse()
-        body = suites.pop().accept(self)
+        blocks = ctx.block()
+        blocks.reverse()
+        body = blocks.pop().accept(self)
 
         handlers = []
         clauses = ctx.except_clause()
@@ -510,29 +527,29 @@ class PyHoleVisitor(Python3Visitor):
             c = clauses[i]
             child_result = c.accept(self)
             handler = child_result
-            handler.body = suites.pop().accept(self)
+            handler.body = blocks.pop().accept(self)
             handlers.append(handler)
 
         if len(handlers) == 0:
-            final = suites.pop().accept(self)
+            final = blocks.pop().accept(self)
             return Try(body, handlers, [], final)
 
-        if len(suites) == 0:
+        if len(blocks) == 0:
             return Try(body, handlers, [], [])
 
-        next_body = suites.pop().accept(self)
+        next_body = blocks.pop().accept(self)
         if ctx.ELSE() is None:
             return Try(body, handlers, [], next_body)
         elif ctx.FINALLY() is None:
             return Try(body, handlers, next_body, [])
         else:
-            final_body = suites.pop().accept(self)
+            final_body = blocks.pop().accept(self)
             return Try(body, handlers, next_body, final_body)
 
     # Visit a parse tree produced by Python3Parser#with_stmt.
     def visitWith_stmt(self, ctx: Python3Parser.With_stmtContext):
         items = list(map(lambda x: x.accept(self), ctx.with_item()))
-        body = ctx.suite().accept(self)
+        body = ctx.block().accept(self)
         return With(items, body)
 
     # Visit a parse tree produced by Python3Parser#with_item.
@@ -550,17 +567,17 @@ class PyHoleVisitor(Python3Visitor):
             return ExceptHandler()
 
         test = ctx.test().accept(self)
-        if ctx.NAME() is None:
+        if ctx.name() is None:
             return ExceptHandler(test)
 
-        name = ctx.NAME().accept(self)
+        name = ctx.name().accept(self)
         return ExceptHandler(test, name)
 
-    # Visit a parse tree produced by Python3Parser#suite.
-    def visitSuite(self, ctx: Python3Parser.SuiteContext):
-        if ctx.simple_stmt() is not None:
-            stmt = ctx.simple_stmt().accept(self)
-            return stmt if isinstance(stmt, list) else [stmt]
+    # Visit a parse tree produced by Python3Parser#block.
+    def visitBlock(self, ctx: Python3Parser.BlockContext):
+        if ctx.simple_stmts() is not None:
+            stmts = ctx.simple_stmts().accept(self)
+            return stmts if isinstance(stmts, list) else [stmts]
 
         body = []
         stmts = ctx.stmt()
@@ -669,88 +686,31 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#expr.
     def visitExpr(self, ctx: Python3Parser.ExprContext):
-        expr = ctx.xor_expr()
-        if len(expr) == 1:
-            return self.visitChildren(ctx)
+        if ctx.atom_expr() is not None:
+            return ctx.atom_expr().accept(self)
 
-        left = expr.pop(0).accept(self)
-        while len(expr) > 0:
-            right = expr.pop(0).accept(self)
-            left = BinOp(left, BitOr(), right)
-
-        return left
-
-    # Visit a parse tree produced by Python3Parser#xor_expr.
-    def visitXor_expr(self, ctx: Python3Parser.Xor_exprContext):
-        expr = ctx.and_expr()
-        if len(expr) == 1:
-            return self.visitChildren(ctx)
-
-        left = expr.pop(0).accept(self)
-        while len(expr) > 0:
-            right = expr.pop(0).accept(self)
-            left = BinOp(left, BitXor(), right)
-
-        return left
-
-    # Visit a parse tree produced by Python3Parser#and_expr.
-    def visitAnd_expr(self, ctx: Python3Parser.And_exprContext):
-        expr = ctx.shift_expr()
-        if len(expr) == 1:
-            return self.visitChildren(ctx)
-
-        left = expr.pop(0).accept(self)
-        while len(expr) > 0:
-            right = expr.pop(0).accept(self)
-            left = BinOp(left, BitAnd(), right)
-
-        return left
-
-    def visitMulti_expr(self, ctx):
-        children = list(ctx.getChildren())
-        left = children.pop(0).accept(self)
-        while len(children) > 0:
-            op_sign = children.pop(0).accept(self)
-            op = operators.get(op_sign)()
-            right = children.pop(0).accept(self)
-            left = BinOp(left, op, right)
-
-        return left
-
-    # Visit a parse tree produced by Python3Parser#shift_expr.
-    def visitShift_expr(self, ctx: Python3Parser.Shift_exprContext):
-        return self.visitMulti_expr(ctx)
-
-    # Visit a parse tree produced by Python3Parser#arith_expr.
-    def visitArith_expr(self, ctx: Python3Parser.Arith_exprContext):
-        children = list(ctx.getChildren())
-        left = children.pop(0).accept(self)
-        while len(children) > 0:
-            op_sign = children.pop(0).accept(self)
-            op = Add() if op_sign == "+" else Sub()
-            right = children.pop(0).accept(self)
-            left = BinOp(left, op, right)
-
-        return left
-
-    # Visit a parse tree produced by Python3Parser#term.
-    def visitTerm(self, ctx: Python3Parser.TermContext):
-        return self.visitMulti_expr(ctx)
-
-    # Visit a parse tree produced by Python3Parser#factor.
-    def visitFactor(self, ctx: Python3Parser.FactorContext):
         if ctx.getChildCount() == 1:
             return self.visitChildren(ctx)
 
-        op_sign = ctx.getChild(0).accept(self)
-        op = operators.get(op_sign)()
-        expr = ctx.getChild(1).accept(self)
+        exprs = ctx.expr()
+        if len(exprs) > 1:
+            left = ctx.getChild(0).accept(self)
+            op_sign = ctx.getChild(1).accept(self)
+            op = operators.get(op_sign)()
+            right = ctx.getChild(2).accept(self)
 
-        return UnaryOp(op, expr)
+            return BinOp(left, op, right)
 
-    # Visit a parse tree produced by Python3Parser#power.
-    def visitPower(self, ctx: Python3Parser.PowerContext):
-        return self.visitMulti_expr(ctx)
+        children = list(ctx.getChildren())
+        expr = children.pop()
+        operand = expr.accept(self)
+        while len(children) > 0:
+            op_sign = children.pop().accept(self)
+            op = operators.get('unary').get(op_sign)()
+            operand = UnaryOp(op, operand)
+
+        return operand
+
 
     # Visit a parse tree produced by Python3Parser#atom_expr.
     def visitAtom_expr(self, ctx: Python3Parser.Atom_exprContext):
@@ -805,8 +765,8 @@ class PyHoleVisitor(Python3Visitor):
 
     # Visit a parse tree produced by Python3Parser#atom.
     def visitAtom(self, ctx: Python3Parser.AtomContext):
-        if ctx.NAME() is not None:
-            return Name(ctx.NAME().accept(self), self.context)
+        if ctx.name() is not None:
+            return Name(ctx.name().accept(self), self.context)
 
         if ctx.NUMBER() is not None:
             num = ctx.NUMBER().accept(self).lower()
@@ -861,14 +821,15 @@ class PyHoleVisitor(Python3Visitor):
             return val
 
         if ctx.OPEN_BRACK() is not None:
-            val = ctx.testlist_comp().accept(self) if ctx.testlist_comp() is not None else List(elts=[],
-                                                                                                ctx=self.context)
+            val = ctx.testlist_comp().accept(self) if ctx.testlist_comp() is not None \
+                else List(elts=[], ctx=self.context)
             if not isinstance(val, List) and not isinstance(val, ListComp):
                 val = List(elts=[val], ctx=self.context)
             return val
 
         if ctx.OPEN_BRACE() is not None:
-            val = ctx.dictorsetmaker().accept(self) if ctx.dictorsetmaker() is not None else Dict(keys=[], values=[])
+            val = ctx.dictorsetmaker().accept(self) if ctx.dictorsetmaker() is not None \
+                else Dict(keys=[], values=[])
             return val
 
         return self.visitChildren(ctx)
@@ -891,8 +852,8 @@ class PyHoleVisitor(Python3Visitor):
             val = ctx.subscriptlist().accept(self)
             return Subscript(value=None, slice=val, ctx=self.context)
 
-        if ctx.NAME() is not None:
-            val = ctx.NAME().accept(self)
+        if ctx.name() is not None:
+            val = ctx.name().accept(self)
             return Attribute(value=None, attr=val, ctx=self.context)
 
         if ctx.arglist() is not None:
@@ -909,12 +870,12 @@ class PyHoleVisitor(Python3Visitor):
     # Visit a parse tree produced by Python3Parser#subscriptlist.
     def visitSubscriptlist(self, ctx: Python3Parser.SubscriptlistContext):
         if ctx.getChildCount() > 1:
-            return Tuple(list(map(lambda x: x.accept(self), ctx.subscript())), self.context)
+            return Tuple(list(map(lambda x: x.accept(self), ctx.subscript_())), self.context)
         else:
-            return ctx.subscript(0).accept(self)
+            return ctx.subscript_(0).accept(self)
 
     # Visit a parse tree produced by Python3Parser#subscript.
-    def visitSubscript(self, ctx: Python3Parser.SubscriptContext):
+    def visitSubscript_(self, ctx: Python3Parser.Subscript_Context):
         if ctx.COLON() is not None:
             lower = None
             step = ctx.sliceop().accept(self) if ctx.sliceop() is not None else None
@@ -961,27 +922,27 @@ class PyHoleVisitor(Python3Visitor):
             keys = tests[::2]
             values = tests[1::2]
             return Dict(keys=keys, values=values)
-        else:
-            # we have a set
-            if ctx.comp_for() is not None:
-                # we have a set comprehension
-                comp = ctx.comp_for().accept(self)
-                elt = ctx.test().accept(self)
-                return SetComp(elt=elt, generators=comp)
 
-            vals = self.visitChildren(ctx)
-            if not isinstance(vals, list):
-                vals = [vals]
-            else:
-                vals = list(filter(lambda x: x != ',', vals))
-            return Set(elts=vals)
+        # we have a set
+        if ctx.comp_for() is not None:
+            # we have a set comprehension
+            comp = ctx.comp_for().accept(self)
+            elt = ctx.test().accept(self)
+            return SetComp(elt=elt, generators=comp)
+
+        vals = self.visitChildren(ctx)
+        if not isinstance(vals, list):
+            vals = [vals]
+        else:
+            vals = list(filter(lambda x: x != ',', vals))
+        return Set(elts=vals)
 
     # Visit a parse tree produced by Python3Parser#classdef.
     def visitClassdef(self, ctx: Python3Parser.ClassdefContext):
-        name = ctx.NAME().accept(self)
+        name = ctx.name().accept(self)
         args = ctx.arglist()
         args = args.accept(self) if args is not None else []
-        body = ctx.suite().accept(self)
+        body = ctx.block().accept(self)
         return ClassDef(name, args, [], body, [])
 
     # Visit a parse tree produced by Python3Parser#arglist.
@@ -1081,19 +1042,19 @@ class PyHoleVisitor(Python3Visitor):
         return self.visitChildren(ctx)
 
     def visitVar_hole(self, ctx: Python3Parser.Var_holeContext):
-        name = ctx.NAME().accept(self)
+        name = ctx.name().accept(self)
         hole = VarHole(name)
         set_lineno(hole, ctx)
         return hole
 
     def visitSimple_compound_hole(self, ctx: Python3Parser.Simple_compound_holeContext):
-        body = ctx.suite().accept(self)
+        body = ctx.block().accept(self)
         hole = CompoundHole(body)
         set_lineno(hole, ctx)
         return hole
 
     def visitMultiple_compound_hole(self, ctx: Python3Parser.Multiple_compound_holeContext):
-        body = ctx.suite().accept(self)
+        body = ctx.block().accept(self)
         hole = MultipleCompoundHole(body)
         set_lineno(hole, ctx)
         return hole

@@ -1,1 +1,2 @@
-antlr4 -Dlanguage=Python3 -visitor Python3.g4
+python transformGrammar.py
+antlr4 -Dlanguage=Python3 -visitor *.g4

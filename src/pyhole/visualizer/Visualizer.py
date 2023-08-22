@@ -49,8 +49,8 @@ def match_to_hml(matcher: PatternMatch, code: str, pattern: str) -> ElementTree:
             for match in remove_overlap(match_i):
                 text = ET.SubElement(pre, "span")
                 text.text = line[start:match[0]]
-                b = ET.SubElement(pre, "b")
-                b.text = line[match[0]:match[1]]
+                b_elem = ET.SubElement(pre, "b")
+                b_elem.text = line[match[0]:match[1]]
                 start = match[1]
             text = ET.SubElement(pre, 'span')
             text.text = line[start:]

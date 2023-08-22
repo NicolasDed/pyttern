@@ -8,11 +8,12 @@ class Python3ErrorListener(ErrorListener):
         self._line = -1
 
     def syntaxError(self, recognizer, offending_symbol, line, column, msg, e):
-        self.output.write(msg)
-        self._symbol = offending_symbol.text
-        self._line = line
-        stack = recognizer.getRuleInvocationStack()
-        stack.reverse()
+        if self._line == -1:
+            self.output.write(msg)
+            self._symbol = offending_symbol.text
+            self._line = line
+            stack = recognizer.getRuleInvocationStack()
+            stack.reverse()
         
     @property
     def symbol(self):

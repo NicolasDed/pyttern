@@ -4,14 +4,14 @@ import io
 from unittest import TestCase
 
 import pytest
-from antlr4 import *
+from antlr4 import ParseTreeListener, TerminalNode, FileStream, CommonTokenStream, ParseTreeWalker
 
 from pyhole.Matcher import Matcher, match_files, match_wildcards
 from pyhole.PyHoleErrorListener import Python3ErrorListener
 from pyhole.PyHoleVisitor import PyHoleVisitor
 from pyhole.antlr.Python3Lexer import Python3Lexer
-from pyhole.antlr.Python3Listener import Python3Listener
 from pyhole.antlr.Python3Parser import Python3Parser
+from pyhole.antlr.Python3ParserListener import Python3ParserListener
 from pyhole.visualizer import Visualizer
 from . import tests_files, visu
 
@@ -37,18 +37,17 @@ class Printer(ParseTreeListener):
 
 class PyHoleTest(TestCase):
     def setup(self, path):
-        input = FileStream(path, encoding="utf-8")
-        lexer = Python3Lexer(input)
+        file_stream = FileStream(path, encoding="utf-8")
+        lexer = Python3Lexer(file_stream)
         stream = CommonTokenStream(lexer)
 
         # print out the token parsing
         parser = Python3Parser(stream)
 
-        self.output = io.StringIO()
-        self.error = io.StringIO()
+        error = io.StringIO()
 
         parser.removeErrorListeners()
-        self.errorListener = Python3ErrorListener(self.error)
+        self.errorListener = Python3ErrorListener(error)
         parser.addErrorListener(self.errorListener)
         return parser
 
@@ -58,7 +57,7 @@ class Python3ParserTests(PyHoleTest):
     def test_python3_test_grammar(self):
         parser = self.setup(get_test_file("grammar.py"))
         tree = parser.file_input()
-        listener = Python3Listener()
+        listener = Python3ParserListener()
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
         self.assertEqual(len(self.errorListener.symbol), 0)
@@ -66,7 +65,7 @@ class Python3ParserTests(PyHoleTest):
     def test_python3_test_student(self):
         parser = self.setup(get_test_file("q1_3.py"))
         tree = parser.file_input()
-        listener = Python3Listener()  # Printer()
+        listener = Python3ParserListener()  # Printer()
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
         self.assertEqual(len(self.errorListener.symbol), 0)
@@ -105,7 +104,8 @@ class AstGeneratorTests(PyHoleTest):
                 path.pop()
 
         elif isinstance(expected_ast, list):
-            self.assertEqual(len(actual_ast), len(expected_ast), f"{str(actual_ast)} != {str(expected_ast)} : {path}")
+            self.assertEqual(len(actual_ast), len(expected_ast),
+                             f"{str(actual_ast)} != {str(expected_ast)} : {path}")
             for expected_value, actual_value in zip(expected_ast, actual_ast):
                 self.__asts_equal(expected_value, actual_value, path)
 
@@ -121,7 +121,7 @@ class AstGeneratorTests(PyHoleTest):
         generated_tree = PyHoleVisitor().visit(tree)
 
         inp_file = get_test_file("q1_3.py")
-        with open(inp_file) as file:
+        with open(inp_file, encoding="utf-8") as file:
             python_tree = ast.parse(file.read(), get_test_file("q1_3.py"))
             self.asts_equal(python_tree, generated_tree)
 
@@ -132,7 +132,7 @@ class AstGeneratorTests(PyHoleTest):
         generated_tree = PyHoleVisitor().visit(tree)
 
         inp_file = get_test_file("q1_254.py")
-        with open(inp_file) as file:
+        with open(inp_file, encoding="utf-8") as file:
             python_tree = ast.parse(file.read(), get_test_file("q1_254.py"))
             self.asts_equal(python_tree, generated_tree)
 
@@ -143,15 +143,15 @@ class AstGeneratorTests(PyHoleTest):
         generated_tree = PyHoleVisitor().visit(tree)
 
         inp_file = get_test_file("grammar.py")
-        with open(inp_file) as file:
+        with open(inp_file, encoding="utf-8") as file:
             python_tree = ast.parse(file.read(), get_test_file("grammar.py"))
             self.asts_equal(python_tree, generated_tree)
 
 
 def show_pattern(code_path, pattern_path, match, output_file):
-    with open(code_path) as file:
+    with open(code_path, encoding="utf-8") as file:
         code = file.read()
-        with open(pattern_path) as pattern_file:
+        with open(pattern_path, encoding="utf-8") as pattern_file:
             pattern = pattern_file.read()
             html = Visualizer.match_to_hml(match, code, pattern)
             html.write(output_file)
@@ -201,7 +201,7 @@ class TestASTHole(PyHoleTest):
         wrong_generated_tree = PyHoleVisitor().visit(wrong_tree)
 
         inp_file = get_test_file("q1_3.py")
-        with open(inp_file) as file:
+        with open(inp_file, encoding="utf-8") as file:
             python_tree = ast.parse(file.read(), get_test_file("q1_3.py"))
             val = Matcher().match(generated_tree, python_tree)
             self.assertTrue(val)
