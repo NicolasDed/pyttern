@@ -127,7 +127,7 @@ patterns: open_sequence_pattern | pattern ;
 pattern: as_pattern | or_pattern ;
 as_pattern: or_pattern 'as' pattern_capture_target ;
 or_pattern: closed_pattern ('|' closed_pattern)* ;
-closed_pattern: literal_pattern | capture_pattern | wildcard_pattern | value_pattern | group_pattern | sequence_pattern | mapping_pattern | class_pattern ;
+closed_pattern: wildcard_pattern | literal_pattern | capture_pattern | value_pattern | group_pattern | sequence_pattern | mapping_pattern | class_pattern ;
 literal_pattern: signed_number { self.CannotBePlusMinus() }? | complex_number | strings | 'None' | 'True' | 'False' ;
 literal_expr: signed_number { self.CannotBePlusMinus() }? | complex_number | strings | 'None' | 'True' | 'False' ;
 complex_number: signed_real_number '+' imaginary_number 
@@ -146,7 +146,7 @@ name_or_attr: attr | name ;
 group_pattern: '(' pattern ')' ;
 sequence_pattern:
     '[' maybe_sequence_pattern? ']' 
-    | '(' open_sequence_pattern? ')' 
+    | '(' open_sequence_pattern? ')'
     ;
 open_sequence_pattern: maybe_star_pattern ',' maybe_sequence_pattern? ;
 maybe_sequence_pattern: maybe_star_pattern (',' maybe_star_pattern)* ','? ;

@@ -1,5 +1,6 @@
 # Generated from Python3.g4 by ANTLR 4.7.2
 
+import codecs
 import re
 from ast import *
 
@@ -70,6 +71,159 @@ def set_lineno(obj, ctx):
 
 class PyHoleVisitor(Python3ParserVisitor):
 
+    def visitMatch_stmt(self, ctx: Python3Parser.Match_stmtContext):
+        subject = ctx.subject_expr().accept(self)
+        body = []
+        cases = ctx.case_block()
+        for i in range(len(cases)):
+            c = cases[i]
+            child_result = c.accept(self)
+            if child_result is not None:
+                if isinstance(child_result, list):
+                    body.extend(child_result)
+                else:
+                    body.append(child_result)
+            else:
+                print(type(c))
+
+        return Match(subject, body)
+
+    def visitSubject_expr(self, ctx: Python3Parser.Subject_exprContext):
+        return super().visitSubject_expr(ctx)
+
+    def visitStar_named_expressions(self, ctx: Python3Parser.Star_named_expressionsContext):
+        return super().visitStar_named_expressions(ctx)
+
+    def visitStar_named_expression(self, ctx: Python3Parser.Star_named_expressionContext):
+        return super().visitStar_named_expression(ctx)
+
+    def visitCase_block(self, ctx: Python3Parser.Case_blockContext):
+        patterns = ctx.patterns().accept(self)
+        guard = ctx.guard().accept(self) if ctx.guard() is not None else None
+        body = ctx.block().accept(self)
+        return match_case(patterns, guard, body)
+
+    def visitGuard(self, ctx: Python3Parser.GuardContext):
+        return ctx.test().accept(self)
+
+    def visitAs_pattern(self, ctx: Python3Parser.As_patternContext):
+        or_pattern = ctx.or_pattern().accept(self)
+        target = ctx.pattern_capture_target().accept(self)
+        return MatchAs(or_pattern, target)
+
+    def visitOr_pattern(self, ctx: Python3Parser.Or_patternContext):
+        if len(ctx.closed_pattern()) == 1:
+            return ctx.closed_pattern(0).accept(self)
+
+        patterns = list(map(lambda x: x.accept(self), ctx.closed_pattern()))
+        return MatchOr(patterns)
+
+    def visitClosed_pattern(self, ctx: Python3Parser.Closed_patternContext):
+        return super().visitClosed_pattern(ctx)
+
+    def visitLiteral_pattern(self, ctx: Python3Parser.Literal_patternContext):
+        expr = ctx.getChild(0).accept(self)
+        return MatchValue(expr)
+
+    def visitLiteral_expr(self, ctx: Python3Parser.Literal_exprContext):
+        return super().visitLiteral_expr(ctx)
+
+    def visitComplex_number(self, ctx: Python3Parser.Complex_numberContext):
+        return super().visitComplex_number(ctx)
+
+    def visitSigned_number(self, ctx: Python3Parser.Signed_numberContext):
+        return super().visitSigned_number(ctx)
+
+    def visitSigned_real_number(self, ctx: Python3Parser.Signed_real_numberContext):
+        return super().visitSigned_real_number(ctx)
+
+    def visitReal_number(self, ctx: Python3Parser.Real_numberContext):
+        return super().visitReal_number(ctx)
+
+    def visitImaginary_number(self, ctx: Python3Parser.Imaginary_numberContext):
+        return super().visitImaginary_number(ctx)
+
+    def visitCapture_pattern(self, ctx: Python3Parser.Capture_patternContext):
+        pattern = ctx.pattern_capture_target().accept(self)
+        return MatchAs(name=pattern)
+
+    def visitPattern_capture_target(self, ctx: Python3Parser.Pattern_capture_targetContext):
+        return super().visitPattern_capture_target(ctx)
+
+    def visitWildcard_pattern(self, ctx: Python3Parser.Wildcard_patternContext):
+        return MatchAs(None)
+
+    def visitValue_pattern(self, ctx: Python3Parser.Value_patternContext):
+        return super().visitValue_pattern(ctx)
+
+    def visitAttr(self, ctx: Python3Parser.AttrContext):
+        return super().visitAttr(ctx)
+
+    def visitName_or_attr(self, ctx: Python3Parser.Name_or_attrContext):
+        return super().visitName_or_attr(ctx)
+
+    def visitGroup_pattern(self, ctx: Python3Parser.Group_patternContext):
+        return super().visitGroup_pattern(ctx)
+
+    def visitSequence_pattern(self, ctx: Python3Parser.Sequence_patternContext):
+        from .antlr import Python3Parser
+        sequence_patterns = ctx.getChild(0,
+                                         (Python3Parser.Maybe_sequence_patternContext,
+                                          Python3Parser.Open_sequence_patternContext))
+        if sequence_patterns is None:
+            return MatchSequence()
+
+        patterns = sequence_patterns.accept(self)
+        return MatchSequence(patterns)
+
+    def visitOpen_sequence_pattern(self, ctx: Python3Parser.Open_sequence_patternContext):
+        return super().visitOpen_sequence_pattern(ctx)
+
+    def visitMaybe_sequence_pattern(self, ctx: Python3Parser.Maybe_sequence_patternContext):
+        maybe_star_patterns = [maybe_start_pattern.accept(self) for maybe_start_pattern in ctx.maybe_star_pattern()]
+        return maybe_star_patterns
+
+    def visitMaybe_star_pattern(self, ctx: Python3Parser.Maybe_star_patternContext):
+        return super().visitMaybe_star_pattern(ctx)
+
+    def visitStar_pattern(self, ctx: Python3Parser.Star_patternContext):
+        name = ctx.getChild(1).accept(self)
+        return MatchStar(name)
+
+    def visitMapping_pattern(self, ctx: Python3Parser.Mapping_patternContext):
+        return super().visitMapping_pattern(ctx)
+
+    def visitItems_pattern(self, ctx: Python3Parser.Items_patternContext):
+        return super().visitItems_pattern(ctx)
+
+    def visitKey_value_pattern(self, ctx: Python3Parser.Key_value_patternContext):
+        return super().visitKey_value_pattern(ctx)
+
+    def visitDouble_star_pattern(self, ctx: Python3Parser.Double_star_patternContext):
+        return super().visitDouble_star_pattern(ctx)
+
+    def visitClass_pattern(self, ctx: Python3Parser.Class_patternContext):
+        return super().visitClass_pattern(ctx)
+
+    def visitPositional_patterns(self, ctx: Python3Parser.Positional_patternsContext):
+        return super().visitPositional_patterns(ctx)
+
+    def visitKeyword_patterns(self, ctx: Python3Parser.Keyword_patternsContext):
+        return super().visitKeyword_patterns(ctx)
+
+    def visitKeyword_pattern(self, ctx: Python3Parser.Keyword_patternContext):
+        return super().visitKeyword_pattern(ctx)
+
+    def visitName(self, ctx: Python3Parser.NameContext):
+        if ctx.UNDERSCORE() is not None:
+            return '_'
+        return super().visitName(ctx)
+
+    def visitStrings(self, ctx: Python3Parser.StringsContext):
+        strings = [self.cleanup_string(s.accept(self)) for s in ctx.STRING()]
+        string = ''.join(strings)
+        return Constant(string)
+
     def __init__(self):
         super().__init__()
         self.context = Load()
@@ -124,6 +278,7 @@ class PyHoleVisitor(Python3ParserVisitor):
         if ctx.OPEN_PAREN() is not None:
             args = ctx.arglist().accept(self) if ctx.arglist() is not None else []
             return Call(name, args, [])
+        if isinstance(name, Attribute): return name
         return Name(name, self.context)
 
     # Visit a parse tree produced by Python3Parser#decorators.
@@ -345,13 +500,14 @@ class PyHoleVisitor(Python3ParserVisitor):
 
     # Visit a parse tree produced by Python3Parser#del_stmt.
     def visitDel_stmt(self, ctx: Python3Parser.Del_stmtContext):
+        prev_ctx = self.context
         self.context = Del()
         exprs = ctx.exprlist().accept(self)
         if not isinstance(exprs, Tuple):
             exprs = [exprs]
         else:
             exprs = exprs.elts
-        self.context = Load()
+        self.context = prev_ctx
         return Delete(exprs)
 
     # Visit a parse tree produced by Python3Parser#pass_stmt.
@@ -405,10 +561,11 @@ class PyHoleVisitor(Python3ParserVisitor):
 
     # Visit a parse tree produced by Python3Parser#import_from.
     def visitImport_from(self, ctx: Python3Parser.Import_fromContext):
-        module = ctx.dotted_name().accept(self)
+        level = len(ctx.DOT()) + 3*len(ctx.ELLIPSIS())
+        module = ctx.dotted_name().accept(self) if ctx.dotted_name() is not None else None
         import_as = ctx.import_as_names()
         names = import_as.accept(self) if import_as is not None else [alias("*")]
-        return ImportFrom(module, names, 0)
+        return ImportFrom(module, names, level)
 
     # Visit a parse tree produced by Python3Parser#import_as_name.
     def visitImport_as_name(self, ctx: Python3Parser.Import_as_nameContext):
@@ -746,6 +903,28 @@ class PyHoleVisitor(Python3ParserVisitor):
         # Replace all escaped characters with their corresponding values
         return escape_pattern.sub(lambda match: escape_dict[match.group()], string)
 
+    @staticmethod
+    def transform_string_to_byte(input_str):
+        try:
+            # Use eval to interpret the input string as a Python literal
+            value = eval(input_str)
+
+            # Check if the value is a bytes-like object (bytes or bytearray)
+            if isinstance(value, (bytes, bytearray)):
+                # Convert the value to a formatted byte string
+                formatted_bytes = b"".join([bytes([byte]) for byte in value])
+                return formatted_bytes
+            else:
+                raise ValueError("Input string is not a valid bytes literal.")
+        except Exception as e:
+            raise ValueError("Error transforming the input string to a byte string.") from e
+
+    @staticmethod
+    def convert_escape_sequence(input_string):
+        # Decode the string using 'unicode_escape' codec
+        output_string = codecs.decode(input_string, 'unicode_escape')
+        return output_string
+
     def cleanup_string(self, string):
         # remove potential '\' at the end of each line
         regex = r"\\\n"
@@ -756,10 +935,13 @@ class PyHoleVisitor(Python3ParserVisitor):
             string = self.replace_escaped_chars(string)
         elif string.startswith('"') or string.startswith("'"):
             string = string[1:-1]
+            if "\\x" in string:
+                string = self.convert_escape_sequence(string)
             string = self.replace_escaped_chars(string)
         elif string.startswith('b'):
+            string = self.transform_string_to_byte(string.encode())
+        elif string.startswith('r'):
             string = string[2:-1]
-            string = bytes(string, 'utf-8')
 
         return string
 
@@ -848,6 +1030,8 @@ class PyHoleVisitor(Python3ParserVisitor):
 
     # Visit a parse tree produced by Python3Parser#trailer.
     def visitTrailer(self, ctx: Python3Parser.TrailerContext):
+        prev_ctx = self.context
+        self.context = Load()
         if ctx.subscriptlist() is not None:
             val = ctx.subscriptlist().accept(self)
             return Subscript(value=None, slice=val, ctx=self.context)
@@ -869,10 +1053,16 @@ class PyHoleVisitor(Python3ParserVisitor):
 
     # Visit a parse tree produced by Python3Parser#subscriptlist.
     def visitSubscriptlist(self, ctx: Python3Parser.SubscriptlistContext):
+        prev_ctx = self.context
+        self.context = Load()
         if ctx.getChildCount() > 1:
-            return Tuple(list(map(lambda x: x.accept(self), ctx.subscript_())), self.context)
+            subscriptlist = list(map(lambda x: x.accept(self), ctx.subscript_()))
+            self.context = prev_ctx
+            return Tuple(subscriptlist, self.context)
         else:
-            return ctx.subscript_(0).accept(self)
+            subscript = ctx.subscript_(0).accept(self)
+            self.context = prev_ctx
+            return subscript
 
     # Visit a parse tree produced by Python3Parser#subscript.
     def visitSubscript_(self, ctx: Python3Parser.Subscript_Context):
@@ -927,7 +1117,7 @@ class PyHoleVisitor(Python3ParserVisitor):
         if ctx.comp_for() is not None:
             # we have a set comprehension
             comp = ctx.comp_for().accept(self)
-            elt = ctx.test().accept(self)
+            elt = ctx.test(0).accept(self)
             return SetComp(elt=elt, generators=comp)
 
         vals = self.visitChildren(ctx)

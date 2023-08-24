@@ -474,8 +474,8 @@ def serializedATN():
         buf.write("u\3\2\2\2\u036c\u0371\5x=\2\u036d\u036e\7D\2\2\u036e\u0370")
         buf.write("\5x=\2\u036f\u036d\3\2\2\2\u0370\u0373\3\2\2\2\u0371\u036f")
         buf.write("\3\2\2\2\u0371\u0372\3\2\2\2\u0372w\3\2\2\2\u0373\u0371")
-        buf.write("\3\2\2\2\u0374\u037d\5z>\2\u0375\u037d\5\u0088E\2\u0376")
-        buf.write("\u037d\5\u008cG\2\u0377\u037d\5\u008eH\2\u0378\u037d\5")
+        buf.write("\3\2\2\2\u0374\u037d\5\u008cG\2\u0375\u037d\5z>\2\u0376")
+        buf.write("\u037d\5\u0088E\2\u0377\u037d\5\u008eH\2\u0378\u037d\5")
         buf.write("\u0094K\2\u0379\u037d\5\u0096L\2\u037a\u037d\5\u00a0Q")
         buf.write("\2\u037b\u037d\5\u00a8U\2\u037c\u0374\3\2\2\2\u037c\u0375")
         buf.write("\3\2\2\2\u037c\u0376\3\2\2\2\u037c\u0377\3\2\2\2\u037c")
@@ -6076,16 +6076,16 @@ class Python3Parser ( Python3ParserBase ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
+        def wildcard_pattern(self):
+            return self.getTypedRuleContext(Python3Parser.Wildcard_patternContext,0)
+
+
         def literal_pattern(self):
             return self.getTypedRuleContext(Python3Parser.Literal_patternContext,0)
 
 
         def capture_pattern(self):
             return self.getTypedRuleContext(Python3Parser.Capture_patternContext,0)
-
-
-        def wildcard_pattern(self):
-            return self.getTypedRuleContext(Python3Parser.Wildcard_patternContext,0)
 
 
         def value_pattern(self):
@@ -6139,19 +6139,19 @@ class Python3Parser ( Python3ParserBase ):
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 882
-                self.literal_pattern()
+                self.wildcard_pattern()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 883
-                self.capture_pattern()
+                self.literal_pattern()
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 884
-                self.wildcard_pattern()
+                self.capture_pattern()
                 pass
 
             elif la_ == 4:
