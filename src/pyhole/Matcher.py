@@ -129,18 +129,6 @@ class Matcher:
         if type(pattern_node) != type(code_node):
             return self.soft_next_node_match(pattern_node)
 
-        """
-        if isinstance(pattern_node, AST):
-            for const_pattern, const_code in zip(iter_constant_field(pattern_node), iter_constant_field(code_node)):
-                if isinstance(const_pattern, SimpleHole):
-                    self.pattern_walker.next()
-                    continue
-                if const_pattern != const_code:
-                    if isinstance(const_code, ast.Load) or isinstance(const_code, ast.Store):
-                        continue
-                    self.error = f"Cannot match const {const_pattern} with {const_code}"
-                    return False
-        """
         if not isinstance(pattern_node, (AST, HoleAST, list)):
             if pattern_node == code_node:
                 return self.simple_match()
