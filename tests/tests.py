@@ -404,6 +404,12 @@ class TestASTHole(PyHoleTest):
         res, det = match_files(pattern_path, code_path, match_details=True)
         assert res, det
 
+    def test_observer_pattern(self):
+        pattern_path = get_test_file("observer.pyh")
+        code_path = get_test_file("observer/Subject.py")
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert res, det
+
 
 class TestVisualizer(TestCase):
 
