@@ -7,7 +7,8 @@ from .PatternMatch import PatternMatch
 from .PyHoleParser import parse_pyhole
 
 
-def match_wildcards(path_pattern_with_wildcards, path_python_with_wildcard, strict_match=False, match_details=False):
+def match_wildcards(path_pattern_with_wildcards, path_python_with_wildcard,
+                    strict_match=False, match_details=False):
     ret = {}
     patterns_filespath = glob.glob(str(path_pattern_with_wildcards))
     pythons_filespath = glob.glob(str(path_python_with_wildcard))
@@ -22,7 +23,7 @@ def match_wildcards(path_pattern_with_wildcards, path_python_with_wildcard, stri
 
 def match_files(path_pattern, path_python, strict_match=False, match_details=False):
     pattern = parse_pyhole(path_pattern)
-    with open(path_python) as file:
+    with open(path_python, encoding="utf-8") as file:
         source = file.read()
         python = ast.parse(source, path_python)
 
@@ -35,8 +36,8 @@ def match_files(path_pattern, path_python, strict_match=False, match_details=Fal
 
     if res:
         return res, matcher.pattern_match
-    else:
-        return res, matcher.error
+
+    return res, matcher.error
 
 
 class Matcher:
@@ -73,8 +74,8 @@ class Matcher:
     def match(self, pattern, code):
         if self.strict:
             return self.match_strict(pattern, code)
-        else:
-            return self.match_soft(pattern, code)
+
+        return self.match_soft(pattern, code)
 
     def simple_match(self):
         pattern_node = self.pattern_walker.next()
@@ -84,8 +85,8 @@ class Matcher:
             code_node = self.code_walker.next()
             if code_node is not None:
                 return False
-            else:
-                return True
+
+            return True
 
         code_node = self.code_walker.next()
         if code_node is None:
@@ -93,8 +94,8 @@ class Matcher:
 
         if self.strict:
             return self.strict_rec_match(pattern_node, code_node)
-        else:
-            return self.soft_rec_match(pattern_node, code_node)
+
+        return self.soft_rec_match(pattern_node, code_node)
 
     def rec_match(self, pattern, code):
         if self.strict:
@@ -157,8 +158,8 @@ class Matcher:
         if not self.simple_match():
             self.load_walkers_state()
             return self.soft_next_node_match(pattern_node)
-        else:
-            return True
+
+        return True
 
     def match_strict(self, pattern, code):
         ast.fix_missing_locations(pattern)
@@ -174,17 +175,6 @@ class Matcher:
         if type(pattern_node) != type(code_node):
             self.error = f"Cannot match {pattern_node} with {code_node}"
             return False
-        """
-        if isinstance(pattern_node, AST):
-            for const_pattern, const_code in zip(iter_constant_field(pattern_node), iter_constant_field(code_node)):
-                if isinstance(const_pattern, SimpleHole):
-                    self.pattern_walker.next()
-                    continue
-                if const_pattern != const_code and not (
-                        isinstance(const_code, ast.Load) or isinstance(const_code, ast.Store)):
-                    self.error = f"Cannot match const {const_pattern} with {const_code}"
-                    return False
-        """
         if not isinstance(pattern_node, (AST, HoleAST, list)):
             if pattern_node == code_node:
                 return self.simple_match()

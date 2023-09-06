@@ -1,4 +1,4 @@
-# Generated from Python3.g4 by ANTLR 4.7.2
+# Generated from Python3Parser.g4 by ANTLR 4.7.2
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .Python3Parser import Python3Parser
@@ -7,7 +7,7 @@ else:
 
 # This class defines a complete generic visitor for a parse tree produced by Python3Parser.
 
-class Python3Visitor(ParseTreeVisitor):
+class Python3ParserVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by Python3Parser#single_input.
     def visitSingle_input(self, ctx:Python3Parser.Single_inputContext):
@@ -79,13 +79,13 @@ class Python3Visitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#simple_stmt.
-    def visitSimple_stmt(self, ctx:Python3Parser.Simple_stmtContext):
+    # Visit a parse tree produced by Python3Parser#simple_stmts.
+    def visitSimple_stmts(self, ctx:Python3Parser.Simple_stmtsContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#small_stmt.
-    def visitSmall_stmt(self, ctx:Python3Parser.Small_stmtContext):
+    # Visit a parse tree produced by Python3Parser#simple_stmt.
+    def visitSimple_stmt(self, ctx:Python3Parser.Simple_stmtContext):
         return self.visitChildren(ctx)
 
 
@@ -249,8 +249,198 @@ class Python3Visitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#suite.
-    def visitSuite(self, ctx:Python3Parser.SuiteContext):
+    # Visit a parse tree produced by Python3Parser#block.
+    def visitBlock(self, ctx:Python3Parser.BlockContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#match_stmt.
+    def visitMatch_stmt(self, ctx:Python3Parser.Match_stmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#subject_expr.
+    def visitSubject_expr(self, ctx:Python3Parser.Subject_exprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#star_named_expressions.
+    def visitStar_named_expressions(self, ctx:Python3Parser.Star_named_expressionsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#star_named_expression.
+    def visitStar_named_expression(self, ctx:Python3Parser.Star_named_expressionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#case_block.
+    def visitCase_block(self, ctx:Python3Parser.Case_blockContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#guard.
+    def visitGuard(self, ctx:Python3Parser.GuardContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#patterns.
+    def visitPatterns(self, ctx:Python3Parser.PatternsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#pattern.
+    def visitPattern(self, ctx:Python3Parser.PatternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#as_pattern.
+    def visitAs_pattern(self, ctx:Python3Parser.As_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#or_pattern.
+    def visitOr_pattern(self, ctx:Python3Parser.Or_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#closed_pattern.
+    def visitClosed_pattern(self, ctx:Python3Parser.Closed_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#literal_pattern.
+    def visitLiteral_pattern(self, ctx:Python3Parser.Literal_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#literal_expr.
+    def visitLiteral_expr(self, ctx:Python3Parser.Literal_exprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#complex_number.
+    def visitComplex_number(self, ctx:Python3Parser.Complex_numberContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#signed_number.
+    def visitSigned_number(self, ctx:Python3Parser.Signed_numberContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#signed_real_number.
+    def visitSigned_real_number(self, ctx:Python3Parser.Signed_real_numberContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#real_number.
+    def visitReal_number(self, ctx:Python3Parser.Real_numberContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#imaginary_number.
+    def visitImaginary_number(self, ctx:Python3Parser.Imaginary_numberContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#capture_pattern.
+    def visitCapture_pattern(self, ctx:Python3Parser.Capture_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#pattern_capture_target.
+    def visitPattern_capture_target(self, ctx:Python3Parser.Pattern_capture_targetContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#wildcard_pattern.
+    def visitWildcard_pattern(self, ctx:Python3Parser.Wildcard_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#value_pattern.
+    def visitValue_pattern(self, ctx:Python3Parser.Value_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#attr.
+    def visitAttr(self, ctx:Python3Parser.AttrContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#name_or_attr.
+    def visitName_or_attr(self, ctx:Python3Parser.Name_or_attrContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#group_pattern.
+    def visitGroup_pattern(self, ctx:Python3Parser.Group_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#sequence_pattern.
+    def visitSequence_pattern(self, ctx:Python3Parser.Sequence_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#open_sequence_pattern.
+    def visitOpen_sequence_pattern(self, ctx:Python3Parser.Open_sequence_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#maybe_sequence_pattern.
+    def visitMaybe_sequence_pattern(self, ctx:Python3Parser.Maybe_sequence_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#maybe_star_pattern.
+    def visitMaybe_star_pattern(self, ctx:Python3Parser.Maybe_star_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#star_pattern.
+    def visitStar_pattern(self, ctx:Python3Parser.Star_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#mapping_pattern.
+    def visitMapping_pattern(self, ctx:Python3Parser.Mapping_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#items_pattern.
+    def visitItems_pattern(self, ctx:Python3Parser.Items_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#key_value_pattern.
+    def visitKey_value_pattern(self, ctx:Python3Parser.Key_value_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#double_star_pattern.
+    def visitDouble_star_pattern(self, ctx:Python3Parser.Double_star_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#class_pattern.
+    def visitClass_pattern(self, ctx:Python3Parser.Class_patternContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#positional_patterns.
+    def visitPositional_patterns(self, ctx:Python3Parser.Positional_patternsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#keyword_patterns.
+    def visitKeyword_patterns(self, ctx:Python3Parser.Keyword_patternsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#keyword_pattern.
+    def visitKeyword_pattern(self, ctx:Python3Parser.Keyword_patternContext):
         return self.visitChildren(ctx)
 
 
@@ -309,41 +499,6 @@ class Python3Visitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#xor_expr.
-    def visitXor_expr(self, ctx:Python3Parser.Xor_exprContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by Python3Parser#and_expr.
-    def visitAnd_expr(self, ctx:Python3Parser.And_exprContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by Python3Parser#shift_expr.
-    def visitShift_expr(self, ctx:Python3Parser.Shift_exprContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by Python3Parser#arith_expr.
-    def visitArith_expr(self, ctx:Python3Parser.Arith_exprContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by Python3Parser#term.
-    def visitTerm(self, ctx:Python3Parser.TermContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by Python3Parser#factor.
-    def visitFactor(self, ctx:Python3Parser.FactorContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by Python3Parser#power.
-    def visitPower(self, ctx:Python3Parser.PowerContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by Python3Parser#atom_expr.
     def visitAtom_expr(self, ctx:Python3Parser.Atom_exprContext):
         return self.visitChildren(ctx)
@@ -351,6 +506,11 @@ class Python3Visitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by Python3Parser#atom.
     def visitAtom(self, ctx:Python3Parser.AtomContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#name.
+    def visitName(self, ctx:Python3Parser.NameContext):
         return self.visitChildren(ctx)
 
 
@@ -369,8 +529,8 @@ class Python3Visitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#subscript.
-    def visitSubscript(self, ctx:Python3Parser.SubscriptContext):
+    # Visit a parse tree produced by Python3Parser#subscript_.
+    def visitSubscript_(self, ctx:Python3Parser.Subscript_Context):
         return self.visitChildren(ctx)
 
 
@@ -436,6 +596,11 @@ class Python3Visitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by Python3Parser#yield_arg.
     def visitYield_arg(self, ctx:Python3Parser.Yield_argContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#strings.
+    def visitStrings(self, ctx:Python3Parser.StringsContext):
         return self.visitChildren(ctx)
 
 

@@ -48,8 +48,8 @@ class Link:
     def __str__(self):
         if isinstance(self._pattern_node, HoleAST):
             return f"({type(self._code_node).__name__}, {self._pattern_node})"
-        else:
-            return f"({type(self._code_node).__name__}, {type(self._pattern_node).__name__})"
+
+        return f"({type(self._code_node).__name__}, {type(self._pattern_node).__name__})"
 
     def __repr__(self):
         return repr(str(self))

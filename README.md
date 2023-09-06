@@ -89,7 +89,7 @@ Those two piece of codes describes the same patterns. The soft match hide the mu
 In a soft match, there is flexibility in code structure and the possibility of including extra code, 
 as long as the main matching criteria are met. In contrast, in a strict match, precise adherence to the defined 
 code structure and syntax is necessary, and there is limited to no allowance for variations or 
-additional code outside of the specified structure.
+additional code outside the specified structure.
 
 ### The wildcard `?:[]`
 The wildcard `?![]` is a notation that allows for a combination of strict and soft matching in certain parts of a code pattern. It is useful when you want to perform a soft match but have a strict match requirement within a specific section of code.
@@ -103,7 +103,7 @@ def foo(bar):
         ?![
         if ?:
            ?var += 1 
-        ]
+        !]
 ```
 In this pattern, the wildcard ? represents a placeholder for any valid Python identifier. The ?var = 0 statement assigns the value 0 to a variable, which we'll refer to as x. The for ? in range(?*) loop iterates over a range of values, which we'll refer to as y. Finally, ?![ ... ] represents a strict match requirement that enforces certain code within the if statement.
 
