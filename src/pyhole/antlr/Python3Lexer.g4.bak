@@ -210,8 +210,8 @@ IDIV_ASSIGN : '//=';
 
 // Rules for wildcards
 WILDCARD : '?';
-WILDCARD_STRICT_START : '?![' ;
-WILDCARD_STRICT_END : '!]' ;
+SYNTAX_STRICT_START : '![' ;
+SYNTAX_STRICT_END : '!]' ;
 
 
 SKIP_
@@ -365,6 +365,7 @@ fragment COMMENT
 fragment LINE_JOINING
  : '\\' SPACES? ( '\r'? '\n' | '\r' | '\f')
  ;
+
 
 
 //$ curl https://www.unicode.org/Public/13.0.0/ucd/PropList.txt | grep Other_ID_

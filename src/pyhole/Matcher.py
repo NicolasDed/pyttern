@@ -99,8 +99,7 @@ class Matcher:
 
     def rec_match(self, pattern, code):
         if self.strict:
-            self.match = self.strict_rec_match(pattern, code)
-            return self.match
+            return self.strict_rec_match(pattern, code)
         else:
             return self.soft_rec_match(pattern, code)
 

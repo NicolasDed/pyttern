@@ -171,14 +171,14 @@ class TestAstGenerator(PyHoleTest):
 
     @pytest.mark.parametrize("file_path", discover_files(get_test_file("small")))
     def test_ast_generator_small(self, file_path):
-            parser = self.setup_stream(file_path)
-            tree = parser.file_input()
+        parser = self.setup_stream(file_path)
+        tree = parser.file_input()
 
-            generated_tree = PyHoleVisitor().visit(tree)
+        generated_tree = PyHoleVisitor().visit(tree)
 
-            with open(file_path, encoding="utf-8") as file:
-                python_tree = ast.parse(file.read(), file_path)
-                self.asts_equal(python_tree, generated_tree)
+        with open(file_path, encoding="utf-8") as file:
+            python_tree = ast.parse(file.read(), file_path)
+            self.asts_equal(python_tree, generated_tree)
 
     @pytest.mark.parametrize("file_path", discover_files(get_test_file("large")))
     def test_ast_generator_large(self, file_path):
@@ -354,7 +354,7 @@ class TestASTHole(PyHoleTest):
                      (pkg_resources.files(visu) / "strict.html"))
 
         val, match = match_files(get_test_file("strictModeTest.pyh"),
-                                 get_test_file("q1_560.py"),
+                                 get_test_file("strictModeNok.py"),
                                  strict_match=False, match_details=True)
         assert not val, match
 

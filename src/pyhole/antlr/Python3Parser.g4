@@ -145,7 +145,7 @@ attr: name ('.' name)+ ;
 name_or_attr: attr | name ;
 group_pattern: '(' pattern ')' ;
 sequence_pattern:
-    '[' maybe_sequence_pattern? ']' 
+    OPEN_BRACK maybe_sequence_pattern? CLOSE_BRACK
     | '(' open_sequence_pattern? ')'
     ;
 open_sequence_pattern: maybe_star_pattern ',' maybe_sequence_pattern? ;
@@ -207,13 +207,13 @@ expr:
 //power: atom_expr ('**' factor)?;
 atom_expr: AWAIT? atom trailer*;
 atom: '(' (yield_expr|testlist_comp)? ')'
-   | '[' testlist_comp? ']'
+   | OPEN_BRACK testlist_comp? CLOSE_BRACK
    | '{' dictorsetmaker? '}'
    | expr_hole
    | name | NUMBER | STRING+ | '...' | 'None' | 'True' | 'False' ;
 name : NAME | '_' | 'match' ;
 testlist_comp: (test|star_expr) ( comp_for | (',' (test|star_expr))* ','? );
-trailer: '(' arglist? ')' | '[' subscriptlist ']' | '.' name ;
+trailer: '(' arglist? ')' | OPEN_BRACK subscriptlist CLOSE_BRACK | '.' name ;
 subscriptlist: subscript_ (',' subscript_)* ','?;
 subscript_: test | test? ':' test? sliceop?;
 sliceop: ':' test?;
@@ -263,4 +263,4 @@ var_hole: '?' name;
 compound_hole: simple_compound_hole | multiple_compound_hole | strict_mode;
 simple_compound_hole: '?' ':' block;
 multiple_compound_hole: '?' '*' ':' block;
-strict_mode: '?![' (simple_stmts | NEWLINE stmt+)  '!]' NEWLINE;
+strict_mode: '?![' (simple_stmts | NEWLINE stmt+) ']' NEWLINE;

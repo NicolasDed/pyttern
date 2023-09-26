@@ -12,7 +12,7 @@ else:
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3k")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3j")
         buf.write("\u05e6\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4\23\t\23")
@@ -761,7 +761,7 @@ def serializedATN():
         buf.write("\5\34\17\2\u05dc\u05db\3\2\2\2\u05dd\u05de\3\2\2\2\u05de")
         buf.write("\u05dc\3\2\2\2\u05de\u05df\3\2\2\2\u05df\u05e1\3\2\2\2")
         buf.write("\u05e0\u05d9\3\2\2\2\u05e0\u05da\3\2\2\2\u05e1\u05e2\3")
-        buf.write("\2\2\2\u05e2\u05e3\7i\2\2\u05e3\u05e4\7.\2\2\u05e4\u00ff")
+        buf.write("\2\2\2\u05e2\u05e3\7C\2\2\u05e3\u05e4\7.\2\2\u05e4\u00ff")
         buf.write("\3\2\2\2\u00d3\u0105\u0109\u010b\u0114\u011d\u0120\u0127")
         buf.write("\u012d\u0136\u013b\u0142\u0149\u014f\u0153\u0159\u015f")
         buf.write("\u0163\u016a\u016c\u016e\u0173\u0175\u0177\u017b\u0181")
@@ -817,7 +817,7 @@ class Python3Parser ( Python3ParserBase ):
                      "'>='", "'<='", "'<>'", "'!='", "'@'", "'->'", "'+='", 
                      "'-='", "'*='", "'@='", "'/='", "'%='", "'&='", "'|='", 
                      "'^='", "'<<='", "'>>='", "'**='", "'//='", "'?'", 
-                     "'?!['", "'!]'" ]
+                     "'?!['" ]
 
     symbolicNames = [ "<INVALID>", "INDENT", "DEDENT", "STRING", "NUMBER", 
                       "INTEGER", "AND", "AS", "ASSERT", "ASYNC", "AWAIT", 
@@ -839,8 +839,8 @@ class Python3Parser ( Python3ParserBase ):
                       "SUB_ASSIGN", "MULT_ASSIGN", "AT_ASSIGN", "DIV_ASSIGN", 
                       "MOD_ASSIGN", "AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN", 
                       "LEFT_SHIFT_ASSIGN", "RIGHT_SHIFT_ASSIGN", "POWER_ASSIGN", 
-                      "IDIV_ASSIGN", "WILDCARD", "WILDCARD_STRICT_START", 
-                      "WILDCARD_STRICT_END", "SKIP_", "UNKNOWN_CHAR" ]
+                      "IDIV_ASSIGN", "WILDCARD", "SYNTAX_STRICT_START", 
+                      "SKIP_", "UNKNOWN_CHAR" ]
 
     RULE_single_input = 0
     RULE_file_input = 1
@@ -1105,10 +1105,9 @@ class Python3Parser ( Python3ParserBase ):
     POWER_ASSIGN=99
     IDIV_ASSIGN=100
     WILDCARD=101
-    WILDCARD_STRICT_START=102
-    WILDCARD_STRICT_END=103
-    SKIP_=104
-    UNKNOWN_CHAR=105
+    SYNTAX_STRICT_START=102
+    SKIP_=103
+    UNKNOWN_CHAR=104
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -1244,7 +1243,7 @@ class Python3Parser ( Python3ParserBase ):
             self.state = 265
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << Python3Parser.STRING) | (1 << Python3Parser.NUMBER) | (1 << Python3Parser.ASSERT) | (1 << Python3Parser.ASYNC) | (1 << Python3Parser.AWAIT) | (1 << Python3Parser.BREAK) | (1 << Python3Parser.CLASS) | (1 << Python3Parser.CONTINUE) | (1 << Python3Parser.DEF) | (1 << Python3Parser.DEL) | (1 << Python3Parser.FALSE) | (1 << Python3Parser.FOR) | (1 << Python3Parser.FROM) | (1 << Python3Parser.GLOBAL) | (1 << Python3Parser.IF) | (1 << Python3Parser.IMPORT) | (1 << Python3Parser.LAMBDA) | (1 << Python3Parser.MATCH) | (1 << Python3Parser.NONE) | (1 << Python3Parser.NONLOCAL) | (1 << Python3Parser.NOT) | (1 << Python3Parser.PASS) | (1 << Python3Parser.RAISE) | (1 << Python3Parser.RETURN) | (1 << Python3Parser.TRUE) | (1 << Python3Parser.TRY) | (1 << Python3Parser.UNDERSCORE) | (1 << Python3Parser.WHILE) | (1 << Python3Parser.WITH) | (1 << Python3Parser.YIELD) | (1 << Python3Parser.NEWLINE) | (1 << Python3Parser.NAME) | (1 << Python3Parser.ELLIPSIS) | (1 << Python3Parser.STAR) | (1 << Python3Parser.OPEN_PAREN))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (Python3Parser.OPEN_BRACK - 64)) | (1 << (Python3Parser.ADD - 64)) | (1 << (Python3Parser.MINUS - 64)) | (1 << (Python3Parser.NOT_OP - 64)) | (1 << (Python3Parser.OPEN_BRACE - 64)) | (1 << (Python3Parser.AT - 64)) | (1 << (Python3Parser.WILDCARD - 64)) | (1 << (Python3Parser.WILDCARD_STRICT_START - 64)))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << Python3Parser.STRING) | (1 << Python3Parser.NUMBER) | (1 << Python3Parser.ASSERT) | (1 << Python3Parser.ASYNC) | (1 << Python3Parser.AWAIT) | (1 << Python3Parser.BREAK) | (1 << Python3Parser.CLASS) | (1 << Python3Parser.CONTINUE) | (1 << Python3Parser.DEF) | (1 << Python3Parser.DEL) | (1 << Python3Parser.FALSE) | (1 << Python3Parser.FOR) | (1 << Python3Parser.FROM) | (1 << Python3Parser.GLOBAL) | (1 << Python3Parser.IF) | (1 << Python3Parser.IMPORT) | (1 << Python3Parser.LAMBDA) | (1 << Python3Parser.MATCH) | (1 << Python3Parser.NONE) | (1 << Python3Parser.NONLOCAL) | (1 << Python3Parser.NOT) | (1 << Python3Parser.PASS) | (1 << Python3Parser.RAISE) | (1 << Python3Parser.RETURN) | (1 << Python3Parser.TRUE) | (1 << Python3Parser.TRY) | (1 << Python3Parser.UNDERSCORE) | (1 << Python3Parser.WHILE) | (1 << Python3Parser.WITH) | (1 << Python3Parser.YIELD) | (1 << Python3Parser.NEWLINE) | (1 << Python3Parser.NAME) | (1 << Python3Parser.ELLIPSIS) | (1 << Python3Parser.STAR) | (1 << Python3Parser.OPEN_PAREN))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (Python3Parser.OPEN_BRACK - 64)) | (1 << (Python3Parser.ADD - 64)) | (1 << (Python3Parser.MINUS - 64)) | (1 << (Python3Parser.NOT_OP - 64)) | (1 << (Python3Parser.OPEN_BRACE - 64)) | (1 << (Python3Parser.AT - 64)) | (1 << (Python3Parser.WILDCARD - 64)) | (1 << (Python3Parser.SYNTAX_STRICT_START - 64)))) != 0):
                 self.state = 263
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
@@ -1252,7 +1251,7 @@ class Python3Parser ( Python3ParserBase ):
                     self.state = 261
                     self.match(Python3Parser.NEWLINE)
                     pass
-                elif token in [Python3Parser.STRING, Python3Parser.NUMBER, Python3Parser.ASSERT, Python3Parser.ASYNC, Python3Parser.AWAIT, Python3Parser.BREAK, Python3Parser.CLASS, Python3Parser.CONTINUE, Python3Parser.DEF, Python3Parser.DEL, Python3Parser.FALSE, Python3Parser.FOR, Python3Parser.FROM, Python3Parser.GLOBAL, Python3Parser.IF, Python3Parser.IMPORT, Python3Parser.LAMBDA, Python3Parser.MATCH, Python3Parser.NONE, Python3Parser.NONLOCAL, Python3Parser.NOT, Python3Parser.PASS, Python3Parser.RAISE, Python3Parser.RETURN, Python3Parser.TRUE, Python3Parser.TRY, Python3Parser.UNDERSCORE, Python3Parser.WHILE, Python3Parser.WITH, Python3Parser.YIELD, Python3Parser.NAME, Python3Parser.ELLIPSIS, Python3Parser.STAR, Python3Parser.OPEN_PAREN, Python3Parser.OPEN_BRACK, Python3Parser.ADD, Python3Parser.MINUS, Python3Parser.NOT_OP, Python3Parser.OPEN_BRACE, Python3Parser.AT, Python3Parser.WILDCARD, Python3Parser.WILDCARD_STRICT_START]:
+                elif token in [Python3Parser.STRING, Python3Parser.NUMBER, Python3Parser.ASSERT, Python3Parser.ASYNC, Python3Parser.AWAIT, Python3Parser.BREAK, Python3Parser.CLASS, Python3Parser.CONTINUE, Python3Parser.DEF, Python3Parser.DEL, Python3Parser.FALSE, Python3Parser.FOR, Python3Parser.FROM, Python3Parser.GLOBAL, Python3Parser.IF, Python3Parser.IMPORT, Python3Parser.LAMBDA, Python3Parser.MATCH, Python3Parser.NONE, Python3Parser.NONLOCAL, Python3Parser.NOT, Python3Parser.PASS, Python3Parser.RAISE, Python3Parser.RETURN, Python3Parser.TRUE, Python3Parser.TRY, Python3Parser.UNDERSCORE, Python3Parser.WHILE, Python3Parser.WITH, Python3Parser.YIELD, Python3Parser.NAME, Python3Parser.ELLIPSIS, Python3Parser.STAR, Python3Parser.OPEN_PAREN, Python3Parser.OPEN_BRACK, Python3Parser.ADD, Python3Parser.MINUS, Python3Parser.NOT_OP, Python3Parser.OPEN_BRACE, Python3Parser.AT, Python3Parser.WILDCARD, Python3Parser.SYNTAX_STRICT_START]:
                     self.state = 262
                     self.stmt()
                     pass
@@ -4501,7 +4500,7 @@ class Python3Parser ( Python3ParserBase ):
             self.state = 707
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [Python3Parser.WILDCARD, Python3Parser.WILDCARD_STRICT_START]:
+            if token in [Python3Parser.WILDCARD, Python3Parser.SYNTAX_STRICT_START]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 696
                 self.compound_hole()
@@ -5360,7 +5359,7 @@ class Python3Parser ( Python3ParserBase ):
                     self.state = 811 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << Python3Parser.STRING) | (1 << Python3Parser.NUMBER) | (1 << Python3Parser.ASSERT) | (1 << Python3Parser.ASYNC) | (1 << Python3Parser.AWAIT) | (1 << Python3Parser.BREAK) | (1 << Python3Parser.CLASS) | (1 << Python3Parser.CONTINUE) | (1 << Python3Parser.DEF) | (1 << Python3Parser.DEL) | (1 << Python3Parser.FALSE) | (1 << Python3Parser.FOR) | (1 << Python3Parser.FROM) | (1 << Python3Parser.GLOBAL) | (1 << Python3Parser.IF) | (1 << Python3Parser.IMPORT) | (1 << Python3Parser.LAMBDA) | (1 << Python3Parser.MATCH) | (1 << Python3Parser.NONE) | (1 << Python3Parser.NONLOCAL) | (1 << Python3Parser.NOT) | (1 << Python3Parser.PASS) | (1 << Python3Parser.RAISE) | (1 << Python3Parser.RETURN) | (1 << Python3Parser.TRUE) | (1 << Python3Parser.TRY) | (1 << Python3Parser.UNDERSCORE) | (1 << Python3Parser.WHILE) | (1 << Python3Parser.WITH) | (1 << Python3Parser.YIELD) | (1 << Python3Parser.NAME) | (1 << Python3Parser.ELLIPSIS) | (1 << Python3Parser.STAR) | (1 << Python3Parser.OPEN_PAREN))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (Python3Parser.OPEN_BRACK - 64)) | (1 << (Python3Parser.ADD - 64)) | (1 << (Python3Parser.MINUS - 64)) | (1 << (Python3Parser.NOT_OP - 64)) | (1 << (Python3Parser.OPEN_BRACE - 64)) | (1 << (Python3Parser.AT - 64)) | (1 << (Python3Parser.WILDCARD - 64)) | (1 << (Python3Parser.WILDCARD_STRICT_START - 64)))) != 0)):
+                    if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << Python3Parser.STRING) | (1 << Python3Parser.NUMBER) | (1 << Python3Parser.ASSERT) | (1 << Python3Parser.ASYNC) | (1 << Python3Parser.AWAIT) | (1 << Python3Parser.BREAK) | (1 << Python3Parser.CLASS) | (1 << Python3Parser.CONTINUE) | (1 << Python3Parser.DEF) | (1 << Python3Parser.DEL) | (1 << Python3Parser.FALSE) | (1 << Python3Parser.FOR) | (1 << Python3Parser.FROM) | (1 << Python3Parser.GLOBAL) | (1 << Python3Parser.IF) | (1 << Python3Parser.IMPORT) | (1 << Python3Parser.LAMBDA) | (1 << Python3Parser.MATCH) | (1 << Python3Parser.NONE) | (1 << Python3Parser.NONLOCAL) | (1 << Python3Parser.NOT) | (1 << Python3Parser.PASS) | (1 << Python3Parser.RAISE) | (1 << Python3Parser.RETURN) | (1 << Python3Parser.TRUE) | (1 << Python3Parser.TRY) | (1 << Python3Parser.UNDERSCORE) | (1 << Python3Parser.WHILE) | (1 << Python3Parser.WITH) | (1 << Python3Parser.YIELD) | (1 << Python3Parser.NAME) | (1 << Python3Parser.ELLIPSIS) | (1 << Python3Parser.STAR) | (1 << Python3Parser.OPEN_PAREN))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (Python3Parser.OPEN_BRACK - 64)) | (1 << (Python3Parser.ADD - 64)) | (1 << (Python3Parser.MINUS - 64)) | (1 << (Python3Parser.NOT_OP - 64)) | (1 << (Python3Parser.OPEN_BRACE - 64)) | (1 << (Python3Parser.AT - 64)) | (1 << (Python3Parser.WILDCARD - 64)) | (1 << (Python3Parser.SYNTAX_STRICT_START - 64)))) != 0)):
                         break
 
                 self.state = 813
@@ -11493,11 +11492,11 @@ class Python3Parser ( Python3ParserBase ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def WILDCARD_STRICT_START(self):
-            return self.getToken(Python3Parser.WILDCARD_STRICT_START, 0)
+        def SYNTAX_STRICT_START(self):
+            return self.getToken(Python3Parser.SYNTAX_STRICT_START, 0)
 
-        def WILDCARD_STRICT_END(self):
-            return self.getToken(Python3Parser.WILDCARD_STRICT_END, 0)
+        def CLOSE_BRACK(self):
+            return self.getToken(Python3Parser.CLOSE_BRACK, 0)
 
         def NEWLINE(self, i:int=None):
             if i is None:
@@ -11544,7 +11543,7 @@ class Python3Parser ( Python3ParserBase ):
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 1494
-            self.match(Python3Parser.WILDCARD_STRICT_START)
+            self.match(Python3Parser.SYNTAX_STRICT_START)
             self.state = 1502
             self._errHandler.sync(self)
             token = self._input.LA(1)
@@ -11564,7 +11563,7 @@ class Python3Parser ( Python3ParserBase ):
                     self.state = 1500 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << Python3Parser.STRING) | (1 << Python3Parser.NUMBER) | (1 << Python3Parser.ASSERT) | (1 << Python3Parser.ASYNC) | (1 << Python3Parser.AWAIT) | (1 << Python3Parser.BREAK) | (1 << Python3Parser.CLASS) | (1 << Python3Parser.CONTINUE) | (1 << Python3Parser.DEF) | (1 << Python3Parser.DEL) | (1 << Python3Parser.FALSE) | (1 << Python3Parser.FOR) | (1 << Python3Parser.FROM) | (1 << Python3Parser.GLOBAL) | (1 << Python3Parser.IF) | (1 << Python3Parser.IMPORT) | (1 << Python3Parser.LAMBDA) | (1 << Python3Parser.MATCH) | (1 << Python3Parser.NONE) | (1 << Python3Parser.NONLOCAL) | (1 << Python3Parser.NOT) | (1 << Python3Parser.PASS) | (1 << Python3Parser.RAISE) | (1 << Python3Parser.RETURN) | (1 << Python3Parser.TRUE) | (1 << Python3Parser.TRY) | (1 << Python3Parser.UNDERSCORE) | (1 << Python3Parser.WHILE) | (1 << Python3Parser.WITH) | (1 << Python3Parser.YIELD) | (1 << Python3Parser.NAME) | (1 << Python3Parser.ELLIPSIS) | (1 << Python3Parser.STAR) | (1 << Python3Parser.OPEN_PAREN))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (Python3Parser.OPEN_BRACK - 64)) | (1 << (Python3Parser.ADD - 64)) | (1 << (Python3Parser.MINUS - 64)) | (1 << (Python3Parser.NOT_OP - 64)) | (1 << (Python3Parser.OPEN_BRACE - 64)) | (1 << (Python3Parser.AT - 64)) | (1 << (Python3Parser.WILDCARD - 64)) | (1 << (Python3Parser.WILDCARD_STRICT_START - 64)))) != 0)):
+                    if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << Python3Parser.STRING) | (1 << Python3Parser.NUMBER) | (1 << Python3Parser.ASSERT) | (1 << Python3Parser.ASYNC) | (1 << Python3Parser.AWAIT) | (1 << Python3Parser.BREAK) | (1 << Python3Parser.CLASS) | (1 << Python3Parser.CONTINUE) | (1 << Python3Parser.DEF) | (1 << Python3Parser.DEL) | (1 << Python3Parser.FALSE) | (1 << Python3Parser.FOR) | (1 << Python3Parser.FROM) | (1 << Python3Parser.GLOBAL) | (1 << Python3Parser.IF) | (1 << Python3Parser.IMPORT) | (1 << Python3Parser.LAMBDA) | (1 << Python3Parser.MATCH) | (1 << Python3Parser.NONE) | (1 << Python3Parser.NONLOCAL) | (1 << Python3Parser.NOT) | (1 << Python3Parser.PASS) | (1 << Python3Parser.RAISE) | (1 << Python3Parser.RETURN) | (1 << Python3Parser.TRUE) | (1 << Python3Parser.TRY) | (1 << Python3Parser.UNDERSCORE) | (1 << Python3Parser.WHILE) | (1 << Python3Parser.WITH) | (1 << Python3Parser.YIELD) | (1 << Python3Parser.NAME) | (1 << Python3Parser.ELLIPSIS) | (1 << Python3Parser.STAR) | (1 << Python3Parser.OPEN_PAREN))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (Python3Parser.OPEN_BRACK - 64)) | (1 << (Python3Parser.ADD - 64)) | (1 << (Python3Parser.MINUS - 64)) | (1 << (Python3Parser.NOT_OP - 64)) | (1 << (Python3Parser.OPEN_BRACE - 64)) | (1 << (Python3Parser.AT - 64)) | (1 << (Python3Parser.WILDCARD - 64)) | (1 << (Python3Parser.SYNTAX_STRICT_START - 64)))) != 0)):
                         break
 
                 pass
@@ -11572,7 +11571,7 @@ class Python3Parser ( Python3ParserBase ):
                 raise NoViableAltException(self)
 
             self.state = 1504
-            self.match(Python3Parser.WILDCARD_STRICT_END)
+            self.match(Python3Parser.CLOSE_BRACK)
             self.state = 1505
             self.match(Python3Parser.NEWLINE)
         except RecognitionException as re:

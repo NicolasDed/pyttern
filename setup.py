@@ -1,10 +1,13 @@
 # read the contents of your README file
 from pathlib import Path
 
-from setuptools import setup
+from setuptools import setup, Extension
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
+
+module1 = Extension('wildcard_match',
+                    sources=['src/pyhole/clibrary/wildcard_match.c'])
 
 setup(
     name='python-hole',
@@ -22,5 +25,6 @@ setup(
         "pytest-timeout"
     ],
     long_description=long_description,
-    long_description_content_type='text/markdown'
+    long_description_content_type='text/markdown',
+    ext_modules=[module1]
 )

@@ -210,8 +210,8 @@ IDIV_ASSIGN : '//=';
 
 // Rules for wildcards
 WILDCARD : '?';
-WILDCARD_STRICT_START : '?![' ;
-WILDCARD_STRICT_END : '!]' ;
+SYNTAX_STRICT_START : '?![' ;
+//SYNTAX_STRICT_END : '!]' ;
 
 
 SKIP_
