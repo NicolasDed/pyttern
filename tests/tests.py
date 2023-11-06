@@ -24,7 +24,8 @@ def get_test_file(path):
 def discover_files(directory):
     for root, _, files in os.walk(directory):
         for file in files:
-            yield os.path.join(root, file)
+            if ".pyc" not in file:
+                yield os.path.join(root, file)
 
 
 class Printer(ParseTreeListener):
