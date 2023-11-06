@@ -604,6 +604,11 @@ class Python3ParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by Python3Parser#hole_type.
+    def visitHole_type(self, ctx:Python3Parser.Hole_typeContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by Python3Parser#expr_hole.
     def visitExpr_hole(self, ctx:Python3Parser.Expr_holeContext):
         return self.visitChildren(ctx)

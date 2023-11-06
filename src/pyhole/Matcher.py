@@ -113,7 +113,7 @@ class Matcher:
     def soft_next_node_match(self, pattern_node):
         next_code_node = self.code_walker.next_sibling()
         if next_code_node is None:
-            self.error = f"No next match node"
+            self.error = f"No next match node fo {pattern_node}"
             return False
         return self.soft_rec_match(pattern_node, next_code_node)
 

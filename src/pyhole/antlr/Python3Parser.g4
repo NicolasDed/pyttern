@@ -256,11 +256,12 @@ yield_arg: 'from' test | testlist;
 strings: STRING+ ;
 
 // syntax of holes
+hole_type: '[' name (',' name)* ']';
 expr_hole: simple_hole | double_hole | var_hole;
-simple_hole: '?';
-double_hole: '?' '*';
-var_hole: '?' name;
+simple_hole: '?' hole_type?;
+double_hole: '?' hole_type? '*';
+var_hole: '?' hole_type? name;
 compound_hole: simple_compound_hole | multiple_compound_hole | strict_mode;
-simple_compound_hole: '?' ':' block;
-multiple_compound_hole: '?' '*' ':' block;
+simple_compound_hole: '?' hole_type? ':' block;
+multiple_compound_hole: '?' hole_type? '*' ':' block;
 strict_mode: '?![' (simple_stmts | NEWLINE stmt+) ']' NEWLINE;

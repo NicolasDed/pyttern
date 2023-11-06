@@ -410,6 +410,16 @@ class TestASTHole(PyHoleTest):
         res, det = match_files(pattern_path, code_path, match_details=True)
         assert res, det
 
+    def test_type_wildcard(self):
+        pattern_path = get_test_file("type.pyh")
+        code_path = get_test_file("type.py")
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert res, det
+
+        code_path = get_test_file("no_type.py")
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert not res, det
+
 
 class TestVisualizer(TestCase):
 

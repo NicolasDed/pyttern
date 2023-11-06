@@ -1079,6 +1079,15 @@ class Python3ParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by Python3Parser#hole_type.
+    def enterHole_type(self, ctx:Python3Parser.Hole_typeContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#hole_type.
+    def exitHole_type(self, ctx:Python3Parser.Hole_typeContext):
+        pass
+
+
     # Enter a parse tree produced by Python3Parser#expr_hole.
     def enterExpr_hole(self, ctx:Python3Parser.Expr_holeContext):
         pass

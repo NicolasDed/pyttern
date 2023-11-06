@@ -1,6 +1,6 @@
 def approx_pi(n):
-    pi = 0
+    x = 0
     for i in range(0, n+1):
-        pi = pi + ((-1)**i)/(2*i+1)
-    pi *= 4
-    return pi
+        x = x + ((-1)**i)/(2*i+1)
+    x *= 4
+    return x

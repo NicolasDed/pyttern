@@ -3,11 +3,14 @@ from ast import AST, Name, Load
 
 
 class HoleAST:
-    def __init__(self):
+    def __init__(self, types=None):
         self._attributes = ["lineno", "lineno_end"]
         self._fields = []
         self.lineno = None
         self.lineno_end = None
+        self.types = types
+        if types is not None and type(types) is not list:
+            raise ValueError(f"Argument types should be of type list not {type(types)}.")
 
     def __str__(self):
         return type(self).__name__
@@ -18,12 +21,22 @@ class HoleAST:
     def visit(self, matcher, current_node):
         raise NotImplementedError()
 
+    def check_type(self, node):
+        if self.types is None:
+            return True
+        return f"{type(node).__name__}" in self.types
+
 
 class SimpleHole(HoleAST):
     def __str__(self):
         return 'ANY'
 
     def visit(self, matcher, current_node):
+        if not self.check_type(current_node):
+            matcher.error = (f"Type missmatch, expecting one of {self.types} but got {type(current_node).__name__} "
+                             f"instead")
+            return False
+
         pattern_node = matcher.pattern_walker.next()
         if pattern_node is None:
             code_node = matcher.code_walker.next_sibling()
@@ -62,6 +75,14 @@ class DoubleHole(HoleAST):
         lineno = getattr(current_node, "lineno", None)
 
         if next_pattern_node is None:
+
+            # We cannot juste skip, we have to check every type inside
+            if self.types is not None:
+                while current_node is not None:
+                    if not self.check_type(current_node):
+                        return False
+                    current_node = matcher.code_walker.next_sibling()
+
             next_pattern_node = matcher.pattern_walker.next()
             next_code_node = matcher.code_walker.next_parent()
 
@@ -81,6 +102,9 @@ class DoubleHole(HoleAST):
 
         code_node = current_node
         while code_node is not None:
+            if not self.check_type(code_node):
+                return False
+
             matcher.save_walkers_state()
             if matcher.rec_match(next_pattern_node, code_node):
                 end_lineno = code_node.lineno
@@ -97,8 +121,8 @@ class DoubleHole(HoleAST):
 
 
 class CompoundHole(HoleAST):
-    def __init__(self, body=None):
-        super().__init__()
+    def __init__(self, body, types=None):
+        super().__init__(types)
         self.body = body
         self._fields = ['body']
 
@@ -107,6 +131,9 @@ class CompoundHole(HoleAST):
 
     def visit(self, matcher, current_node):
         # matcher.pattern_match.add_match(self, current_node)
+        if not self.check_type(current_node):
+            return False
+
         matcher.code_walker.select_specific_child('body')
         next_code_node = matcher.code_walker.next_child()
         if next_code_node is None:
@@ -121,8 +148,8 @@ class CompoundHole(HoleAST):
 
 
 class VarHole(HoleAST):
-    def __init__(self, name):
-        super().__init__()
+    def __init__(self, name, types=None):
+        super().__init__(types)
         self.name = name
         self._fields = ['name']
 
@@ -164,6 +191,10 @@ class VarHole(HoleAST):
         # Handle func name and class name
         if not isinstance(current_node, AST):
             current_node = Name(current_node, Load())
+
+        if not self.check_type(current_node):
+            return False
+
         matcher.variables[self.name] = current_node
 
         next_pattern_node = matcher.pattern_walker.next_sibling()
@@ -191,8 +222,8 @@ class VarHole(HoleAST):
 
 
 class MultipleCompoundHole(HoleAST):
-    def __init__(self, body):
-        super().__init__()
+    def __init__(self, body, types=None):
+        super().__init__(types)
         self.body = body
         self._fields = ['body']
 
@@ -209,11 +240,14 @@ class MultipleCompoundHole(HoleAST):
         if not has_body_elements(code_node):
             return False
         while code_node is not None:
+            if not self.check_type(code_node):
+                return False
+
             matcher.save_walkers_state()
             if matcher.rec_match(next_pattern_node, code_node):
                 end_lineno = code_node.lineno
                 if end_lineno != lineno:
-                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno-1)
+                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno - 1)
                 return True
             matcher.load_walkers_state()
             if lineno and lineno not in matcher.pattern_match.pattern_match:

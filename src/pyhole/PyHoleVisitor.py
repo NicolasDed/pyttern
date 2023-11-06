@@ -931,7 +931,7 @@ class PyHoleVisitor(Python3ParserVisitor):
 
         return self.visitChildren(ctx)
 
-    # Visit a parse tree pro duced by Python3Parser#testlist_comp.
+    # Visit a parse tree produced by Python3Parser#testlist_comp.
     def visitTestlist_comp(self, ctx: Python3Parser.Testlist_compContext):
         if ctx.comp_for() is not None:
             comp = ctx.comp_for().accept(self)
@@ -1124,33 +1124,51 @@ class PyHoleVisitor(Python3ParserVisitor):
             return None
         return txt
 
+    def visitHole_type(self, ctx:Python3Parser.Hole_typeContext):
+        return list(map(lambda x: x.accept(self), ctx.name()))
+
     # Visit a parse tree produced by Python3Parser#simple_hole.
     def visitSimple_hole(self, ctx: Python3Parser.Simple_holeContext):
-        hole = SimpleHole()
+        types = None
+        if ctx.hole_type() is not None:
+            types = ctx.hole_type().accept(self)
+        hole = SimpleHole(types)
         set_lineno(hole, ctx)
         return hole
 
     # Visit a parse tree produced by Python3Parser#double_hole.
     def visitDouble_hole(self, ctx: Python3Parser.Double_holeContext):
-        hole = DoubleHole()
+        types = None
+        if ctx.hole_type() is not None:
+            types = ctx.hole_type().accept(self)
+        hole = DoubleHole(types)
         set_lineno(hole, ctx)
         return hole
 
     def visitVar_hole(self, ctx: Python3Parser.Var_holeContext):
+        types = None
+        if ctx.hole_type() is not None:
+            types = ctx.hole_type().accept(self)
         name = ctx.name().accept(self)
-        hole = VarHole(name)
+        hole = VarHole(name, types)
         set_lineno(hole, ctx)
         return hole
 
     def visitSimple_compound_hole(self, ctx: Python3Parser.Simple_compound_holeContext):
+        types = None
+        if ctx.hole_type() is not None:
+            types = ctx.hole_type().accept(self)
         body = ctx.block().accept(self)
-        hole = CompoundHole(body)
+        hole = CompoundHole(body, types)
         set_lineno(hole, ctx)
         return hole
 
     def visitMultiple_compound_hole(self, ctx: Python3Parser.Multiple_compound_holeContext):
+        types = None
+        if ctx.hole_type() is not None:
+            types = ctx.hole_type().accept(self)
         body = ctx.block().accept(self)
-        hole = MultipleCompoundHole(body)
+        hole = MultipleCompoundHole(body, types)
         set_lineno(hole, ctx)
         return hole
 
