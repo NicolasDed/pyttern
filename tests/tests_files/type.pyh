@@ -1,4 +1,4 @@
 def ? (?*):
     ?[Assign]
-    ?[For, While]:
+    ?[While, For]:*
         ?[Assign]*

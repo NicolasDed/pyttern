@@ -1,6 +1,7 @@
 import glob
 from copy import deepcopy
 
+from .ASTMatcher import ASTMatcher
 from .AstWalker import AstWalker
 from .HoleAST import *
 from .PatternMatch import PatternMatch
@@ -71,11 +72,33 @@ class Matcher:
         self.code_walker = saved_code
         self.pattern_match = saved_match
 
-    def match(self, pattern, code):
-        if self.strict:
-            return self.match_strict(pattern, code)
+    def drop_walkers_state(self):
+        self.saved_pattern_walkers.pop()
+        self.saved_code_walkers.pop()
+        self.saved_patten_matches.pop()
 
-        return self.match_soft(pattern, code)
+    def match(self, pattern, code):
+        ast.fix_missing_locations(pattern)
+        self.pattern_walker = AstWalker(pattern)
+        self.code_walker = AstWalker(code)
+
+        pattern_node = self.pattern_walker.current()
+        code_node = self.code_walker.current()
+        if pattern_node is None:
+            if not self.strict:
+                return True
+            if code_node is not None:
+                return False
+
+            return True
+
+        if code_node is None:
+            return False
+
+        if self.strict:
+            return self.strict_rec_match(pattern_node, code_node)
+
+        return self.soft_rec_match(pattern_node, code_node)
 
     def simple_match(self):
         pattern_node = self.pattern_walker.next()
@@ -113,7 +136,7 @@ class Matcher:
     def soft_next_node_match(self, pattern_node):
         next_code_node = self.code_walker.next_sibling()
         if next_code_node is None:
-            self.error = f"No next match node fo {pattern_node}"
+            self.error = f"No next match node for {pattern_node}"
             return False
         return self.soft_rec_match(pattern_node, next_code_node)
 
@@ -123,9 +146,17 @@ class Matcher:
             if not pattern_node.visit(self, code_node):
                 self.load_walkers_state()
                 return self.soft_next_node_match(pattern_node)
+            self.drop_walkers_state()
             return True
 
-        if type(pattern_node) != type(code_node):
+        if isinstance(pattern_node, AST):
+            matcher = ASTMatcher(self)
+            self.save_walkers_state()
+            if not matcher.visit(pattern_node, code_node):
+                self.load_walkers_state()
+                return self.soft_next_node_match(pattern_node)
+            self.drop_walkers_state()
+        elif type(pattern_node) != type(code_node):
             return self.soft_next_node_match(pattern_node)
 
         if not isinstance(pattern_node, (AST, HoleAST, list)):
@@ -145,6 +176,7 @@ class Matcher:
         if not self.simple_match():
             self.load_walkers_state()
             return self.soft_next_node_match(pattern_node)
+        self.drop_walkers_state()
 
         return True
 
@@ -162,6 +194,7 @@ class Matcher:
         if type(pattern_node) != type(code_node):
             self.error = f"Cannot match {pattern_node} with {code_node}"
             return False
+
         if not isinstance(pattern_node, (AST, HoleAST, list)):
             if pattern_node == code_node:
                 return self.simple_match()

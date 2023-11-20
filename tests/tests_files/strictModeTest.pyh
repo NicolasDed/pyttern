@@ -1,5 +1,5 @@
 def ?(n):
-    ?*:
+    ?:*
         for ? in range(?*):
             ?![
             if ?:

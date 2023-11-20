@@ -1079,75 +1079,84 @@ class Python3ParserListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by Python3Parser#hole_type.
-    def enterHole_type(self, ctx:Python3Parser.Hole_typeContext):
+    # Enter a parse tree produced by Python3Parser#wildcard_type.
+    def enterWildcard_type(self, ctx:Python3Parser.Wildcard_typeContext):
         pass
 
-    # Exit a parse tree produced by Python3Parser#hole_type.
-    def exitHole_type(self, ctx:Python3Parser.Hole_typeContext):
-        pass
-
-
-    # Enter a parse tree produced by Python3Parser#expr_hole.
-    def enterExpr_hole(self, ctx:Python3Parser.Expr_holeContext):
-        pass
-
-    # Exit a parse tree produced by Python3Parser#expr_hole.
-    def exitExpr_hole(self, ctx:Python3Parser.Expr_holeContext):
+    # Exit a parse tree produced by Python3Parser#wildcard_type.
+    def exitWildcard_type(self, ctx:Python3Parser.Wildcard_typeContext):
         pass
 
 
-    # Enter a parse tree produced by Python3Parser#simple_hole.
-    def enterSimple_hole(self, ctx:Python3Parser.Simple_holeContext):
+    # Enter a parse tree produced by Python3Parser#wildcard_number.
+    def enterWildcard_number(self, ctx:Python3Parser.Wildcard_numberContext):
         pass
 
-    # Exit a parse tree produced by Python3Parser#simple_hole.
-    def exitSimple_hole(self, ctx:Python3Parser.Simple_holeContext):
-        pass
-
-
-    # Enter a parse tree produced by Python3Parser#double_hole.
-    def enterDouble_hole(self, ctx:Python3Parser.Double_holeContext):
-        pass
-
-    # Exit a parse tree produced by Python3Parser#double_hole.
-    def exitDouble_hole(self, ctx:Python3Parser.Double_holeContext):
+    # Exit a parse tree produced by Python3Parser#wildcard_number.
+    def exitWildcard_number(self, ctx:Python3Parser.Wildcard_numberContext):
         pass
 
 
-    # Enter a parse tree produced by Python3Parser#var_hole.
-    def enterVar_hole(self, ctx:Python3Parser.Var_holeContext):
+    # Enter a parse tree produced by Python3Parser#expr_wildcard.
+    def enterExpr_wildcard(self, ctx:Python3Parser.Expr_wildcardContext):
         pass
 
-    # Exit a parse tree produced by Python3Parser#var_hole.
-    def exitVar_hole(self, ctx:Python3Parser.Var_holeContext):
-        pass
-
-
-    # Enter a parse tree produced by Python3Parser#compound_hole.
-    def enterCompound_hole(self, ctx:Python3Parser.Compound_holeContext):
-        pass
-
-    # Exit a parse tree produced by Python3Parser#compound_hole.
-    def exitCompound_hole(self, ctx:Python3Parser.Compound_holeContext):
+    # Exit a parse tree produced by Python3Parser#expr_wildcard.
+    def exitExpr_wildcard(self, ctx:Python3Parser.Expr_wildcardContext):
         pass
 
 
-    # Enter a parse tree produced by Python3Parser#simple_compound_hole.
-    def enterSimple_compound_hole(self, ctx:Python3Parser.Simple_compound_holeContext):
+    # Enter a parse tree produced by Python3Parser#simple_wildcard.
+    def enterSimple_wildcard(self, ctx:Python3Parser.Simple_wildcardContext):
         pass
 
-    # Exit a parse tree produced by Python3Parser#simple_compound_hole.
-    def exitSimple_compound_hole(self, ctx:Python3Parser.Simple_compound_holeContext):
+    # Exit a parse tree produced by Python3Parser#simple_wildcard.
+    def exitSimple_wildcard(self, ctx:Python3Parser.Simple_wildcardContext):
         pass
 
 
-    # Enter a parse tree produced by Python3Parser#multiple_compound_hole.
-    def enterMultiple_compound_hole(self, ctx:Python3Parser.Multiple_compound_holeContext):
+    # Enter a parse tree produced by Python3Parser#double_wildcard.
+    def enterDouble_wildcard(self, ctx:Python3Parser.Double_wildcardContext):
         pass
 
-    # Exit a parse tree produced by Python3Parser#multiple_compound_hole.
-    def exitMultiple_compound_hole(self, ctx:Python3Parser.Multiple_compound_holeContext):
+    # Exit a parse tree produced by Python3Parser#double_wildcard.
+    def exitDouble_wildcard(self, ctx:Python3Parser.Double_wildcardContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#var_wildcard.
+    def enterVar_wildcard(self, ctx:Python3Parser.Var_wildcardContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#var_wildcard.
+    def exitVar_wildcard(self, ctx:Python3Parser.Var_wildcardContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#compound_wildcard.
+    def enterCompound_wildcard(self, ctx:Python3Parser.Compound_wildcardContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#compound_wildcard.
+    def exitCompound_wildcard(self, ctx:Python3Parser.Compound_wildcardContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#simple_compound_wildcard.
+    def enterSimple_compound_wildcard(self, ctx:Python3Parser.Simple_compound_wildcardContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#simple_compound_wildcard.
+    def exitSimple_compound_wildcard(self, ctx:Python3Parser.Simple_compound_wildcardContext):
+        pass
+
+
+    # Enter a parse tree produced by Python3Parser#multiple_compound_wildcard.
+    def enterMultiple_compound_wildcard(self, ctx:Python3Parser.Multiple_compound_wildcardContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#multiple_compound_wildcard.
+    def exitMultiple_compound_wildcard(self, ctx:Python3Parser.Multiple_compound_wildcardContext):
         pass
 
 

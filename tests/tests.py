@@ -394,7 +394,7 @@ class TestASTHole(PyHoleTest):
         for _, match in matches.items():
             for pattern, result in match.items():
                 do_match, details = result
-                if "patternMultPlusDIv" in pattern:
+                if "patternMultPlusDIv" in pattern or "patternMultEqDiv" in pattern:
                     assert do_match, details
                 else:
                     assert not do_match, details
@@ -420,6 +420,24 @@ class TestASTHole(PyHoleTest):
         code_path = get_test_file("no_type.py")
         res, det = match_files(pattern_path, code_path, match_details=True)
         assert not res, det
+
+    def test_augassign(self):
+        pattern_path = get_test_file("augassign.pyh")
+        code_path = get_test_file("piCode.py")
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert res, det
+
+        code_path = get_test_file("piCodeBis.py")
+        ret, det = match_files(pattern_path, code_path, match_details=True)
+        assert ret, det
+
+        pattern_path = get_test_file("augassignNok.pyh")
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert not res, str(det)
+
+        code_path = get_test_file("piCode.py")
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert not res, str(det)
 
 
 class TestVisualizer(TestCase):

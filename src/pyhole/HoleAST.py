@@ -78,6 +78,7 @@ class DoubleHole(HoleAST):
 
             # We cannot juste skip, we have to check every type inside
             if self.types is not None:
+                current_node = matcher.code_walker.next_sibling()
                 while current_node is not None:
                     if not self.check_type(current_node):
                         return False

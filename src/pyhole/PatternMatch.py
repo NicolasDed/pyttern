@@ -20,6 +20,9 @@ class PatternMatch:
     def match(self, code, pattern):
         self.links.append(Link(code, pattern))
 
+    def __str__(self):
+        return f'[{",".join(str(s) for s in self.links)}]'
+
 
 class Link:
     def __init__(self, code_node, pattern_node):

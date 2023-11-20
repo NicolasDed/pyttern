@@ -228,10 +228,10 @@ class PyHoleVisitor(Python3ParserVisitor):
     def visitFuncdef(self, ctx: Python3Parser.FuncdefContext):
         if ctx.name() is not None:
             name = ctx.name().accept(self)
-        elif ctx.simple_hole() is not None:
-            name = ctx.simple_hole().accept(self)
+        elif ctx.simple_wildcard() is not None:
+            name = ctx.simple_wildcard().accept(self)
         else:
-            name = ctx.var_hole().accept(self)
+            name = ctx.var_wildcard().accept(self)
         args = ctx.parameters().accept(self)
 
         returns = ctx.test().accept(self) if ctx.test() is not None else None
@@ -296,8 +296,8 @@ class PyHoleVisitor(Python3ParserVisitor):
 
     # Visit a parse tree produced by Python3Parser#tfpdef.
     def visitTfpdef(self, ctx: Python3Parser.TfpdefContext):
-        if ctx.expr_hole() is not None:
-            return ctx.expr_hole().accept(self)
+        if ctx.expr_wildcard() is not None:
+            return ctx.expr_wildcard().accept(self)
         val = ctx.name().accept(self)
         type_val = ctx.test().accept(self) if ctx.test() is not None else None
         return arg(val, annotation=type_val)
@@ -1043,10 +1043,10 @@ class PyHoleVisitor(Python3ParserVisitor):
     def visitClassdef(self, ctx: Python3Parser.ClassdefContext):
         if ctx.name() is not None:
             name = ctx.name().accept(self)
-        elif ctx.simple_hole() is not None:
-            name = ctx.simple_hole().accept(self)
+        elif ctx.simple_wildcard() is not None:
+            name = ctx.simple_wildcard().accept(self)
         else:
-            name = ctx.var_hole().accept(self)
+            name = ctx.var_wildcard().accept(self)
         args = ctx.arglist()
         args = args.accept(self) if args is not None else []
         body = ctx.block().accept(self)
@@ -1124,62 +1124,63 @@ class PyHoleVisitor(Python3ParserVisitor):
             return None
         return txt
 
-    def visitHole_type(self, ctx:Python3Parser.Hole_typeContext):
+    def visitWildcard_type(self, ctx:Python3Parser.Wildcard_typeContext):
+        # TODO
         return list(map(lambda x: x.accept(self), ctx.name()))
 
-    # Visit a parse tree produced by Python3Parser#simple_hole.
-    def visitSimple_hole(self, ctx: Python3Parser.Simple_holeContext):
+    # Visit a parse tree produced by Python3Parser#simple_wildcard.
+    def visitSimple_wildcard(self, ctx: Python3Parser.Simple_wildcardContext):
         types = None
-        if ctx.hole_type() is not None:
-            types = ctx.hole_type().accept(self)
-        hole = SimpleHole(types)
-        set_lineno(hole, ctx)
-        return hole
+        if ctx.wildcard_type() is not None:
+            types = ctx.wildcard_type().accept(self)
+        wildcard = SimpleHole(types)
+        set_lineno(wildcard, ctx)
+        return wildcard
 
-    # Visit a parse tree produced by Python3Parser#double_hole.
-    def visitDouble_hole(self, ctx: Python3Parser.Double_holeContext):
+    # Visit a parse tree produced by Python3Parser#double_wildcard.
+    def visitDouble_wildcard(self, ctx: Python3Parser.Double_wildcardContext):
         types = None
-        if ctx.hole_type() is not None:
-            types = ctx.hole_type().accept(self)
-        hole = DoubleHole(types)
-        set_lineno(hole, ctx)
-        return hole
+        if ctx.wildcard_type() is not None:
+            types = ctx.wildcard_type().accept(self)
+        wildcard = DoubleHole(types)
+        set_lineno(wildcard, ctx)
+        return wildcard
 
-    def visitVar_hole(self, ctx: Python3Parser.Var_holeContext):
+    def visitVar_wildcard(self, ctx: Python3Parser.Var_wildcardContext):
         types = None
-        if ctx.hole_type() is not None:
-            types = ctx.hole_type().accept(self)
+        if ctx.wildcard_type() is not None:
+            types = ctx.wildcard_type().accept(self)
         name = ctx.name().accept(self)
-        hole = VarHole(name, types)
-        set_lineno(hole, ctx)
-        return hole
+        wildcard = VarHole(name, types)
+        set_lineno(wildcard, ctx)
+        return wildcard
 
-    def visitSimple_compound_hole(self, ctx: Python3Parser.Simple_compound_holeContext):
+    def visitSimple_compound_wildcard(self, ctx: Python3Parser.Simple_compound_wildcardContext):
         types = None
-        if ctx.hole_type() is not None:
-            types = ctx.hole_type().accept(self)
+        if ctx.wildcard_type() is not None:
+            types = ctx.wildcard_type().accept(self)
         body = ctx.block().accept(self)
-        hole = CompoundHole(body, types)
-        set_lineno(hole, ctx)
-        return hole
+        wildcard = CompoundHole(body, types)
+        set_lineno(wildcard, ctx)
+        return wildcard
 
-    def visitMultiple_compound_hole(self, ctx: Python3Parser.Multiple_compound_holeContext):
+    def visitMultiple_compound_wildcard(self, ctx: Python3Parser.Multiple_compound_wildcardContext):
         types = None
-        if ctx.hole_type() is not None:
-            types = ctx.hole_type().accept(self)
+        if ctx.wildcard_type() is not None:
+            types = ctx.wildcard_type().accept(self)
         body = ctx.block().accept(self)
-        hole = MultipleCompoundHole(body, types)
-        set_lineno(hole, ctx)
-        return hole
+        wildcard = MultipleCompoundHole(body, types)
+        set_lineno(wildcard, ctx)
+        return wildcard
 
     def visitStrict_mode(self, ctx: Python3Parser.Strict_modeContext):
         body = self.visitChildren(ctx)
-        hole = StrictMode(body, True)
-        set_lineno(hole, ctx)
+        wildcard = StrictMode(body, True)
+        set_lineno(wildcard, ctx)
 
-        end_hole = StrictMode(None, False)
-        set_lineno(hole, ctx)
-        return [hole, end_hole]
+        end_wildcard = StrictMode(None, False)
+        set_lineno(wildcard, ctx)
+        return [wildcard, end_wildcard]
 
 
 del Python3Parser

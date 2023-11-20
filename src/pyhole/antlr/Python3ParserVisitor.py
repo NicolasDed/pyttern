@@ -604,43 +604,48 @@ class Python3ParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#hole_type.
-    def visitHole_type(self, ctx:Python3Parser.Hole_typeContext):
+    # Visit a parse tree produced by Python3Parser#wildcard_type.
+    def visitWildcard_type(self, ctx:Python3Parser.Wildcard_typeContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#expr_hole.
-    def visitExpr_hole(self, ctx:Python3Parser.Expr_holeContext):
+    # Visit a parse tree produced by Python3Parser#wildcard_number.
+    def visitWildcard_number(self, ctx:Python3Parser.Wildcard_numberContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#simple_hole.
-    def visitSimple_hole(self, ctx:Python3Parser.Simple_holeContext):
+    # Visit a parse tree produced by Python3Parser#expr_wildcard.
+    def visitExpr_wildcard(self, ctx:Python3Parser.Expr_wildcardContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#double_hole.
-    def visitDouble_hole(self, ctx:Python3Parser.Double_holeContext):
+    # Visit a parse tree produced by Python3Parser#simple_wildcard.
+    def visitSimple_wildcard(self, ctx:Python3Parser.Simple_wildcardContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#var_hole.
-    def visitVar_hole(self, ctx:Python3Parser.Var_holeContext):
+    # Visit a parse tree produced by Python3Parser#double_wildcard.
+    def visitDouble_wildcard(self, ctx:Python3Parser.Double_wildcardContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#compound_hole.
-    def visitCompound_hole(self, ctx:Python3Parser.Compound_holeContext):
+    # Visit a parse tree produced by Python3Parser#var_wildcard.
+    def visitVar_wildcard(self, ctx:Python3Parser.Var_wildcardContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#simple_compound_hole.
-    def visitSimple_compound_hole(self, ctx:Python3Parser.Simple_compound_holeContext):
+    # Visit a parse tree produced by Python3Parser#compound_wildcard.
+    def visitCompound_wildcard(self, ctx:Python3Parser.Compound_wildcardContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by Python3Parser#multiple_compound_hole.
-    def visitMultiple_compound_hole(self, ctx:Python3Parser.Multiple_compound_holeContext):
+    # Visit a parse tree produced by Python3Parser#simple_compound_wildcard.
+    def visitSimple_compound_wildcard(self, ctx:Python3Parser.Simple_compound_wildcardContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by Python3Parser#multiple_compound_wildcard.
+    def visitMultiple_compound_wildcard(self, ctx:Python3Parser.Multiple_compound_wildcardContext):
         return self.visitChildren(ctx)
 
 

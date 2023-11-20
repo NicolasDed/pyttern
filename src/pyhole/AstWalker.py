@@ -9,6 +9,9 @@ class AstWalker:
         self._node = None
         self._set_node(tree, None)
 
+    def current(self):
+        return self._node.node
+
     def _set_node(self, tree, parent):
         self._node = _Node(tree, parent)
 
