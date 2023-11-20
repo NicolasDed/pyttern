@@ -1,9 +1,9 @@
 # Generated from Python3Lexer.g4 by ANTLR 4.7.2
-from antlr4 import *
-from io import StringIO
-from typing.io import TextIO
 import sys
+from io import StringIO
 
+from antlr4 import *
+from typing.io import TextIO
 
 if __name__ is not None and "." in __name__:
     from .Python3LexerBase import Python3LexerBase

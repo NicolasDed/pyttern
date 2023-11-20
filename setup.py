@@ -7,14 +7,14 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 module1 = Extension('wildcard_match',
-                    sources=['src/pyhole/clibrary/wildcard_match.c'])
+                    sources=['src/pyttern/clibrary/wildcard_match.c'])
 
 setup(
-    name='python-hole',
+    name='pyttern',
     version='0.0.10',
-    packages=['pyhole', 'pyhole.antlr', 'pyhole.visualizer'],
+    packages=['pyttern', 'pyttern.antlr', 'pyttern.visualizer'],
     package_dir={'': 'src'},
-    url='https://github.com/JulienLie/python-hole',
+    url='https://github.com/JulienLie/pyttern',
     license='MIT',
     author='Julien Lienard',
     author_email='julien.lienard@uclouvain.be',

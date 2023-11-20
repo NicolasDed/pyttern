@@ -1,4 +1,4 @@
-from .HoleAST import HoleAST
+from .PytternAST import PytternAST
 
 
 class PatternMatch:
@@ -49,7 +49,7 @@ class Link:
             return self._pattern_node.lineno
 
     def __str__(self):
-        if isinstance(self._pattern_node, HoleAST):
+        if isinstance(self._pattern_node, PytternAST):
             return f"({type(self._code_node).__name__}, {self._pattern_node})"
 
         return f"({type(self._code_node).__name__}, {type(self._pattern_node).__name__})"

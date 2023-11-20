@@ -264,5 +264,5 @@ double_wildcard: '?' wildcard_type? '*';
 var_wildcard: '?' wildcard_type? name;
 compound_wildcard: simple_compound_wildcard | multiple_compound_wildcard | strict_mode;
 simple_compound_wildcard: '?' wildcard_type? ':' wildcard_number? block;
-multiple_compound_wildcard: '?' wildcard_type? '*' ':' block; // TODO: change to ':*'
+multiple_compound_wildcard: '?' wildcard_type? ':' '*' block; // TODO: change to ':*'
 strict_mode: '?![' (simple_stmts | NEWLINE stmt+) ']' NEWLINE;

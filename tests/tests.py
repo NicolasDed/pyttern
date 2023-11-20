@@ -7,13 +7,13 @@ from unittest import TestCase
 import pytest
 from antlr4 import ParseTreeListener, TerminalNode, FileStream, CommonTokenStream, ParseTreeWalker
 
-from pyhole.Matcher import Matcher, match_files, match_wildcards
-from pyhole.PyHoleErrorListener import Python3ErrorListener
-from pyhole.PyHoleVisitor import PyHoleVisitor
-from pyhole.antlr.Python3Lexer import Python3Lexer
-from pyhole.antlr.Python3Parser import Python3Parser
-from pyhole.antlr.Python3ParserListener import Python3ParserListener
-from pyhole.visualizer import Visualizer
+from pyttern.Matcher import Matcher, match_files, match_wildcards
+from pyttern.PytternErrorListener import Python3ErrorListener
+from pyttern.PytternVisitor import PytternVisitor
+from pyttern.antlr.Python3Lexer import Python3Lexer
+from pyttern.antlr.Python3Parser import Python3Parser
+from pyttern.antlr.Python3ParserListener import Python3ParserListener
+from pyttern.visualizer import Visualizer
 from . import tests_files, visu
 
 
@@ -43,7 +43,7 @@ class Printer(ParseTreeListener):
         print(node)
 
 
-class PyHoleTest:
+class PytternTest:
     def setup_stream(self, path):
         file_stream = FileStream(path, encoding="utf-8")
         lexer = Python3Lexer(file_stream)
@@ -60,44 +60,7 @@ class PyHoleTest:
         return parser
 
 
-class TestPython3Parser(PyHoleTest):
-
-    def test_python3_test_grammar(self):
-        parser = self.setup_stream(get_test_file("grammar.py"))
-        tree = parser.file_input()
-        listener = Python3ParserListener()
-        walker = ParseTreeWalker()
-        walker.walk(listener, tree)
-        assert len(self.errorListener.symbol) == 0
-
-    def test_python3_test_student(self):
-        parser = self.setup_stream(get_test_file("q1_3.py"))
-        tree = parser.file_input()
-        listener = Python3ParserListener()  # Printer()
-        walker = ParseTreeWalker()
-        walker.walk(listener, tree)
-        assert len(self.errorListener.symbol) == 0
-
-    @pytest.mark.parametrize("file_path", discover_files(get_test_file("small")))
-    def test_python3_test_small(self, file_path):
-        parser = self.setup_stream(str(file_path))
-        tree = parser.file_input()
-        listener = Python3ParserListener()  # Printer()
-        walker = ParseTreeWalker()
-        walker.walk(listener, tree)
-        assert len(self.errorListener.symbol) == 0
-
-    @pytest.mark.parametrize("file_path", discover_files(get_test_file("large")))
-    def test_python3_test_large(self, file_path):
-        parser = self.setup_stream(str(file_path))
-        tree = parser.file_input()
-        listener = Python3ParserListener()  # Printer()
-        walker = ParseTreeWalker()
-        walker.walk(listener, tree)
-        assert len(self.errorListener.symbol) == 0
-
-
-class TestAstGenerator(PyHoleTest):
+class TestAstGenerator(PytternTest):
 
     def asts_equal(self, expected_ast, actual_ast):
         """
@@ -140,8 +103,12 @@ class TestAstGenerator(PyHoleTest):
     def test_ast_generator_student(self):
         parser = self.setup_stream(get_test_file("q1_3.py"))
         tree = parser.file_input()
+        listener = Python3ParserListener()  # Printer()
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+        assert len(self.errorListener.symbol) == 0
 
-        generated_tree = PyHoleVisitor().visit(tree)
+        generated_tree = PytternVisitor().visit(tree)
 
         inp_file = get_test_file("q1_3.py")
         with open(inp_file, encoding="utf-8") as file:
@@ -152,8 +119,7 @@ class TestAstGenerator(PyHoleTest):
         parser = self.setup_stream(get_test_file("q1_254.py"))
         tree = parser.file_input()
 
-        generated_tree = PyHoleVisitor().visit(tree)
-
+        generated_tree = PytternVisitor().visit(tree)
         inp_file = get_test_file("q1_254.py")
         with open(inp_file, encoding="utf-8") as file:
             python_tree = ast.parse(file.read(), get_test_file("q1_254.py"))
@@ -162,9 +128,12 @@ class TestAstGenerator(PyHoleTest):
     def test_ast_generator_complex(self):
         parser = self.setup_stream(get_test_file("grammar.py"))
         tree = parser.file_input()
+        listener = Python3ParserListener()
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+        assert len(self.errorListener.symbol) == 0
 
-        generated_tree = PyHoleVisitor().visit(tree)
-
+        generated_tree = PytternVisitor().visit(tree)
         inp_file = get_test_file("grammar.py")
         with open(inp_file, encoding="utf-8") as file:
             python_tree = ast.parse(file.read(), get_test_file("grammar.py"))
@@ -172,22 +141,28 @@ class TestAstGenerator(PyHoleTest):
 
     @pytest.mark.parametrize("file_path", discover_files(get_test_file("small")))
     def test_ast_generator_small(self, file_path):
-        parser = self.setup_stream(file_path)
+        parser = self.setup_stream(str(file_path))
         tree = parser.file_input()
+        listener = Python3ParserListener()  # Printer()
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+        assert len(self.errorListener.symbol) == 0
 
-        generated_tree = PyHoleVisitor().visit(tree)
-
+        generated_tree = PytternVisitor().visit(tree)
         with open(file_path, encoding="utf-8") as file:
             python_tree = ast.parse(file.read(), file_path)
             self.asts_equal(python_tree, generated_tree)
 
     @pytest.mark.parametrize("file_path", discover_files(get_test_file("large")))
     def test_ast_generator_large(self, file_path):
-        parser = self.setup_stream(file_path)
+        parser = self.setup_stream(str(file_path))
         tree = parser.file_input()
+        listener = Python3ParserListener()  # Printer()
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+        assert len(self.errorListener.symbol) == 0
 
-        generated_tree = PyHoleVisitor().visit(tree)
-
+        generated_tree = PytternVisitor().visit(tree)
         with open(file_path, encoding="utf-8") as file:
             python_tree = ast.parse(file.read(), file_path)
             self.asts_equal(python_tree, generated_tree)
@@ -203,7 +178,7 @@ def show_pattern(code_path, pattern_path, match, output_file):
             return html
 
 
-class TestASTHole(PyHoleTest):
+class TestASTWildcards(PytternTest):
 
     @pytest.mark.timeout(10)
     def test_strict_ast_equal_match(self):
@@ -234,16 +209,16 @@ class TestASTHole(PyHoleTest):
                     assert not val, f"{n_1} = {n_2}: {details}"
 
     @pytest.mark.timeout(10)
-    def test_ast_simple_hole(self):
-        parser = self.setup_stream(get_test_file("pyHoleTest.pyh"))
+    def test_ast_simple_wildcard(self):
+        parser = self.setup_stream(get_test_file("pytternTest.pyh"))
         tree = parser.file_input()
 
-        generated_tree = PyHoleVisitor().visit(tree)
+        generated_tree = PytternVisitor().visit(tree)
 
-        wrong_parser = self.setup_stream(get_test_file("pyHoleNok.pyh"))
+        wrong_parser = self.setup_stream(get_test_file("pytternNok.pyh"))
         wrong_tree = wrong_parser.file_input()
 
-        wrong_generated_tree = PyHoleVisitor().visit(wrong_tree)
+        wrong_generated_tree = PytternVisitor().visit(wrong_tree)
 
         inp_file = get_test_file("q1_3.py")
         with open(inp_file, encoding="utf-8") as file:
@@ -264,11 +239,11 @@ class TestASTHole(PyHoleTest):
         assert res, det
 
     @pytest.mark.timeout(10)
-    def test_ast_compound_hole(self):
-        parser_ok = self.setup_stream(get_test_file("pyHoleCompoundOk.pyh"))
+    def test_ast_body_wildcard(self):
+        parser_ok = self.setup_stream(get_test_file("pytternCompoundOk.pyh"))
         tree_ok = parser_ok.file_input()
 
-        generated_tree_ok = PyHoleVisitor().visit(tree_ok)
+        generated_tree_ok = PytternVisitor().visit(tree_ok)
 
         inp_file = get_test_file("q1_254.py")
         with open(inp_file, encoding="utf-8") as file:
@@ -278,14 +253,14 @@ class TestASTHole(PyHoleTest):
             assert val_ok
 
     @pytest.mark.timeout(10)
-    def test_ast_labeled_hole(self):
-        val, det = match_files(get_test_file("pyHoleLabeled.pyh"),
+    def test_ast_labeled_wildcard(self):
+        val, det = match_files(get_test_file("pytternLabeled.pyh"),
                                get_test_file("q1_3.py"), strict_match=True, match_details=True)
         assert val, det
 
     @pytest.mark.timeout(10)
     def test_ast_multiple_depth(self):
-        val, msg = match_files(get_test_file("pyHoleMultipleDepth.pyh"),
+        val, msg = match_files(get_test_file("pytternMultipleDepth.pyh"),
                                get_test_file("q1_254.py"), strict_match=True, match_details=True)
         assert val, msg
 
@@ -329,17 +304,17 @@ class TestASTHole(PyHoleTest):
         assert not val, match
 
     @pytest.mark.timeout(10)
-    def test_soft_ast_compound_hole(self):
-        val, match = match_files(get_test_file("pyHoleCompoundSoft.pyh"),
+    def test_soft_ast_body_wildcard(self):
+        val, match = match_files(get_test_file("pytternCompoundSoft.pyh"),
                                  get_test_file("q1_254.py"),
                                  strict_match=False, match_details=True)
         assert val, match
 
         show_pattern(get_test_file("q1_254.py"),
-                     get_test_file("pyHoleCompoundSoft.pyh"), match,
-                     (pkg_resources.files(visu) / "pyHoleCompoundSoft.html"))
+                     get_test_file("pytternCompoundSoft.pyh"), match,
+                     (pkg_resources.files(visu) / "pytternCompoundSoft.html"))
 
-        val, match = match_files(get_test_file("pyHoleCompoundSoft.pyh"),
+        val, match = match_files(get_test_file("pytternCompoundSoft.pyh"),
                                  get_test_file("q1_254.py"),
                                  strict_match=True, match_details=True)
         assert not val, match
@@ -360,13 +335,13 @@ class TestASTHole(PyHoleTest):
         assert not val, match
 
     def test_match_wildcards_unique(self):
-        pattern_path = get_test_file("pyHoleCompoundSoft.pyh")
+        pattern_path = get_test_file("pytternCompoundSoft.pyh")
         code_path = get_test_file("q1_254.py")
         matches = match_wildcards(pattern_path, code_path)
         assert matches[code_path][pattern_path], matches
 
     def test_match_wildcards_multiple_pattern(self):
-        pattern_path = get_test_file("pyHoleCompound*.pyh")
+        pattern_path = get_test_file("pytternCompound*.pyh")
         code_path = get_test_file("q1_254.py")
         matches = match_wildcards(pattern_path, code_path, strict_match=True)
         for code, match in matches.items():
@@ -443,13 +418,13 @@ class TestASTHole(PyHoleTest):
 class TestVisualizer(TestCase):
 
     def test_pattern_visualizer(self):
-        val, match = match_files(get_test_file("pyHoleMultipleDepth.pyh"),
+        val, match = match_files(get_test_file("pytternMultipleDepth.pyh"),
                                  get_test_file("q1_254.py"),
                                  strict_match=True, match_details=True)
         assert val
 
         html = show_pattern(get_test_file("q1_254.py"),
-                            get_test_file("pyHoleMultipleDepth.pyh"),
+                            get_test_file("pytternMultipleDepth.pyh"),
                             match, (pkg_resources.files(visu) / "match.html"))
         b_elements = html.findall(".//b")
 

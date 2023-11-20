@@ -3,9 +3,9 @@ from copy import deepcopy
 
 from .ASTMatcher import ASTMatcher
 from .AstWalker import AstWalker
-from .HoleAST import *
 from .PatternMatch import PatternMatch
-from .PyHoleParser import parse_pyhole
+from .PytternAST import *
+from .PytternParser import parse_pyttern
 
 
 def match_wildcards(path_pattern_with_wildcards, path_python_with_wildcard,
@@ -23,7 +23,7 @@ def match_wildcards(path_pattern_with_wildcards, path_python_with_wildcard,
 
 
 def match_files(path_pattern, path_python, strict_match=False, match_details=False):
-    pattern = parse_pyhole(path_pattern)
+    pattern = parse_pyttern(path_pattern)
     with open(path_python, encoding="utf-8") as file:
         source = file.read()
         python = ast.parse(source, path_python)
@@ -141,7 +141,7 @@ class Matcher:
         return self.soft_rec_match(pattern_node, next_code_node)
 
     def soft_rec_match(self, pattern_node, code_node):
-        if isinstance(pattern_node, HoleAST):
+        if isinstance(pattern_node, PytternAST):
             self.save_walkers_state()
             if not pattern_node.visit(self, code_node):
                 self.load_walkers_state()
@@ -159,7 +159,7 @@ class Matcher:
         elif type(pattern_node) != type(code_node):
             return self.soft_next_node_match(pattern_node)
 
-        if not isinstance(pattern_node, (AST, HoleAST, list)):
+        if not isinstance(pattern_node, (AST, PytternAST, list)):
             if pattern_node == code_node:
                 return self.simple_match()
             else:
@@ -188,14 +188,14 @@ class Matcher:
         return self.simple_match()
 
     def strict_rec_match(self, pattern_node, code_node):
-        if isinstance(pattern_node, HoleAST):
+        if isinstance(pattern_node, PytternAST):
             return pattern_node.visit(self, code_node)
 
         if type(pattern_node) != type(code_node):
             self.error = f"Cannot match {pattern_node} with {code_node}"
             return False
 
-        if not isinstance(pattern_node, (AST, HoleAST, list)):
+        if not isinstance(pattern_node, (AST, PytternAST, list)):
             if pattern_node == code_node:
                 return self.simple_match()
             else:

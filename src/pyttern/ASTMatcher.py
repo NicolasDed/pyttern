@@ -24,7 +24,7 @@ class ASTMatcher:
 
         if len(pattern_targets) != 1:
             return False
-        from pyhole.Matcher import Matcher
+        from pyttern.Matcher import Matcher
         target_matcher = Matcher()
         target_matcher.variables = self.matcher.variables
         pattern_target = pattern_targets[0]
@@ -60,7 +60,7 @@ class ASTMatcher:
 
         if len(node_targets) != 1:
             return False
-        from pyhole.Matcher import Matcher
+        from pyttern.Matcher import Matcher
         target_matcher = Matcher()
         target_matcher.variables = self.matcher.variables
         node_target = node_targets[0]

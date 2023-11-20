@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pyhole"
+name = "pyttern"
 authors = [
   { name="Julien Lienard", email="julien.lienard@uclouvain.be" },
 ]
@@ -17,8 +17,8 @@ classifiers = [
 dynamic = ["dependencies", "version", "license", "readme"]
 
 [project.urls]
-"Homepage" = "https://github.com/JulienLie/python-hole"
-"Bug Tracker" = "https://github.com/JulienLie/python-hole/issues"
+"Homepage" = "https://github.com/JulienLie/pyttern"
+"Bug Tracker" = "https://github.com/JulienLie/pyttern/issues"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}

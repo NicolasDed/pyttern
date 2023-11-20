@@ -1,6 +1,6 @@
 import ast
 
-from .HoleAST import iter_child_nodes
+from .PytternAST import iter_child_nodes
 
 
 class AstWalker:

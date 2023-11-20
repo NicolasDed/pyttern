@@ -2,7 +2,7 @@ import ast
 from ast import AST, Name, Load
 
 
-class HoleAST:
+class PytternAST:
     def __init__(self, types=None):
         self._attributes = ["lineno", "lineno_end"]
         self._fields = []
@@ -27,7 +27,7 @@ class HoleAST:
         return f"{type(node).__name__}" in self.types
 
 
-class SimpleHole(HoleAST):
+class SimpleWildcard(PytternAST):
     def __str__(self):
         return 'ANY'
 
@@ -63,13 +63,13 @@ class SimpleHole(HoleAST):
         return matcher.rec_match(pattern_node, code_node)
 
 
-class DoubleHole(HoleAST):
+class AnyWildcard(PytternAST):
     def __str__(self):
         return 'ANY*'
 
     def visit(self, matcher, current_node):
         next_pattern_node = matcher.pattern_walker.next_sibling()
-        while isinstance(next_pattern_node, DoubleHole):
+        while isinstance(next_pattern_node, AnyWildcard):
             next_pattern_node = matcher.pattern_walker.next_sibling()
 
         lineno = getattr(current_node, "lineno", None)
@@ -121,7 +121,7 @@ class DoubleHole(HoleAST):
         return False
 
 
-class CompoundHole(HoleAST):
+class BodyWildcard(PytternAST):
     def __init__(self, body, types=None):
         super().__init__(types)
         self.body = body
@@ -148,7 +148,7 @@ class CompoundHole(HoleAST):
         return True
 
 
-class VarHole(HoleAST):
+class VarWildcard(PytternAST):
     def __init__(self, name, types=None):
         super().__init__(types)
         self.name = name
@@ -222,7 +222,7 @@ class VarHole(HoleAST):
         return True
 
 
-class MultipleCompoundHole(HoleAST):
+class AnyBodyWildcard(PytternAST):
     def __init__(self, body, types=None):
         super().__init__(types)
         self.body = body
@@ -260,7 +260,7 @@ class MultipleCompoundHole(HoleAST):
         return False
 
 
-class StrictMode(HoleAST):
+class StrictMode(PytternAST):
     def __init__(self, body, enable):
         super().__init__()
         self.body = body
@@ -301,26 +301,16 @@ def iter_child_nodes(node):
             for item in field:
                 if isinstance(item, AST):
                     yield item
-                elif isinstance(item, HoleAST):
+                elif isinstance(item, PytternAST):
                     yield item
         elif field is not None:
             yield field
-        """if isinstance(field, AST):
-            yield field
-        elif isinstance(field, HoleAST):
-            yield field
-        elif isinstance(field, list):
-            for item in field:
-                if isinstance(item, AST):
-                    yield item
-                elif isinstance(item, HoleAST):
-                    yield item"""
 
 
 def iter_constant_field(node):
     for name, field in iter_fields(node):
-        if isinstance(field, SimpleHole) or not (
-                isinstance(field, AST) or isinstance(field, HoleAST) or isinstance(field, list)):
+        if isinstance(field, SimpleWildcard) or not (
+                isinstance(field, AST) or isinstance(field, PytternAST) or isinstance(field, list)):
             if field is not None:
                 yield field
 

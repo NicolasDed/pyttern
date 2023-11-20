@@ -1,8 +1,8 @@
-# Python Hole
+# Pyttern
 
 ![Tests Status](https://github.com/JulienLie/python-hole/actions/workflows/python-app.yml/badge.svg?event=push)
 
-Python Hole (or PyHole) is a python library to create patterns file for Python code.
+Pyttern is a python library to create patterns file for Python code.
 
 ## Syntax
 
@@ -139,7 +139,7 @@ specific code sections. This helps in creating adaptable code patterns that can 
 You can visualize the pattern match using the `match_details` argument and the visualiser.
 
 ```python
-from src.pyhole import Visualizer
+from src.pyttern import Visualizer
 import Matcher
 
 code = "code_file.py"

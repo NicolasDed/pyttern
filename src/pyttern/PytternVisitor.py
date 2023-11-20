@@ -4,8 +4,8 @@ import codecs
 import re
 from ast import *
 
-from .HoleAST import (HoleAST, StrictMode, MultipleCompoundHole,
-                      CompoundHole, VarHole, DoubleHole, SimpleHole)
+from .PytternAST import (PytternAST, StrictMode, AnyBodyWildcard,
+                         BodyWildcard, VarWildcard, AnyWildcard, SimpleWildcard)
 from .antlr.Python3Parser import Python3Parser
 from .antlr.Python3ParserVisitor import Python3ParserVisitor
 
@@ -62,14 +62,14 @@ operators = {
 def set_lineno(obj, ctx):
     start = ctx.start.line
     end = ctx.stop.line
-    if isinstance(obj, (stmt, HoleAST)):
+    if isinstance(obj, (stmt, PytternAST)):
         obj.lineno = start
         obj.lineno_end = end
 
 
 # This class defines a complete generic visitor for a parse tree produced by Python3Parser.
 
-class PyHoleVisitor(Python3ParserVisitor):
+class PytternVisitor(Python3ParserVisitor):
 
     def visitMatch_stmt(self, ctx: Python3Parser.Match_stmtContext):
         subject = ctx.subject_expr().accept(self)
@@ -1133,7 +1133,7 @@ class PyHoleVisitor(Python3ParserVisitor):
         types = None
         if ctx.wildcard_type() is not None:
             types = ctx.wildcard_type().accept(self)
-        wildcard = SimpleHole(types)
+        wildcard = SimpleWildcard(types)
         set_lineno(wildcard, ctx)
         return wildcard
 
@@ -1142,7 +1142,7 @@ class PyHoleVisitor(Python3ParserVisitor):
         types = None
         if ctx.wildcard_type() is not None:
             types = ctx.wildcard_type().accept(self)
-        wildcard = DoubleHole(types)
+        wildcard = AnyWildcard(types)
         set_lineno(wildcard, ctx)
         return wildcard
 
@@ -1151,7 +1151,7 @@ class PyHoleVisitor(Python3ParserVisitor):
         if ctx.wildcard_type() is not None:
             types = ctx.wildcard_type().accept(self)
         name = ctx.name().accept(self)
-        wildcard = VarHole(name, types)
+        wildcard = VarWildcard(name, types)
         set_lineno(wildcard, ctx)
         return wildcard
 
@@ -1160,7 +1160,7 @@ class PyHoleVisitor(Python3ParserVisitor):
         if ctx.wildcard_type() is not None:
             types = ctx.wildcard_type().accept(self)
         body = ctx.block().accept(self)
-        wildcard = CompoundHole(body, types)
+        wildcard = BodyWildcard(body, types)
         set_lineno(wildcard, ctx)
         return wildcard
 
@@ -1169,7 +1169,7 @@ class PyHoleVisitor(Python3ParserVisitor):
         if ctx.wildcard_type() is not None:
             types = ctx.wildcard_type().accept(self)
         body = ctx.block().accept(self)
-        wildcard = MultipleCompoundHole(body, types)
+        wildcard = AnyBodyWildcard(body, types)
         set_lineno(wildcard, ctx)
         return wildcard
 

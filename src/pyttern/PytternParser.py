@@ -3,8 +3,8 @@ import io
 
 from antlr4 import FileStream, CommonTokenStream, ParseTreeListener, TerminalNode, ParseTreeWalker
 
-from .PyHoleErrorListener import Python3ErrorListener
-from .PyHoleVisitor import PyHoleVisitor
+from .PytternErrorListener import Python3ErrorListener
+from .PytternVisitor import PytternVisitor
 from .antlr.Python3Lexer import Python3Lexer
 from .antlr.Python3Parser import Python3Parser
 
@@ -24,7 +24,7 @@ class Printer(ParseTreeListener):
         print((self.depth * ' ') + str(node))
 
 
-def _parse_pyhole_to_antlr(path):
+def _parse_pyttern_to_antlr(path):
     file_input = FileStream(path, encoding="utf-8")
     lexer = Python3Lexer(file_input)
     stream = CommonTokenStream(lexer)
@@ -43,17 +43,17 @@ def _parse_pyhole_to_antlr(path):
     return tree
 
 
-def parse_pyhole(path):
-    tree = _parse_pyhole_to_antlr(path)
+def parse_pyttern(path):
+    tree = _parse_pyttern_to_antlr(path)
 
-    generated_tree = PyHoleVisitor().visit(tree)
+    generated_tree = PytternVisitor().visit(tree)
     return generated_tree
 
 
 def main(args):
     if args.brut:
         print(args.pytternFile)
-        tree = _parse_pyhole_to_antlr(args.pytternFile)
+        tree = _parse_pyttern_to_antlr(args.pytternFile)
         listener = Printer()
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
@@ -63,7 +63,7 @@ def main(args):
         print(match_files(args.pytternFile, args.codeFile))
 
     else:
-        print(parse_pyhole(args.pytternFile))
+        print(parse_pyttern(args.pytternFile))
 
 
 if __name__ == "__main__":
