@@ -257,12 +257,12 @@ strings: STRING+ ;
 
 // syntax of wildcards
 wildcard_type: '[' name (',' name)* ']';
-wildcard_number: '{' INTEGER (',' INTEGER) '}';
+wildcard_number: '{' NUMBER (',' | ',' NUMBER)? '}';
 expr_wildcard: simple_wildcard | double_wildcard | var_wildcard;
 simple_wildcard: '?' wildcard_type? wildcard_number?;
 double_wildcard: '?' wildcard_type? '*';
 var_wildcard: '?' wildcard_type? name;
 compound_wildcard: simple_compound_wildcard | multiple_compound_wildcard | strict_mode;
 simple_compound_wildcard: '?' wildcard_type? ':' wildcard_number? block;
-multiple_compound_wildcard: '?' wildcard_type? ':' '*' block; // TODO: change to ':*'
+multiple_compound_wildcard: '?' wildcard_type? ':' '*' block;
 strict_mode: '?![' (simple_stmts | NEWLINE stmt+) ']' NEWLINE;

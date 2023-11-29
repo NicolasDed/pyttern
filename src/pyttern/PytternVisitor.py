@@ -1125,15 +1125,29 @@ class PytternVisitor(Python3ParserVisitor):
         return txt
 
     def visitWildcard_type(self, ctx:Python3Parser.Wildcard_typeContext):
-        # TODO
+        # TODO (maybe not)
         return list(map(lambda x: x.accept(self), ctx.name()))
+
+    def visitWildcard_number(self, ctx:Python3Parser.Wildcard_numberContext):
+        low = ctx.NUMBER(0).accept(self)
+        high = low
+        if ctx.NUMBER(1) is not None:
+            high = ctx.NUMBER(1).accept(self)
+            if high < low:
+                raise Exception("High must be bigger than low")
+        elif ctx.COMMA() is not None:
+            high = 2e64
+        return int(low), int(high)
 
     # Visit a parse tree produced by Python3Parser#simple_wildcard.
     def visitSimple_wildcard(self, ctx: Python3Parser.Simple_wildcardContext):
         types = None
         if ctx.wildcard_type() is not None:
             types = ctx.wildcard_type().accept(self)
-        wildcard = SimpleWildcard(types)
+        numbers = (1, 1)
+        if ctx.wildcard_number() is not None:
+            numbers = ctx.wildcard_number().accept(self)
+        wildcard = SimpleWildcard(types, numbers[0], numbers[1])
         set_lineno(wildcard, ctx)
         return wildcard
 
@@ -1159,8 +1173,11 @@ class PytternVisitor(Python3ParserVisitor):
         types = None
         if ctx.wildcard_type() is not None:
             types = ctx.wildcard_type().accept(self)
+        numbers = (1, 1)
+        if ctx.wildcard_number() is not None:
+            numbers = ctx.wildcard_number().accept(self)
         body = ctx.block().accept(self)
-        wildcard = BodyWildcard(body, types)
+        wildcard = BodyWildcard(body, types, numbers[0], numbers[1])
         set_lineno(wildcard, ctx)
         return wildcard
 

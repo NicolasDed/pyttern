@@ -414,6 +414,31 @@ class TestASTWildcards(PytternTest):
         res, det = match_files(pattern_path, code_path, match_details=True)
         assert not res, str(det)
 
+    @pytest.mark.parametrize("file_path", discover_files(get_test_file("numbers")))
+    def test_number_wildcard(self, file_path):
+        pattern_path = get_test_file(file_path)
+        code_path = get_test_file("type.py")
+
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        if "Ok" in file_path:
+            assert res, det
+        elif "Ko" in file_path:
+            assert not res, det
+        else:
+            assert False, f"Not ok nor ko in file name: {file_path}"
+
+    @pytest.mark.parametrize("file_path", discover_files(get_test_file("bodyNumbers")))
+    def test_number_body_wildcard(self, file_path):
+        pattern_path = get_test_file(file_path)
+        code_path = get_test_file("strictModeNok.py")
+
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        if "Ok" in file_path:
+            assert res, det
+        elif "Ko" in file_path:
+            assert not res, det
+        else:
+            assert False, f"Not ok nor ko in file name: {file_path}"
 
 class TestVisualizer(TestCase):
 

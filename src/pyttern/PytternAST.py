@@ -26,8 +26,27 @@ class PytternAST:
             return True
         return f"{type(node).__name__}" in self.types
 
+    def _recursiveMatch(self, pattern_node, code_node, matcher, lineno):
+        matcher.save_walkers_state()
+        if matcher.rec_match(pattern_node, code_node):
+            end_lineno = getattr(code_node, "lineno", None)
+            if end_lineno != lineno and end_lineno is not None:
+                matcher.pattern_match.add_line_skip_match(lineno, end_lineno - 1)
+            return True
+        matcher.load_walkers_state()
+        matcher.pattern_match.match(code_node, self)
+        if lineno and lineno not in matcher.pattern_match.pattern_match:
+            matcher.pattern_match.add_pattern_match(lineno, self)
+        return False
+
 
 class SimpleWildcard(PytternAST):
+
+    def __init__(self, types=None, low=1, high=1):
+        super().__init__(types=types)
+        self.low = low
+        self.high = high
+
     def __str__(self):
         return 'ANY'
 
@@ -36,6 +55,22 @@ class SimpleWildcard(PytternAST):
             matcher.error = (f"Type missmatch, expecting one of {self.types} but got {type(current_node).__name__} "
                              f"instead")
             return False
+
+        lineno = getattr(current_node, "lineno", None)
+
+        code_node = current_node
+        count = 0
+        while count < self.low:
+            if code_node is None:
+                return False
+            if not self.check_type(code_node):
+                return False
+
+            # if not self._recursiveMatch(pattern_node, code_node, matcher, lineno):
+            #     return False
+
+            code_node = matcher.code_walker.next_sibling()
+            count += 1
 
         pattern_node = matcher.pattern_walker.next()
         if pattern_node is None:
@@ -51,16 +86,22 @@ class SimpleWildcard(PytternAST):
                 matcher.pattern_match.add_pattern_match(current_node.lineno, self)
             return True
 
-        code_node = matcher.code_walker.next_sibling()
         if code_node is None:
-            code_node = matcher.code_walker.next_parent()
-            if code_node is None:
-                return False
+            matcher.code_walker.select_specific_child("")
+            code_node = matcher.code_walker.next()
+            return self._recursiveMatch(pattern_node, code_node, matcher, lineno)
 
-        if hasattr(current_node, "lineno"):
-            matcher.pattern_match.add_pattern_match(current_node.lineno, self)
-        matcher.pattern_match.match(code_node, self)
-        return matcher.rec_match(pattern_node, code_node)
+        while count <= self.high:
+            # if not self.check_type(code_node):
+            #     return False
+
+            if self._recursiveMatch(pattern_node, code_node, matcher, lineno):
+                return True
+
+            code_node = matcher.code_walker.next_sibling()
+            count += 1
+
+        return False
 
 
 class AnyWildcard(PytternAST):
@@ -106,46 +147,82 @@ class AnyWildcard(PytternAST):
             if not self.check_type(code_node):
                 return False
 
-            matcher.save_walkers_state()
-            if matcher.rec_match(next_pattern_node, code_node):
-                end_lineno = code_node.lineno
-                if end_lineno != lineno:
-                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno - 1)
+            if self._recursiveMatch(next_pattern_node, code_node, matcher, lineno):
                 return True
-            matcher.load_walkers_state()
-            matcher.pattern_match.match(code_node, self)
-            if lineno and lineno not in matcher.pattern_match.pattern_match:
-                matcher.pattern_match.add_pattern_match(lineno, self)
+
             code_node = matcher.code_walker.next_sibling()
 
         return False
 
 
 class BodyWildcard(PytternAST):
-    def __init__(self, body, types=None):
+    def __init__(self, body, types=None, low=1, high=1):
         super().__init__(types)
         self.body = body
         self._fields = ['body']
+        self.low = low
+        self.high = high
 
     def __str__(self):
         return 'ANY:'
 
-    def visit(self, matcher, current_node):
-        # matcher.pattern_match.add_match(self, current_node)
-        if not self.check_type(current_node):
+    def _get_next_body(self, matcher, current_node):
+        while not has_body_elements(current_node) or not self.check_type(current_node):
+            current_node = matcher.code_walker.next_sibling()
+            if current_node is None:
+                return None
+        return current_node
+
+    def _recursive_visit(self, matcher, current_node, next_pattern_node, depth):
+        if depth >= self.high:
             return False
 
+        matcher.save_walkers_state()
         matcher.code_walker.select_specific_child('body')
         next_code_node = matcher.code_walker.next_child()
         if next_code_node is None:
+            matcher.drop_walkers_state()
             return False
-        next_pattern_node = matcher.pattern_walker.next()
-        if not matcher.rec_match(next_pattern_node, next_code_node):
-            return False
+        # next_pattern_node = matcher.pattern_walker.next()
+        if matcher.rec_match(next_pattern_node, next_code_node):
+            matcher.drop_walkers_state()
+            return True
+
         if hasattr(current_node, "lineno"):
             matcher.pattern_match.add_pattern_match(current_node.lineno, self)
         matcher.pattern_match.match(current_node, self)
-        return True
+
+        if self._recursive_visit(matcher, next_code_node, next_pattern_node, depth + 1):
+            matcher.drop_walkers_state()
+            return True
+
+        matcher.load_walkers_state()
+        next_code_node = self._get_next_body(matcher, next_code_node)
+        if next_code_node is None:
+            return False
+
+        return self._recursive_visit(matcher, next_code_node, next_pattern_node, depth + 1)
+
+    def visit(self, matcher, current_node):
+        # matcher.pattern_match.add_match(self, current_node)
+        count = 0
+        if not self.check_type(current_node):
+            return False
+
+        while count < self.low - 1:
+            current_node = self._get_next_body(matcher, current_node)
+            if current_node is None:
+                return False
+
+            matcher.code_walker.select_specific_child("body")
+            current_node = matcher.code_walker.next_child()
+            if current_node is None:
+                return False
+
+            count += 1
+
+        next_pattern_node = matcher.pattern_walker.next()
+        return self._recursive_visit(matcher, current_node, next_pattern_node, count)
 
 
 class VarWildcard(PytternAST):
@@ -240,20 +317,13 @@ class AnyBodyWildcard(PytternAST):
         lineno = code_node.lineno if hasattr(code_node, "lineno") else None
         if not has_body_elements(code_node):
             return False
-        while code_node is not None:
-            if not self.check_type(code_node):
-                return False
+        if not self.check_type(code_node):
+            return False
 
-            matcher.save_walkers_state()
-            if matcher.rec_match(next_pattern_node, code_node):
-                end_lineno = code_node.lineno
-                if end_lineno != lineno:
-                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno - 1)
+        while code_node is not None:
+            if self._recursiveMatch(next_pattern_node, code_node, matcher, lineno):
                 return True
-            matcher.load_walkers_state()
-            if lineno and lineno not in matcher.pattern_match.pattern_match:
-                matcher.pattern_match.add_pattern_match(lineno, self)
-            matcher.pattern_match.match(code_node, self)
+
             matcher.code_walker.select_body_children()
             code_node = matcher.code_walker.next()
 
