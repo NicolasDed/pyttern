@@ -1,17 +1,14 @@
 # read the contents of your README file
 from pathlib import Path
 
-from setuptools import setup, Extension
+from setuptools import setup
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
-module1 = Extension('wildcard_match',
-                    sources=['src/pyttern/clibrary/wildcard_match.c'])
-
 setup(
-    name='pyttern',
-    version='0.0.10',
+    name='pyhole',
+    version='0.1.0',
     packages=['pyttern', 'pyttern.antlr', 'pyttern.visualizer'],
     package_dir={'': 'src'},
     url='https://github.com/JulienLie/pyttern',
@@ -25,6 +22,5 @@ setup(
         "pytest-timeout"
     ],
     long_description=long_description,
-    long_description_content_type='text/markdown',
-    ext_modules=[module1]
+    long_description_content_type='text/markdown'
 )
