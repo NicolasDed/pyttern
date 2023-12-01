@@ -440,6 +440,13 @@ class TestASTWildcards(PytternTest):
         else:
             assert False, f"Not ok nor ko in file name: {file_path}"
 
+    def test_nathan(self):
+        pattern_path = get_test_file("nathan/pattern.pyh")
+        code_path = get_test_file("nathan/code.py")
+
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert not res, det
+
 class TestVisualizer(TestCase):
 
     def test_pattern_visualizer(self):
