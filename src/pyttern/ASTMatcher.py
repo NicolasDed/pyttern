@@ -16,6 +16,7 @@ class ASTMatcher:
         visitor = getattr(self, method1, getattr(self, method2, self.generic_visit))
         return visitor(pattern, node)
 
+    # Careful of __iadd__ method
     def visit_AugAssign_Assign(self, pattern, node):
         node_target = node.target
         node_op = node.op

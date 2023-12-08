@@ -1133,6 +1133,15 @@ class Python3ParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by Python3Parser#contains_wildcard.
+    def enterContains_wildcard(self, ctx:Python3Parser.Contains_wildcardContext):
+        pass
+
+    # Exit a parse tree produced by Python3Parser#contains_wildcard.
+    def exitContains_wildcard(self, ctx:Python3Parser.Contains_wildcardContext):
+        pass
+
+
     # Enter a parse tree produced by Python3Parser#compound_wildcard.
     def enterCompound_wildcard(self, ctx:Python3Parser.Compound_wildcardContext):
         pass

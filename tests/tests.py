@@ -21,11 +21,12 @@ def get_test_file(path):
     return str(pkg_resources.files(tests_files) / path)
 
 
-def discover_files(directory):
+def discover_files(directory, extension=None):
     for root, _, files in os.walk(directory):
         for file in files:
             if ".pyc" not in file:
-                yield os.path.join(root, file)
+                if extension is None or file.endswith(extension):
+                    yield os.path.join(root, file)
 
 
 class Printer(ParseTreeListener):
@@ -446,6 +447,33 @@ class TestASTWildcards(PytternTest):
 
         res, det = match_files(pattern_path, code_path, match_details=True)
         assert not res, det
+
+    @pytest.mark.parametrize("file_path", discover_files(get_test_file("test_zero")))
+    def test_zero_wildcard(self, file_path):
+        pattern_path = get_test_file(file_path)
+        code_path = get_test_file("type.py")
+
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        if "Ok" in file_path:
+            assert res, det
+        elif "Ko" in file_path:
+            assert not res, det
+        else:
+            assert False, f"Not ok nor ko in file name: {file_path}"
+
+    @pytest.mark.parametrize("file_path", discover_files(get_test_file("contains"), ".pyh"))
+    @pytest.mark.parametrize("code_path", discover_files(get_test_file("contains"), ".py"))
+    def test_contains_wildcard(self, file_path, code_path):
+        pattern_path = get_test_file(file_path)
+        code_path = get_test_file(code_path)
+
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        if "Ok" in file_path:
+            assert res, det
+        elif "Ko" in file_path:
+            assert not res, det
+        else:
+            assert False, f"Not ok nor ko in file name: {file_path}"
 
 class TestVisualizer(TestCase):
 

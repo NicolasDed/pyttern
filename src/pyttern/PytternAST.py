@@ -50,7 +50,57 @@ class SimpleWildcard(PytternAST):
     def __str__(self):
         return 'ANY'
 
+    def _handle_zero(self, matcher, current_node):
+        next_pattern_node = matcher.pattern_walker.next_sibling()
+        while isinstance(next_pattern_node, AnyWildcard):
+            next_pattern_node = matcher.pattern_walker.next_sibling()
+
+        lineno = getattr(current_node, "lineno", None)
+
+        if next_pattern_node is None:
+
+            # We cannot juste skip, we have to check every type inside
+            if self.types is not None:
+                current_node = matcher.code_walker.next_sibling()
+                while current_node is not None:
+                    if not self.check_type(current_node):
+                        return False
+                    current_node = matcher.code_walker.next_sibling()
+
+            next_pattern_node = matcher.pattern_walker.next()
+            next_code_node = matcher.code_walker.next_parent()
+
+            if next_pattern_node is None:
+                if next_code_node is None or not matcher.strict:
+                    if lineno and lineno not in matcher.pattern_match.pattern_match:
+                        matcher.pattern_match.add_pattern_match(lineno, self)
+                    return True
+                return False
+            else:
+                if lineno and lineno not in matcher.pattern_match.pattern_match and next_code_node is not None:
+                    matcher.pattern_match.add_pattern_match(lineno, self)
+                    end_lineno = next_code_node.lineno - 1
+                    if lineno != end_lineno:
+                        matcher.pattern_match.add_line_skip_match(lineno, end_lineno)
+                return matcher.rec_match(next_pattern_node, next_code_node)
+
+        code_node = current_node
+        while code_node is not None:
+            if not self.check_type(code_node):
+                return False
+
+            if self._recursiveMatch(next_pattern_node, code_node, matcher, lineno):
+                return True
+
+            code_node = matcher.code_walker.next_sibling()
+
+        return False
+
     def visit(self, matcher, current_node):
+        if self.low == 0 == self.high:
+            return self._handle_zero(matcher, current_node)
+
+
         if not self.check_type(current_node):
             matcher.error = (f"Type missmatch, expecting one of {self.types} but got {type(current_node).__name__} "
                              f"instead")
@@ -110,8 +160,8 @@ class AnyWildcard(PytternAST):
 
     def visit(self, matcher, current_node):
         next_pattern_node = matcher.pattern_walker.next_sibling()
-        while isinstance(next_pattern_node, AnyWildcard):
-            next_pattern_node = matcher.pattern_walker.next_sibling()
+        #while isinstance(next_pattern_node, AnyWildcard):
+        #    next_pattern_node = matcher.pattern_walker.next_sibling()
 
         lineno = getattr(current_node, "lineno", None)
 
@@ -119,6 +169,8 @@ class AnyWildcard(PytternAST):
 
             # We cannot juste skip, we have to check every type inside
             if self.types is not None:
+                if not self.check_type(current_node):
+                    return False
                 current_node = matcher.code_walker.next_sibling()
                 while current_node is not None:
                     if not self.check_type(current_node):
@@ -153,6 +205,36 @@ class AnyWildcard(PytternAST):
             code_node = matcher.code_walker.next_sibling()
 
         return False
+
+
+class ContainerWildcard(PytternAST):
+    def __init__(self, values, types=None):
+        super().__init__(types)
+        self.values = values
+        self._fields = ['values']
+
+    def visit(self, matcher, current_node):
+        if not self.check_type(current_node):
+            return False
+
+        from .Matcher import Matcher
+        from .AstWalker import AstWalker
+
+        matcher.code_walker.select_specific_child("")
+        matcher.code_walker.next()
+        code_walker = AstWalker(current_node)
+
+        while current_node is not None:
+            sub_matcher = Matcher()
+            sub_matcher.variables = matcher.variables
+            if sub_matcher.match(self.values, current_node):
+                return True
+            current_node = code_walker.next()
+
+        return False
+
+    def __str__(self):
+        return f"Contains {self.values}"
 
 
 class BodyWildcard(PytternAST):

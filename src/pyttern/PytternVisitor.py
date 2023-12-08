@@ -1,11 +1,11 @@
 # Generated from Python3.g4 by ANTLR 4.7.2
-
+import ast
 import codecs
 import re
 from ast import *
 
 from .PytternAST import (PytternAST, StrictMode, AnyBodyWildcard,
-                         BodyWildcard, VarWildcard, AnyWildcard, SimpleWildcard)
+                         BodyWildcard, VarWildcard, AnyWildcard, SimpleWildcard, ContainerWildcard)
 from .antlr.Python3Parser import Python3Parser
 from .antlr.Python3ParserVisitor import Python3ParserVisitor
 
@@ -1147,6 +1147,12 @@ class PytternVisitor(Python3ParserVisitor):
         numbers = (1, 1)
         if ctx.wildcard_number() is not None:
             numbers = ctx.wildcard_number().accept(self)
+        if numbers == (0, 0):
+            ast_types = [t for t in ast.__dir__() if t[0].isupper()]
+            ast_types = [t for t in ast_types if t not in types]
+            wildcard = AnyWildcard(ast_types)
+            set_lineno(wildcard, ctx)
+            return wildcard
         wildcard = SimpleWildcard(types, numbers[0], numbers[1])
         set_lineno(wildcard, ctx)
         return wildcard
@@ -1169,6 +1175,17 @@ class PytternVisitor(Python3ParserVisitor):
         set_lineno(wildcard, ctx)
         return wildcard
 
+    def visitContains_wildcard(self, ctx:Python3Parser.Contains_wildcardContext):
+        types = None
+        if ctx.wildcard_type() is not None:
+            types = ctx.wildcard_type().accept(self)
+        value = ctx.getChild(2).accept(self)
+        if isinstance(value, Expr):
+            value = value.value
+        wildcard = ContainerWildcard(value, types)
+        set_lineno(wildcard, ctx)
+        return wildcard
+
     def visitSimple_compound_wildcard(self, ctx: Python3Parser.Simple_compound_wildcardContext):
         types = None
         if ctx.wildcard_type() is not None:
@@ -1177,6 +1194,12 @@ class PytternVisitor(Python3ParserVisitor):
         if ctx.wildcard_number() is not None:
             numbers = ctx.wildcard_number().accept(self)
         body = ctx.block().accept(self)
+        if numbers == (0, 0):
+            ast_types = [t for t in ast.__dir__() if t[0].isupper()]
+            ast_types = [t for t in ast_types if t not in types]
+            wildcard = AnyBodyWildcard(body, ast_types)
+            set_lineno(wildcard, ctx)
+            return wildcard
         wildcard = BodyWildcard(body, types, numbers[0], numbers[1])
         set_lineno(wildcard, ctx)
         return wildcard

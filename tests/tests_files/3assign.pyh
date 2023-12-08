@@ -1,5 +1,0 @@
-def ?(?*):
-    ?+[Assign]
-    lst = [?[^Constant]{3,6}]
-    ?:
-        ?[Assign]{0}
