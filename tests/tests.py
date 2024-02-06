@@ -7,12 +7,12 @@ from unittest import TestCase
 import pytest
 from antlr4 import ParseTreeListener, TerminalNode, FileStream, CommonTokenStream, ParseTreeWalker
 
-from pyttern.Matcher import Matcher, match_files, match_wildcards
-from pyttern.PytternErrorListener import Python3ErrorListener
-from pyttern.PytternVisitor import PytternVisitor
 from pyttern.antlr.Python3Lexer import Python3Lexer
 from pyttern.antlr.Python3Parser import Python3Parser
 from pyttern.antlr.Python3ParserListener import Python3ParserListener
+from pyttern.matcher import Matcher, match_files, match_wildcards
+from pyttern.pyttern_error_listener import Python3ErrorListener
+from pyttern.pyttern_visitor import PytternVisitor
 from pyttern.visualizer import Visualizer
 from . import tests_files, visu
 

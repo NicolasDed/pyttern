@@ -1,16 +1,46 @@
+"""
+This module contains the ASTMatcher class.
+"""
+
 import ast
 from ast import BinOp
 
+from .astpyttern import AstPyttern
 
-class ASTMatcher:
+
+class AstMatcher:
+    """
+    ASTMatcher class is responsible for custom matching of Python AST nodes.
+    If a method is defined with the name visit_<node_name>_<pattern_name> or visit_<node_name>,
+    it will be called when visiting the nodes.
+    """
 
     def __init__(self, matcher):
+        """
+        Constructor for ASTMatcher class.
+        :param matcher: Matcher object for further matching.
+        """
         self.matcher = matcher
 
-    def generic_visit(self, pattern, node):
+    def generic_visit(self, pattern, node) -> bool:
+        """
+        Generic visit method for ASTMatcher class.
+        :param pattern: Pattern node to be matched.
+        :param node: Node to be matched.
+        :return: False if the nodes are from different types, True otherwise.
+        """
         return type(pattern) is type(node)
 
-    def visit(self, pattern, node):
+    def visit(self, pattern: ast.AST | AstPyttern, node: ast.AST | AstPyttern) -> bool:
+        """
+        Visit method for ASTMatcher class.
+        This method is responsible for calling the correct visit method for the
+        given pattern and node.
+        If no specific method is found, it calls the generic_visit method.
+        :param pattern: Pattern node to be matched.
+        :param node: Node to be matched.
+        :return: Result of the visit method for the given pattern and node.
+        """
         method1 = 'visit_' + node.__class__.__name__ + "_" + pattern.__class__.__name__
         method2 = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method1, getattr(self, method2, self.generic_visit))
@@ -18,6 +48,7 @@ class ASTMatcher:
 
     # Careful of __iadd__ method
     def visit_AugAssign_Assign(self, pattern, node):
+        """Handle var += value and var = var + value patterns."""
         node_target = node.target
         node_op = node.op
         node_value = node.value
@@ -25,7 +56,7 @@ class ASTMatcher:
 
         if len(pattern_targets) != 1:
             return False
-        from pyttern.Matcher import Matcher
+        from pyttern.matcher import Matcher
         target_matcher = Matcher()
         target_matcher.variables = self.matcher.variables
         pattern_target = pattern_targets[0]
@@ -54,6 +85,7 @@ class ASTMatcher:
         return True
 
     def visit_Assign_AugAssign(self, pattern, node):
+        """Handle var = var + value and var += value patterns."""
         pattern_target = pattern.target
         pattern_op = pattern.op
         pattern_value = pattern.value
@@ -61,7 +93,7 @@ class ASTMatcher:
 
         if len(node_targets) != 1:
             return False
-        from pyttern.Matcher import Matcher
+        from pyttern.matcher import Matcher
         target_matcher = Matcher()
         target_matcher.variables = self.matcher.variables
         node_target = node_targets[0]

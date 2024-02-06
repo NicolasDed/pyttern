@@ -1,15 +1,20 @@
+"""
+Main module for the Pyttern parser.
+"""
+
 import argparse
 import io
 
 from antlr4 import FileStream, CommonTokenStream, ParseTreeListener, TerminalNode, ParseTreeWalker
 
-from .PytternErrorListener import Python3ErrorListener
-from .PytternVisitor import PytternVisitor
 from .antlr.Python3Lexer import Python3Lexer
 from .antlr.Python3Parser import Python3Parser
+from .pyttern_error_listener import Python3ErrorListener
+from .pyttern_visitor import PytternVisitor
 
 
 class Printer(ParseTreeListener):
+    """Parse tree printer."""
     def __init__(self):
         self.depth = 0
 
@@ -28,14 +33,14 @@ def _parse_pyttern_to_antlr(path):
     file_input = FileStream(path, encoding="utf-8")
     lexer = Python3Lexer(file_input)
     stream = CommonTokenStream(lexer)
-    parser = Python3Parser(stream)
+    py_parser = Python3Parser(stream)
 
     error = io.StringIO()
 
-    parser.removeErrorListeners()
+    py_parser.removeErrorListeners()
     error_listener = Python3ErrorListener(error)
-    parser.addErrorListener(error_listener)
-    tree = parser.file_input()
+    py_parser.addErrorListener(error_listener)
+    tree = py_parser.file_input()
     if len(error_listener.symbol) > 0:
         raise IOError(f"Syntax error in {path} at line {error_listener.line} "
                       f"({repr(error_listener.symbol)}) : {error.getvalue()}")
@@ -59,7 +64,7 @@ def main(args):
         walker.walk(listener, tree)
 
     elif args.codeFile:
-        from .Matcher import match_files
+        from .matcher import match_files
         print(match_files(args.pytternFile, args.codeFile))
 
     else:

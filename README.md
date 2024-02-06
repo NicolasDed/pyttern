@@ -161,21 +161,3 @@ This option can be used in five different ways:
 ## Augassign
 We implemented a match between `augassign` and `assign`. For example, the pattern `x = x + 1` will match `x += 1` and the 
 pattern `x += 1` will match `x = x + 1`.
-
-
-## [WIP] Visualization 
-You can visualize the pattern match using the `match_details` argument and the visualiser.
-
-```python
-from src.pyttern import Visualizer
-import Matcher
-
-code = "code_file.py"
-pattern = "pattern_file.py"
-val, match = match_files(pattern, code, strict_match=False, match_details=True)
-
-output_file = "example.html"
-html = Visualizer.match_to_hml(match, code, pattern)
-html.write(output_file)
-```
-![Visualisation of a match](match.png)

@@ -2,7 +2,7 @@ import pkgutil
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import ElementTree, Element
 
-from ..PatternMatch import PatternMatch
+from ..pattern_match import PatternMatch
 
 
 def remove_overlap(intervals):

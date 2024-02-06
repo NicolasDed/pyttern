@@ -1,15 +1,24 @@
+"""
+Defines the Pyttern AST classes and helper functions.
+"""
+
 import ast
 from ast import AST, Name, Load
 
 
-class PytternAST:
+class AstPyttern:
+    """
+    Abstract class for pyttern AST nodes.
+    """
+
     def __init__(self, types=None):
+        """Constructor for ast_pyttern class."""
         self._attributes = ["lineno", "lineno_end"]
         self._fields = []
         self.lineno = None
         self.lineno_end = None
         self.types = types
-        if types is not None and type(types) is not list:
+        if types is not None and not isinstance(types, list):
             raise ValueError(f"Argument types should be of type list not {type(types)}.")
 
     def __str__(self):
@@ -19,14 +28,22 @@ class PytternAST:
         return repr(self.__str__())
 
     def visit(self, matcher, current_node):
+        """
+        Visit method for ast_pyttern class.
+        Handle the matching of pyttern node with the current node.
+        :param matcher: Matcher object for further matching.
+        :param current_node: Current node to be matched.
+        :return: True if the subtree match, False otherwise.
+        """
         raise NotImplementedError()
 
-    def check_type(self, node):
+    def check_type(self, node) -> bool:
+        """Check if the node type is in the types list."""
         if self.types is None:
             return True
         return f"{type(node).__name__}" in self.types
 
-    def _recursiveMatch(self, pattern_node, code_node, matcher, lineno):
+    def _recursive_match(self, pattern_node, code_node, matcher, lineno):
         matcher.save_walkers_state()
         if matcher.rec_match(pattern_node, code_node):
             end_lineno = getattr(code_node, "lineno", None)
@@ -40,7 +57,8 @@ class PytternAST:
         return False
 
 
-class SimpleWildcard(PytternAST):
+class SimpleWildcard(AstPyttern):
+    """SimpleWildcard class is responsible for matching the "?" wildcard."""
 
     def __init__(self, types=None, low=1, high=1):
         super().__init__(types=types)
@@ -51,6 +69,7 @@ class SimpleWildcard(PytternAST):
         return 'ANY'
 
     def _handle_zero(self, matcher, current_node):
+        """Handle the case where we don't want to match the current node."""
         next_pattern_node = matcher.pattern_walker.next_sibling()
         while isinstance(next_pattern_node, AnyWildcard):
             next_pattern_node = matcher.pattern_walker.next_sibling()
@@ -76,20 +95,20 @@ class SimpleWildcard(PytternAST):
                         matcher.pattern_match.add_pattern_match(lineno, self)
                     return True
                 return False
-            else:
-                if lineno and lineno not in matcher.pattern_match.pattern_match and next_code_node is not None:
-                    matcher.pattern_match.add_pattern_match(lineno, self)
-                    end_lineno = next_code_node.lineno - 1
-                    if lineno != end_lineno:
-                        matcher.pattern_match.add_line_skip_match(lineno, end_lineno)
-                return matcher.rec_match(next_pattern_node, next_code_node)
+            if (lineno and lineno not in matcher.pattern_match.pattern_match
+                    and next_code_node is not None):
+                matcher.pattern_match.add_pattern_match(lineno, self)
+                end_lineno = next_code_node.lineno - 1
+                if lineno != end_lineno:
+                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno)
+            return matcher.rec_match(next_pattern_node, next_code_node)
 
         code_node = current_node
         while code_node is not None:
             if not self.check_type(code_node):
                 return False
 
-            if self._recursiveMatch(next_pattern_node, code_node, matcher, lineno):
+            if self._recursive_match(next_pattern_node, code_node, matcher, lineno):
                 return True
 
             code_node = matcher.code_walker.next_sibling()
@@ -100,10 +119,9 @@ class SimpleWildcard(PytternAST):
         if self.low == 0 == self.high:
             return self._handle_zero(matcher, current_node)
 
-
         if not self.check_type(current_node):
-            matcher.error = (f"Type missmatch, expecting one of {self.types} but got {type(current_node).__name__} "
-                             f"instead")
+            matcher.error = (f"Type missmatch, expecting one of {self.types} but "
+                             f"got {type(current_node).__name__} instead")
             return False
 
         lineno = getattr(current_node, "lineno", None)
@@ -111,13 +129,8 @@ class SimpleWildcard(PytternAST):
         code_node = current_node
         count = 0
         while count < self.low:
-            if code_node is None:
+            if code_node is None or not self.check_type(code_node):
                 return False
-            if not self.check_type(code_node):
-                return False
-
-            # if not self._recursiveMatch(pattern_node, code_node, matcher, lineno):
-            #     return False
 
             code_node = matcher.code_walker.next_sibling()
             count += 1
@@ -139,13 +152,13 @@ class SimpleWildcard(PytternAST):
         if code_node is None:
             matcher.code_walker.select_specific_child("")
             code_node = matcher.code_walker.next()
-            return self._recursiveMatch(pattern_node, code_node, matcher, lineno)
+            return self._recursive_match(pattern_node, code_node, matcher, lineno)
 
         while count <= self.high:
             # if not self.check_type(code_node):
             #     return False
 
-            if self._recursiveMatch(pattern_node, code_node, matcher, lineno):
+            if self._recursive_match(pattern_node, code_node, matcher, lineno):
                 return True
 
             code_node = matcher.code_walker.next_sibling()
@@ -154,13 +167,14 @@ class SimpleWildcard(PytternAST):
         return False
 
 
-class AnyWildcard(PytternAST):
+class AnyWildcard(AstPyttern):
+    """AnyWildcard class is responsible for matching the "?*" wildcard."""
     def __str__(self):
         return 'ANY*'
 
     def visit(self, matcher, current_node):
         next_pattern_node = matcher.pattern_walker.next_sibling()
-        #while isinstance(next_pattern_node, AnyWildcard):
+        # while isinstance(next_pattern_node, AnyWildcard):
         #    next_pattern_node = matcher.pattern_walker.next_sibling()
 
         lineno = getattr(current_node, "lineno", None)
@@ -186,20 +200,20 @@ class AnyWildcard(PytternAST):
                         matcher.pattern_match.add_pattern_match(lineno, self)
                     return True
                 return False
-            else:
-                if lineno and lineno not in matcher.pattern_match.pattern_match and next_code_node is not None:
-                    matcher.pattern_match.add_pattern_match(lineno, self)
-                    end_lineno = next_code_node.lineno - 1
-                    if lineno != end_lineno:
-                        matcher.pattern_match.add_line_skip_match(lineno, end_lineno)
-                return matcher.rec_match(next_pattern_node, next_code_node)
+            if (lineno and lineno not in matcher.pattern_match.pattern_match
+                    and next_code_node is not None):
+                matcher.pattern_match.add_pattern_match(lineno, self)
+                end_lineno = next_code_node.lineno - 1
+                if lineno != end_lineno:
+                    matcher.pattern_match.add_line_skip_match(lineno, end_lineno)
+            return matcher.rec_match(next_pattern_node, next_code_node)
 
         code_node = current_node
         while code_node is not None:
             if not self.check_type(code_node):
                 return False
 
-            if self._recursiveMatch(next_pattern_node, code_node, matcher, lineno):
+            if self._recursive_match(next_pattern_node, code_node, matcher, lineno):
                 return True
 
             code_node = matcher.code_walker.next_sibling()
@@ -207,7 +221,8 @@ class AnyWildcard(PytternAST):
         return False
 
 
-class ContainerWildcard(PytternAST):
+class ContainerWildcard(AstPyttern):
+    """ContainerWildcard class is responsible for matching the "<>" wildcard. Still [WIP]"""
     def __init__(self, values, types=None):
         super().__init__(types)
         self.values = values
@@ -217,12 +232,12 @@ class ContainerWildcard(PytternAST):
         if not self.check_type(current_node):
             return False
 
-        from .Matcher import Matcher
-        from .AstWalker import AstWalker
+        from .matcher import Matcher
+        from .ast_walker import ast_walker
 
         matcher.code_walker.select_specific_child("")
         matcher.code_walker.next()
-        code_walker = AstWalker(current_node)
+        code_walker = ast_walker(current_node)
 
         while current_node is not None:
             sub_matcher = Matcher()
@@ -237,7 +252,8 @@ class ContainerWildcard(PytternAST):
         return f"Contains {self.values}"
 
 
-class BodyWildcard(PytternAST):
+class BodyWildcard(AstPyttern):
+    """BodyWildcard class is responsible for matching the "?:" wildcard."""
     def __init__(self, body, types=None, low=1, high=1):
         super().__init__(types)
         self.body = body
@@ -307,7 +323,8 @@ class BodyWildcard(PytternAST):
         return self._recursive_visit(matcher, current_node, next_pattern_node, count)
 
 
-class VarWildcard(PytternAST):
+class VarWildcard(AstPyttern):
+    """VarWildcard class is responsible for matching the "?var" wildcard."""
     def __init__(self, name, types=None):
         super().__init__(types)
         self.name = name
@@ -319,7 +336,7 @@ class VarWildcard(PytternAST):
     def visit(self, matcher, current_node):
         if self.name in matcher.variables:
             pattern_node = matcher.variables[self.name]
-            from .Matcher import Matcher
+            from .matcher import Matcher
             if not Matcher().match(pattern_node, current_node):
                 return False
             if hasattr(current_node, "lineno"):
@@ -362,12 +379,10 @@ class VarWildcard(PytternAST):
             next_code_node = matcher.code_walker.next_sibling()
             if next_code_node is None:
                 return True
-            else:
-                next_code_node = matcher.code_walker.next_parent()
-                if next_code_node is None:
-                    return True
-                else:
-                    return False
+            next_code_node = matcher.code_walker.next_parent()
+            if next_code_node is None:
+                return True
+            return False
 
         next_code_node = matcher.code_walker.next_sibling()
 
@@ -381,14 +396,15 @@ class VarWildcard(PytternAST):
         return True
 
 
-class AnyBodyWildcard(PytternAST):
+class AnyBodyWildcard(AstPyttern):
+    """AnyBodyWildcard class is responsible for matching the "?:*" wildcard."""
     def __init__(self, body, types=None):
         super().__init__(types)
         self.body = body
         self._fields = ['body']
 
     def __str__(self):
-        return f"ANY Depth"
+        return "ANY Depth"
 
     def visit(self, matcher, current_node):
         next_pattern_node = matcher.pattern_walker.next()
@@ -403,7 +419,7 @@ class AnyBodyWildcard(PytternAST):
             return False
 
         while code_node is not None:
-            if self._recursiveMatch(next_pattern_node, code_node, matcher, lineno):
+            if self._recursive_match(next_pattern_node, code_node, matcher, lineno):
                 return True
 
             matcher.code_walker.select_body_children()
@@ -412,7 +428,8 @@ class AnyBodyWildcard(PytternAST):
         return False
 
 
-class StrictMode(PytternAST):
+class StrictMode(AstPyttern):
+    """StrictMode class is responsible for matching the "?![]" wildcard."""
     def __init__(self, body, enable):
         super().__init__()
         self.body = body
@@ -436,6 +453,7 @@ class StrictMode(PytternAST):
 # Static methods #
 
 def has_body_elements(node):
+    """:return: True if the node has body elements, False otherwise."""
     for (_, value) in iter_fields(node):
         if isinstance(value, list):
             if len(value) > 0 and isinstance(value[0], ast.stmt):
@@ -453,16 +471,18 @@ def iter_child_nodes(node):
             for item in field:
                 if isinstance(item, AST):
                     yield item
-                elif isinstance(item, PytternAST):
+                elif isinstance(item, AstPyttern):
                     yield item
         elif field is not None:
             yield field
 
 
 def iter_constant_field(node):
-    for name, field in iter_fields(node):
-        if isinstance(field, SimpleWildcard) or not (
-                isinstance(field, AST) or isinstance(field, PytternAST) or isinstance(field, list)):
+    """
+    Yield all direct child nodes of *node*, that is, all fields that are constants
+    """
+    for _, field in iter_fields(node):
+        if isinstance(field, SimpleWildcard) or not isinstance(field, (AST, AstPyttern, list)):
             if field is not None:
                 yield field
 
