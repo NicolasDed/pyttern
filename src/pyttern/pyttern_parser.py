@@ -3,7 +3,6 @@ Main module for the Pyttern parser.
 """
 
 import io
-import tempfile
 from ast import dump
 from ast import parse
 from functools import cache
@@ -13,6 +12,7 @@ from antlr4 import FileStream, CommonTokenStream, ParseTreeListener, TerminalNod
 from .antlr.Python3Lexer import Python3Lexer
 from .antlr.Python3Parser import Python3Parser
 from .pyttern_error_listener import Python3ErrorListener
+from .pyttern_visitor import PytternVisitor
 
 
 class Printer(ParseTreeListener):
@@ -106,22 +106,22 @@ def parse_pyttern(path):
     Returns:
     Pyttern AST: The Pyttern AST representation of the Python file.
     """
-    with open(path, encoding="utf-8") as file:
-        source = file.read()
-        splitted = source.split('!#')
-        patterns = {}
-        for slit in splitted:
-            name, code = slit.split('\n', 1)
-            with tempfile.TemporaryFile() as temp:
-                temp.write(code.encode())
-                tree = _parse_pyttern_to_antlr(temp)
-                patterns[name.strip()] = tree
-        return patterns
+    # with open(path, encoding="utf-8") as file:
+    #     source = file.read()
+    #     splitted = source.split('!#')
+    #     patterns = {}
+    #     for slit in splitted:
+    #         name, code = slit.split('\n', 1)
+    #         with tempfile.TemporaryFile() as temp:
+    #             temp.write(code.encode())
+    #             tree = _parse_pyttern_to_antlr(temp)
+    #             patterns[name.strip()] = tree
+    #     return patterns
 
-    # tree = _parse_pyttern_to_antlr(path)
-    #
-    # generated_tree = PytternVisitor().visit(tree)
-    # return generated_tree
+    tree = _parse_pyttern_to_antlr(path)
+
+    generated_tree = PytternVisitor().visit(tree)
+    return generated_tree
 
 
 @cache

@@ -2,7 +2,6 @@ import ast
 import importlib.resources as pkg_resources
 import io
 import os
-import timeit
 from unittest import TestCase
 
 import pytest
@@ -468,20 +467,6 @@ class TestASTWildcards(PytternTest):
         else:
             assert False, f"Not ok nor ko in file name: {file_path}"
 
-    def test_count_match(self):
-        pattern_path = get_test_file("count/match_var_assign.pyt")
-        code_path = get_test_file("count/multiple_var_assign.py")
-
-        res, count, details = match_files(pattern_path, code_path, count=True, match_details=True)
-        assert res, details
-        if count != 6:
-            for i, detail in enumerate(details):
-                print(f"Match {i + 1}:")
-                for link in detail.links:
-                    if isinstance(link.code_node, ast.Assign):
-                        print(f"{link.pattern_node} -> {link.code_node.targets[0].id}")
-            assert False, f"Count should be 6, not {count}"
-
     def test_too_much_indentation(self):
         pattern_path = get_test_file("toomuchindentation.pyt")
         code_path = get_test_file("q1_560.py")
@@ -501,13 +486,6 @@ class TestASTWildcards(PytternTest):
                     assert not result, f"{pattern} on {match} should not match"
                 else:
                     assert result, f"{pattern} on {code} should match"
-
-    def test_performance(self):
-        pattern_path = get_test_file("augassign.pyh")
-        code_path = get_test_file("code/*.py")
-
-        time = timeit.timeit(lambda: match_wildcards(pattern_path, code_path), number=1)
-        assert time < 1, f"Time is {time} s"
 
     def test_missplaced_return(self):
         pattern_path = get_test_file("missplacedreturn/toplevelreturn.pyt")

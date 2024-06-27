@@ -1,10 +1,9 @@
 # Generated from Python3Parser.g4 by ANTLR 4.7.2
 # encoding: utf-8
-import sys
-from io import StringIO
-
 from antlr4 import *
+from io import StringIO
 from typing.io import TextIO
+import sys
 
 if __name__ is not None and "." in __name__:
     from .Python3ParserBase import Python3ParserBase
