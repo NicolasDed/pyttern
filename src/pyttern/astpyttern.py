@@ -147,7 +147,7 @@ class SimpleWildcard(AstPyttern):
 
             if hasattr(current_node, "lineno"):
                 matcher.pattern_match.add_pattern_match(current_node.lineno, self)
-            return True
+            return matcher.count_and_return()
 
         if code_node is None:
             matcher.code_walker.select_specific_child("")
@@ -159,7 +159,7 @@ class SimpleWildcard(AstPyttern):
             #     return False
 
             if self._recursive_match(pattern_node, code_node, matcher, lineno):
-                return True
+                return matcher.count_and_return()
 
             code_node = matcher.code_walker.next_sibling()
             count += 1
@@ -198,7 +198,7 @@ class AnyWildcard(AstPyttern):
                 if next_code_node is None or not matcher.strict:
                     if lineno and lineno not in matcher.pattern_match.pattern_match:
                         matcher.pattern_match.add_pattern_match(lineno, self)
-                    return True
+                    return matcher.count_and_return()
                 return False
             if (lineno and lineno not in matcher.pattern_match.pattern_match
                     and next_code_node is not None):
@@ -214,7 +214,7 @@ class AnyWildcard(AstPyttern):
                 return False
 
             if self._recursive_match(next_pattern_node, code_node, matcher, lineno):
-                return True
+                return matcher.count_and_return()
 
             code_node = matcher.code_walker.next_sibling()
 
@@ -243,7 +243,7 @@ class ContainerWildcard(AstPyttern):
             sub_matcher = Matcher()
             sub_matcher.variables = matcher.variables
             if sub_matcher.match(self.values, current_node):
-                return True
+                return matcher.count_and_return()
             current_node = code_walker.next()
 
         return False
@@ -276,7 +276,7 @@ class BodyWildcard(AstPyttern):
             return False
 
         matcher.save_walkers_state()
-        matcher.code_walker.select_specific_child('body')
+        matcher.code_walker.select_body_children()
         next_code_node = matcher.code_walker.next_child()
         if next_code_node is None:
             matcher.drop_walkers_state()
@@ -284,7 +284,7 @@ class BodyWildcard(AstPyttern):
         # next_pattern_node = matcher.pattern_walker.next()
         if matcher.rec_match(next_pattern_node, next_code_node):
             matcher.drop_walkers_state()
-            return True
+            return matcher.count_and_return()
 
         if hasattr(current_node, "lineno"):
             matcher.pattern_match.add_pattern_match(current_node.lineno, self)
@@ -292,7 +292,7 @@ class BodyWildcard(AstPyttern):
 
         if self._recursive_visit(matcher, next_code_node, next_pattern_node, depth + 1):
             matcher.drop_walkers_state()
-            return True
+            return matcher.count_and_return()
 
         matcher.load_walkers_state()
         next_code_node = self._get_next_body(matcher, next_code_node)
@@ -355,7 +355,7 @@ class VarWildcard(AstPyttern):
 
                 if hasattr(current_node, "lineno"):
                     matcher.pattern_match.add_pattern_match(current_node.lineno, self)
-                return True
+                return matcher.count_and_return()
 
             code_node = matcher.code_walker.next_sibling()
             if code_node is None:
@@ -369,6 +369,10 @@ class VarWildcard(AstPyttern):
         if not isinstance(current_node, AST):
             current_node = Name(current_node, Load())
 
+        # Handle arguments
+        if isinstance(current_node, ast.arg):
+            current_node = Name(current_node.arg, Load())
+
         if not self.check_type(current_node):
             return False
 
@@ -376,15 +380,19 @@ class VarWildcard(AstPyttern):
 
         next_pattern_node = matcher.pattern_walker.next_sibling()
         if next_pattern_node is None:
+            next_pattern_node = matcher.pattern_walker.next_parent()
+            if next_pattern_node is None:
+                next_code_node = matcher.code_walker.next_sibling()
+                if next_code_node is None:
+                    return matcher.count_and_return()
+                next_code_node = matcher.code_walker.next_parent()
+                if next_code_node is None:
+                    return matcher.count_and_return()
+                return False
+            else:
+                next_code_node = matcher.code_walker.next_parent()
+        else:
             next_code_node = matcher.code_walker.next_sibling()
-            if next_code_node is None:
-                return True
-            next_code_node = matcher.code_walker.next_parent()
-            if next_code_node is None:
-                return True
-            return False
-
-        next_code_node = matcher.code_walker.next_sibling()
 
         if not matcher.rec_match(next_pattern_node, next_code_node):
             del matcher.variables[self.name]
@@ -393,7 +401,7 @@ class VarWildcard(AstPyttern):
         if hasattr(current_node, "lineno"):
             matcher.pattern_match.add_pattern_match(current_node.lineno, self)
         matcher.pattern_match.match(current_node, self)
-        return True
+        return matcher.count_and_return()
 
 
 class AnyBodyWildcard(AstPyttern):
@@ -413,14 +421,14 @@ class AnyBodyWildcard(AstPyttern):
 
         code_node = current_node
         lineno = code_node.lineno if hasattr(code_node, "lineno") else None
-        if not has_body_elements(code_node):
-            return False
+        #if not has_body_elements(code_node):
+        #    return False
         if not self.check_type(code_node):
             return False
 
         while code_node is not None:
             if self._recursive_match(next_pattern_node, code_node, matcher, lineno):
-                return True
+                return matcher.count_and_return()
 
             matcher.code_walker.select_body_children()
             code_node = matcher.code_walker.next()
@@ -443,11 +451,11 @@ class StrictMode(AstPyttern):
         matcher.set_strict(self.enable)
         next_pattern_node = matcher.pattern_walker.next()
         if next_pattern_node is None:
-            return True
+            return matcher.count_and_return()
         if not matcher.rec_match(next_pattern_node, current_node):
             matcher.set_strict(not self.enable)
             return False
-        return True
+        return matcher.count_and_return()
 
 
 # Static methods #

@@ -265,5 +265,5 @@ var_wildcard: '?' wildcard_type? name;
 contains_wildcard: '?' '<' (expr_wildcard | expr_stmt) '>' wildcard_type?;
 compound_wildcard: simple_compound_wildcard | multiple_compound_wildcard | strict_mode;
 simple_compound_wildcard: '?' wildcard_type? ':' wildcard_number? block;
-multiple_compound_wildcard: '?' wildcard_type? ':' '*' block;
+multiple_compound_wildcard: ('?' wildcard_type? ':' '*' block) | ('?' wildcard_type? '*' ':' block);
 strict_mode: '?![' (simple_stmts | NEWLINE stmt+) ']' NEWLINE;

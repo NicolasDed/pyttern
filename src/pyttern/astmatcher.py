@@ -5,8 +5,6 @@ This module contains the ASTMatcher class.
 import ast
 from ast import BinOp
 
-from .astpyttern import AstPyttern
-
 
 class AstMatcher:
     """
@@ -31,7 +29,7 @@ class AstMatcher:
         """
         return type(pattern) is type(node)
 
-    def visit(self, pattern: ast.AST | AstPyttern, node: ast.AST | AstPyttern) -> bool:
+    def visit(self, pattern, node) -> bool:
         """
         Visit method for ASTMatcher class.
         This method is responsible for calling the correct visit method for the

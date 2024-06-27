@@ -2,6 +2,7 @@ import ast
 import importlib.resources as pkg_resources
 import io
 import os
+import timeit
 from unittest import TestCase
 
 import pytest
@@ -79,8 +80,8 @@ class TestAstGenerator(PytternTest):
             to_app = type(actual_ast).__name__
         path.append(to_app)
 
-        if (isinstance(expected_ast, (ast.Load, ast.Store, ast.Del))
-                and isinstance(actual_ast, (ast.Load, ast.Store, ast.Del))):
+        if (isinstance(expected_ast, (ast.Load, ast.Store, ast.Del)) and isinstance(
+            actual_ast, (ast.Load, ast.Store, ast.Del))):
             path.pop()
             return
 
@@ -187,9 +188,9 @@ class TestASTWildcards(PytternTest):
 
         for n_1 in nbr:
             for n_2 in nbr:
-                val, details = match_files((pkg_resources.files(tests_files) / f"q1_{n_1}.py"),
-                                           (pkg_resources.files(tests_files) / f"q1_{n_2}.py"),
-                                           True, True)
+                val, details = match_files(
+                    (pkg_resources.files(tests_files) / f"q1_{n_1}.py"),
+                    (pkg_resources.files(tests_files) / f"q1_{n_2}.py"), True, True)
                 if n_1 == n_2:
                     assert val, f"{n_1} != {n_2}: {details}"
                 else:
@@ -201,9 +202,9 @@ class TestASTWildcards(PytternTest):
 
         for n_1 in nbr:
             for n_2 in nbr:
-                val, details = match_files((pkg_resources.files(tests_files) / f"q1_{n_1}.py"),
-                                           (pkg_resources.files(tests_files) / f"q1_{n_2}.py"),
-                                           False, True)
+                val, details = match_files(
+                    (pkg_resources.files(tests_files) / f"q1_{n_1}.py"),
+                    (pkg_resources.files(tests_files) / f"q1_{n_2}.py"), False, True)
                 if n_1 == n_2:
                     assert val, f"{n_1} != {n_2}: {details}"
                 else:
@@ -255,84 +256,76 @@ class TestASTWildcards(PytternTest):
 
     @pytest.mark.timeout(10)
     def test_ast_labeled_wildcard(self):
-        val, det = match_files(get_test_file("pytternLabeled.pyh"),
-                               get_test_file("q1_3.py"), strict_match=True, match_details=True)
+        val, det = match_files(
+            get_test_file("pytternLabeled.pyh"), get_test_file("q1_3.py"), strict_match=True, match_details=True)
         assert val, det
 
     @pytest.mark.timeout(10)
     def test_ast_multiple_depth(self):
-        val, msg = match_files(get_test_file("pytternMultipleDepth.pyh"),
-                               get_test_file("q1_254.py"), strict_match=True, match_details=True)
+        val, msg = match_files(
+            get_test_file("pytternMultipleDepth.pyh"), get_test_file("q1_254.py"), strict_match=True,
+            match_details=True)
         assert val, msg
 
     @pytest.mark.timeout(10)
     def test_pattern_13(self):
-        val, match = match_files(get_test_file("Pattern13.pyh"),
-                                 get_test_file("q1_560.py"), strict_match=True,
-                                 match_details=True)
+        val, match = match_files(
+            get_test_file("Pattern13.pyh"), get_test_file("q1_560.py"), strict_match=True, match_details=True)
         assert val, match
 
-        show_pattern(get_test_file("q1_560.py"),
-                     get_test_file("Pattern13.pyh"), match,
-                     (pkg_resources.files(visu) / "p13.html"))
+        show_pattern(
+            get_test_file("q1_560.py"), get_test_file("Pattern13.pyh"), match, (pkg_resources.files(visu) / "p13.html"))
 
     @pytest.mark.timeout(10)
     def test_pattern_different_size(self):
-        val = match_files(get_test_file("Small.pyh"),
-                          get_test_file("q1_3.py"), strict_match=True)
+        val = match_files(get_test_file("Small.pyh"), get_test_file("q1_3.py"), strict_match=True)
         assert not val
-        val = match_files(get_test_file("Small.pyh"),
-                          get_test_file("q1_254.py"), strict_match=True)
+        val = match_files(get_test_file("Small.pyh"), get_test_file("q1_254.py"), strict_match=True)
         assert not val
-        val = match_files(get_test_file("Small.pyh"),
-                          get_test_file("q1_560.py"), strict_match=True)
+        val = match_files(get_test_file("Small.pyh"), get_test_file("q1_560.py"), strict_match=True)
         assert not val
 
     @pytest.mark.timeout(10)
     def test_soft_pattern_match(self):
-        val, match = match_files(get_test_file("Pattern13soft.pyh"),
-                                 get_test_file("q1_560.py"),
-                                 strict_match=False, match_details=True)
+        val, match = match_files(
+            get_test_file("Pattern13soft.pyh"), get_test_file("q1_560.py"), strict_match=False, match_details=True)
         assert val, match
 
-        show_pattern(get_test_file("q1_560.py"),
-                     get_test_file("Pattern13soft.pyh"), match,
-                     (pkg_resources.files(visu) / "p13soft.html"))
+        show_pattern(
+            get_test_file("q1_560.py"), get_test_file("Pattern13soft.pyh"), match,
+            (pkg_resources.files(visu) / "p13soft.html"))
 
-        val, match = match_files(get_test_file("Pattern13soft.pyh"),
-                                 get_test_file("q1_560.py"),
-                                 strict_match=True, match_details=True)
+        val, match = match_files(
+            get_test_file("Pattern13soft.pyh"), get_test_file("q1_560.py"), strict_match=True, match_details=True)
         assert not val, match
 
     @pytest.mark.timeout(10)
     def test_soft_ast_body_wildcard(self):
-        val, match = match_files(get_test_file("pytternCompoundSoft.pyh"),
-                                 get_test_file("q1_254.py"),
-                                 strict_match=False, match_details=True)
+        val, match = match_files(
+            get_test_file("pytternCompoundSoft.pyh"), get_test_file("q1_254.py"), strict_match=False,
+            match_details=True)
         assert val, match
 
-        show_pattern(get_test_file("q1_254.py"),
-                     get_test_file("pytternCompoundSoft.pyh"), match,
-                     (pkg_resources.files(visu) / "pytternCompoundSoft.html"))
+        show_pattern(
+            get_test_file("q1_254.py"), get_test_file("pytternCompoundSoft.pyh"), match,
+            (pkg_resources.files(visu) / "pytternCompoundSoft.html"))
 
-        val, match = match_files(get_test_file("pytternCompoundSoft.pyh"),
-                                 get_test_file("q1_254.py"),
-                                 strict_match=True, match_details=True)
+        val, match = match_files(
+            get_test_file("pytternCompoundSoft.pyh"), get_test_file("q1_254.py"), strict_match=True, match_details=True)
         assert not val, match
 
     def test_strict_mode(self):
-        val, match = match_files(get_test_file("strictModeTest.pyh"),
-                                 get_test_file("q1_254.py"),
-                                 strict_match=False, match_details=True)
+        val, match = match_files(
+            get_test_file("strictModeTest.pyh"), get_test_file("q1_254.py"), strict_match=False, match_details=True)
         assert val, match
 
-        show_pattern(get_test_file("q1_254.py"),
-                     get_test_file("strictModeTest.pyh"), match,
-                     (pkg_resources.files(visu) / "strict.html"))
+        show_pattern(
+            get_test_file("q1_254.py"), get_test_file("strictModeTest.pyh"), match,
+            (pkg_resources.files(visu) / "strict.html"))
 
-        val, match = match_files(get_test_file("strictModeTest.pyh"),
-                                 get_test_file("strictModeNok.py"),
-                                 strict_match=False, match_details=True)
+        val, match = match_files(
+            get_test_file("strictModeTest.pyh"), get_test_file("strictModeNok.py"), strict_match=False,
+            match_details=True)
         assert not val, match
 
     def test_match_wildcards_unique(self):
@@ -475,17 +468,69 @@ class TestASTWildcards(PytternTest):
         else:
             assert False, f"Not ok nor ko in file name: {file_path}"
 
+    def test_count_match(self):
+        pattern_path = get_test_file("count/match_var_assign.pyt")
+        code_path = get_test_file("count/multiple_var_assign.py")
+
+        res, count, details = match_files(pattern_path, code_path, count=True, match_details=True)
+        assert res, details
+        if count != 6:
+            for i, detail in enumerate(details):
+                print(f"Match {i + 1}:")
+                for link in detail.links:
+                    if isinstance(link.code_node, ast.Assign):
+                        print(f"{link.pattern_node} -> {link.code_node.targets[0].id}")
+            assert False, f"Count should be 6, not {count}"
+
+    def test_too_much_indentation(self):
+        pattern_path = get_test_file("toomuchindentation.pyt")
+        code_path = get_test_file("q1_560.py")
+
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert res, det
+
+    def test_var_wildcard_in_arg(self):
+        pattern_path = get_test_file("overwritten_arg/overwritten_arg.pyt")
+        code_path = get_test_file("overwritten_arg/arg_*.py")
+
+        matches = match_wildcards(pattern_path, code_path)
+
+        for code, match in matches.items():
+            for pattern, result in match.items():
+                if "nok" in code:
+                    assert not result, f"{pattern} on {match} should not match"
+                else:
+                    assert result, f"{pattern} on {code} should match"
+
+    def test_performance(self):
+        pattern_path = get_test_file("augassign.pyh")
+        code_path = get_test_file("code/*.py")
+
+        time = timeit.timeit(lambda: match_wildcards(pattern_path, code_path), number=1)
+        assert time < 1, f"Time is {time} s"
+
+    def test_missplaced_return(self):
+        pattern_path = get_test_file("missplacedreturn/toplevelreturn.pyt")
+        code_path = get_test_file("missplacedreturn/code55.py")
+
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert not res, det
+
+        pattern_path = get_test_file("missplacedreturn/indentreturn.pyt")
+        res, det = match_files(pattern_path, code_path, match_details=True)
+        assert res, det
+
 class TestVisualizer(TestCase):
 
     def test_pattern_visualizer(self):
-        val, match = match_files(get_test_file("pytternMultipleDepth.pyh"),
-                                 get_test_file("q1_254.py"),
-                                 strict_match=True, match_details=True)
+        val, match = match_files(
+            get_test_file("pytternMultipleDepth.pyh"), get_test_file("q1_254.py"), strict_match=True,
+            match_details=True)
         assert val
 
-        html = show_pattern(get_test_file("q1_254.py"),
-                            get_test_file("pytternMultipleDepth.pyh"),
-                            match, (pkg_resources.files(visu) / "match.html"))
+        html = show_pattern(
+            get_test_file("q1_254.py"), get_test_file("pytternMultipleDepth.pyh"), match,
+            (pkg_resources.files(visu) / "match.html"))
         b_elements = html.findall(".//b")
 
         assert 4 == len(b_elements)

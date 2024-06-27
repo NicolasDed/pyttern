@@ -4,17 +4,22 @@ Describe the main Matcher class and the match functions.
 """
 import ast
 import glob
-from copy import deepcopy
+from copy import copy
 
 from .ast_walker import ast_walker
 from .astmatcher import AstMatcher
 from .astpyttern import AstPyttern
 from .pattern_match import PatternMatch
-from .pyttern_parser import parse_pyttern
+from .pyttern_parser import parse_pyttern, parse_python
+
+try:
+    from tqdm import tqdm
+except ImportError:
+    pass
 
 
 def match_wildcards(path_pattern_with_wildcards: str, path_python_with_wildcard: str,
-                    strict_match=False, match_details=False):
+                    strict_match=False, match_details=False, count=False):
     """
     Match all python files with all pattern files.
     The path_pattern_with_wildcards and path_python_with_wildcard
@@ -23,37 +28,54 @@ def match_wildcards(path_pattern_with_wildcards: str, path_python_with_wildcard:
     :param path_python_with_wildcard: Path to the python files with wildcards.
     :param strict_match: If True, the match will be strict, otherwise it will be soft.
     :param match_details: If True, the function will return the match details.
+    :param count: If True, the function will return the number of matches.
+    :param n_threads: Number of threads to use.
     :return: Dictionary with the results of the matches.
     """
+
     ret = {}
     patterns_filespath = glob.glob(str(path_pattern_with_wildcards))
     pythons_filespath = glob.glob(str(path_python_with_wildcard))
+
+    try:
+        pythons_filespath = tqdm(pythons_filespath)
+    except NameError:
+        pass
+
     for python_filepath in pythons_filespath:
         for pattern_filepath in patterns_filespath:
-            result = match_files(pattern_filepath, python_filepath, strict_match, match_details)
+            result = match_files(pattern_filepath, python_filepath, strict_match, match_details, count)
             if python_filepath not in ret:
                 ret[python_filepath] = {}
             ret[python_filepath][pattern_filepath] = result
     return ret
 
 
-def match_files(path_pattern, path_python, strict_match=False, match_details=False):
+def match_files(path_pattern, path_python, strict_match=False, match_details=False, count=False):
     """
     Match a pattern file with a python file.
     :param path_pattern: Path to the pattern file.
     :param path_python: Path to the python file.
     :param strict_match: If True, the match will be strict, otherwise it will be soft.
     :param match_details: If True, the function will return the match details.
+    :param count: If True, the function will return the number of matches.
     :return: The result of the match.
     """
+
     pattern = parse_pyttern(path_pattern)
-    with open(path_python, encoding="utf-8") as file:
-        source = file.read()
-        python = ast.parse(source, path_python)
+    python = parse_python(path_python)
 
     matcher = Matcher()
     matcher.set_strict(strict_match)
+    matcher.count = count
     res = matcher.match(pattern, python)
+
+    if count:
+        if match_details:
+            if matcher.counter > 0:
+                return matcher.counter > 0, matcher.counter, matcher.true_pattern_matches
+            return matcher.counter > 0, matcher.counter, matcher.error
+        return matcher.counter > 0, matcher.counter
 
     if not match_details:
         return res
@@ -76,15 +98,18 @@ class Matcher:
         """
         Constructor for Matcher class.
         """
-        self.pattern_walker: ast_walker = None
-        self.code_walker: ast_walker = None
+        self.pattern_walker = None
+        self.code_walker = None
+        self.pattern_match = PatternMatch()
         self.saved_pattern_walkers = []
         self.saved_code_walkers = []
-        self.saved_patten_matches = []
+        self.saved_pattern_matches = []
+        self.true_pattern_matches = []
         self.variables = {}
-        self.pattern_match = PatternMatch()
         self.error = None
         self.strict = True
+        self.count = False
+        self.counter = 0
 
     def set_strict(self, strict: bool):
         """Switch the matching to strict or soft."""
@@ -94,12 +119,15 @@ class Matcher:
         """
         Save the current state of the walkers and the pattern match for backtracking.
         """
-        saved_pattern = deepcopy(self.pattern_walker)
-        saved_code = deepcopy(self.code_walker)
-        saved_match = deepcopy(self.pattern_match)
+        # saved_pattern = self.pattern_walker.copy()
+        # saved_code = self.code_walker.copy()
+        # saved_match = self.pattern_match.copy()
+        saved_pattern = copy(self.pattern_walker)
+        saved_code = copy(self.code_walker)
+        saved_match = copy(self.pattern_match)
         self.saved_pattern_walkers.append(saved_pattern)
         self.saved_code_walkers.append(saved_code)
-        self.saved_patten_matches.append(saved_match)
+        self.saved_pattern_matches.append(saved_match)
 
     def load_walkers_state(self):
         """
@@ -107,7 +135,7 @@ class Matcher:
         """
         saved_pattern = self.saved_pattern_walkers.pop()
         saved_code = self.saved_code_walkers.pop()
-        saved_match = self.saved_patten_matches.pop()
+        saved_match = self.saved_pattern_matches.pop()
         self.pattern_walker = saved_pattern
         self.code_walker = saved_code
         self.pattern_match = saved_match
@@ -118,7 +146,7 @@ class Matcher:
         """
         self.saved_pattern_walkers.pop()
         self.saved_code_walkers.pop()
-        self.saved_patten_matches.pop()
+        self.saved_pattern_matches.pop()
 
     def match(self, pattern, code) -> bool:
         """
@@ -135,11 +163,11 @@ class Matcher:
         code_node = self.code_walker.current()
         if pattern_node is None:
             if not self.strict:
-                return True
+                return self.count_and_return()
             if code_node is not None:
                 return False
 
-            return True
+            return self.count_and_return()
 
         if code_node is None:
             return False
@@ -158,12 +186,12 @@ class Matcher:
         pattern_node = self.pattern_walker.next()
         if pattern_node is None:
             if not self.strict:
-                return True
+                return self.count_and_return()
             code_node = self.code_walker.next()
             if code_node is not None:
                 return False
 
-            return True
+            return self.count_and_return()
 
         code_node = self.code_walker.next()
         if code_node is None:
@@ -193,6 +221,13 @@ class Matcher:
             return False
         return self.soft_rec_match(pattern_node, next_code_node)
 
+    def count_and_return(self):
+        if self.count:
+            self.true_pattern_matches.append(self.pattern_match)
+            self.counter += 1
+            return False
+        return True
+
     def soft_rec_match(self, pattern_node, code_node):
         """
         Recursive matching method for soft matching.
@@ -210,7 +245,10 @@ class Matcher:
                 self.load_walkers_state()
                 return self.soft_next_node_match(pattern_node)
             self.drop_walkers_state()
-            return True
+            if self.count:
+                self.counter += 1
+                return False
+            return self.count_and_return()
 
         # If we try to match an AST node, we delegate the matching to the ast_matcher class.
         if isinstance(pattern_node, ast.AST):
@@ -243,7 +281,7 @@ class Matcher:
             return self.soft_next_node_match(pattern_node)
         self.drop_walkers_state()
 
-        return True
+        return self.count_and_return()
 
     def strict_rec_match(self, pattern_node, code_node):
         """

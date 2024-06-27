@@ -8,16 +8,16 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='pyttern',
-    version='0.1.0',
-    packages=['pyttern', 'pyttern.antlr', 'pyttern.visualizer'],
+    version='0.1.3',
+    packages=['pyttern', 'pyttern.antlr'],
     package_dir={'': 'src'},
     url='https://github.com/JulienLie/pyttern',
     license='MIT',
     author='Julien Lienard',
     author_email='julien.lienard@uclouvain.be',
-    description="Python package to build code patterns",
+    description="Python package to build code patterns using a dedicated language.",
     install_requires=[
-        "pytest==7.2.1",
+        "pytest",
         "antlr4-python3-runtime==4.7.2",
         "pytest-timeout"
     ],

@@ -22,4 +22,3 @@ def facteurs(n):
             sum += 1
             n = n / p
     return sum
-

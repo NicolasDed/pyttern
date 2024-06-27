@@ -1,21 +1,18 @@
 # Pyttern
-
-![Tests Status](https://github.com/JulienLie/python-hole/actions/workflows/python-app.yml/badge.svg?event=push)
-
 Pyttern is a python library to create patterns file for Python code.
 
 ## Syntax
 
 We extended the python syntax to create patterns file. Our new syntax include the following elements:
 
-| Wildcard          | Description                                                               |
-|-------------------|---------------------------------------------------------------------------|
-| ?                 | Match 1 element                                                           |
-| ?*                | Match 0 or more elements                                                  |
-| ?{name}           | Match 1 element and bind it to {``name``}                                 |
-| ?:                | Match 1 element with a body                                               |
-| ?*:               | Match the body of the wildcard in any indentation                         |
-| ?<...>            | Match if the inside of the wildcard is contained inside the matching node |
+| Wildcard | Description                                                               |
+|----------|---------------------------------------------------------------------------|
+| ?        | Match 1 element                                                           |
+| ?*       | Match 0 or more elements                                                  |
+| ?name    | Match 1 element and bind it to ``name``                                   |
+| ?:       | Match 1 element with a body                                               |
+| ?:*      | Match the body of the wildcard in any indentation                         |
+| ?<...>   | Match if the inside of the wildcard is contained inside the matching node |
 
 In addition to these wildcards, we added some optional elements to allow more options:
 
@@ -52,46 +49,147 @@ If result is True, details contains the match details. If result is False, detai
 
 
 ## Examples
-### Python code:
+### Wildcard: ``?``
+The `?` wildcard matches any single element in the code. For example, the pattern `? = 0` will match any assignment statement where the right-hand side is 0.
+
+#### Pyttern
 ```python
-def multiplications(n):
-    """
-    pre:  n is a positive integer
-    post: Return the number of distinct decompositions a,b 
-          such that n == a*b == b*a
-    """
-    b=n
-    a=1
-    c=0
-    while a*b==n:
-        c=a*(b/a)
-        a+=1
-    return c
-```
-### Pattern file:
-#### Soft match
-```python
-def multiplications(n):
-    ?var1 = ?       # We want to have a initial variable
-    ?*:
-        ?var1 = ?   # This variable has to be updated somewhere
-    return ?var1    # And we want to return it
-```
-#### Strict match
-```python
-def multiplications(n):
-    ?*
-    ?var1 = ?       # We want to have a initial variable
-    ?*
-    ?*:
-        ?*
-        ?var1 = ?   # This variable has to be updated somewhere
-        ?*
-    return ?var1    # And we want to return it
+def ?():
+    ? = 0
+    return ?
 ```
 
-Those two piece of codes describes the same patterns. The soft match hide the multiple wildcards `?*` in the strict match.
+#### Code
+```python
+def foo():
+    x = 0
+    return "bar"
+```
+### Wildcard: ``?*``
+The `?*` wildcard matches zero or more elements in the code. For example, the pattern `?*` will match any sequence of elements.
 
+#### Pyttern
+```python
+def foo(?*):
+    ?*
+    a = 0
+    ?*
+    return a
+```
+
+#### Code
+```python
+def foo(x, y, z):
+    x = 1
+    y = 2
+    z = 3
+    a = 0
+    if a == 0:
+        return a
+    return a
+```
+
+### Wildcard: ``?name``
+The `?name` wildcard matches a single element in the code and binds it to the name `name`. For example, the pattern `?name = 0` will match any assignment statement where the right-hand side is 0 and bind the left-hand side to the name `name`.
+
+#### Pyttern
+```python
+def foo(?name):
+    ?name.append(0)
+    return ?name
+```
+
+#### Code
+```python
+def foo(lst):
+    lst.append(0)
+    return lst
+```
+
+### Wildcard: ``?:``
+The `?:` wildcard matches a single element in the code that has a body.
+
+#### Pyttern
+```python
+def foo():
+    ?:
+        x = 0
+    return x
+```
+
+#### Code
+```python
+def foo():
+    if True:
+        x = 0
+    return x
+```
+
+### Wildcard: ``?:*``
+The `?:*` wildcard matches the body of the wildcard in any indentation.
+
+#### Pyttern
+```python
+def foo():
+    ?:*
+        x = 0
+    return x
+```
+
+#### Code
+```python
+def foo():
+    if True:
+        if True:
+            x = 0
+    return x
+```
+
+```python
+def foo():
+    x = 0
+    return x
+```
+
+### Wildcard: ``?<...>``
+The `?<...>` wildcard matches if the inside of the wildcard is contained inside the matching node.
+
+#### Pyttern
+```python
+def foo(x):
+    y = ?<x>
+    return y
+```
+
+#### Code
+```python
+def foo(x):
+    y = 2*x + 1
+    return y
+```
+
+### Combining Wildcards
+You can combine wildcards to create more complex patterns.
+
+#### Pyttern
+```python
+def ?(?*):
+   ?acc = 0
+   ?:*
+        for ? in ?:
+            ?:*
+                ?acc += ?
+    return ?acc
+```
+
+#### Code
+```python
+def sum(lst):
+    acc = 0
+    for i in lst:
+        acc += i
+    return acc
+```
 
 ## Strict match / Soft match
 ### Main difference
@@ -112,7 +210,7 @@ def foo(bar):
         ?![
         if ?:
            ?var += 1 
-        !]
+        ]
 ```
 In this pattern, the wildcard ? represents a placeholder for any valid Python identifier. The ?var = 0 statement assigns the value 0 to a variable, which we'll refer to as x. The for ? in range(?*) loop iterates over a range of values, which we'll refer to as y. Finally, ?![ ... ] represents a strict match requirement that enforces certain code within the if statement.
 
@@ -157,6 +255,47 @@ This option can be used in five different ways:
     3. `?{, m}`: Match at most `m` elements
     4. `?{n}`: Match exactly `n` elements
     5. `?{0}`: Create a `not` wildcard. For example: `?:{0}` will ensure that the current element does not have a body.
+
+### Wildcard Option: ``?[Type, ...]``
+The `?[Type, ...]` option allows you to specify the type of the element to match. For example, the pattern `?[For]` will match any integer value.
+
+#### Pyttern
+```python
+def foo():
+    ?[For]:
+        x = 0
+    return x
+```
+
+#### Code
+```python
+def foo():
+    for i in range(10):
+        x = 0
+    return x
+```
+
+### Wildcard Option: ``?{n, m}``
+The `?{n, m}` option allows you to specify the number of elements to match. For example, the pattern `?{1, 2}` will match between 1 and 2 elements.
+
+#### Pyttern
+```python
+def foo():
+    ?:{3}
+        x = 0
+    return x
+```
+
+#### Code
+```python
+def foo():
+    if True:
+        if True:
+            if True:
+                x = 0
+    return x
+```
+
 
 ## Augassign
 We implemented a match between `augassign` and `assign`. For example, the pattern `x = x + 1` will match `x += 1` and the 

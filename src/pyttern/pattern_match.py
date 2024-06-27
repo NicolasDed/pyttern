@@ -18,6 +18,18 @@ class PatternMatch:
         self.pattern_match = {}
         self.links: list[Link] = []
 
+    def copy(self):
+        """
+        Deepcopy method for PatternMatch class.
+        :return: Deepcopy of the PatternMatch object.
+        """
+        new = type(self)()
+        new.matches = self.matches.copy()
+        new.line_skip_matches = self.line_skip_matches.copy()
+        new.pattern_match = self.pattern_match.copy()
+        new.links = self.links.copy()
+        return new
+
     def add_match(self, pattern, code):
         """Add a match to the list of matches."""
         self.matches.append((pattern, code))

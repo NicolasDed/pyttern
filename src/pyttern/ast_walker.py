@@ -3,8 +3,9 @@ Module for handling the AST tree traversal.
 """
 
 import ast
+from copy import copy
 
-from .astpyttern import iter_child_nodes, AstPyttern
+from .astpyttern import iter_child_nodes
 
 
 class ast_walker:
@@ -14,7 +15,7 @@ class ast_walker:
     THis ensures the faisability of the tree traversal.
     """
 
-    def __init__(self, tree: ast.AST | AstPyttern):
+    def __init__(self, tree):
         """
         Constructor for AstWalker class.
         :param tree: AST tree to be walked through.
@@ -23,7 +24,16 @@ class ast_walker:
         self._node = None
         self._set_node(tree, None)
 
-    def current(self) -> ast.AST | AstPyttern:
+    def __copy__(self):
+        """
+        Deepcopy method for AstWalker class.
+        :return: Deepcopy of the AstWalker object.
+        """
+        new = type(self)(self.tree)
+        new._node = copy(self._node)
+        return new
+
+    def current(self):
         """
         Returns the current node.
         :return: Current node.
@@ -33,7 +43,7 @@ class ast_walker:
     def _set_node(self, tree, parent):
         self._node = _Node(tree, parent)
 
-    def next(self) -> ast.AST | AstPyttern | None:
+    def next(self):
         """
         Moves to the next node in the tree.
         Try to move to the next child, if it is not possible, tries to move to the next sibling,
@@ -134,6 +144,12 @@ class _Node:
         self.children = list(filter(_is_load_store, iter_child_nodes(node)))
         self.child_index = 0
 
+    def __copy__(self):
+        new = type(self)(self.node, copy(self.parent))
+        new.children = self.children
+        new.child_index = self.child_index
+        return new
+
     def next_child(self):
         """
         Returns the next child of the current node.
@@ -144,3 +160,6 @@ class _Node:
         next_child = self.children[self.child_index]
         self.child_index += 1
         return next_child
+
+    def __str__(self):
+        return f'{self.node}'
