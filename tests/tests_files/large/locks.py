@@ -444,7 +444,7 @@ class Semaphore(_ContextManagerMixin):
             try:
                 yield from fut
             except:
-                # See the similar code in Queue.get.
+                # See the similar static in Queue.get.
                 fut.cancel()
                 if self._value > 0 and not fut.cancelled():
                     self._wake_up_next()

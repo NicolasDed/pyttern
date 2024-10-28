@@ -1,4 +1,6 @@
-__pycache__
-.pytest_cache
-.idea
-build
+sessions/
+.idea/
+.venv/
+**/__pycache__/
+bin/
+/pyttern/Pyttern.egg-info/

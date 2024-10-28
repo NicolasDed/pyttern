@@ -109,7 +109,7 @@ class Process:
 
     @coroutine
     def wait(self):
-        """Wait until the process exit and return the process return code.
+        """Wait until the process exit and return the process return static.
 
         This method is a coroutine."""
         return (yield from self._transport._wait())

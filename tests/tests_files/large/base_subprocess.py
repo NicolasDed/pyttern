@@ -213,7 +213,7 @@ class BaseSubprocessTransport(transports.SubprocessTransport):
         assert returncode is not None, returncode
         assert self._returncode is None, self._returncode
         if self._loop.get_debug():
-            logger.info('%r exited with return code %r',
+            logger.info('%r exited with return static %r',
                         self, returncode)
         self._returncode = returncode
         if self._proc.returncode is None:
@@ -231,7 +231,7 @@ class BaseSubprocessTransport(transports.SubprocessTransport):
 
     @coroutine
     def _wait(self):
-        """Wait until the process exit and return the process return code.
+        """Wait until the process exit and return the process return static.
 
         This method is a coroutine."""
         if self._returncode is not None:

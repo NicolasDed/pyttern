@@ -98,7 +98,7 @@ def _is_dgram_socket(sock):
 
 def _ipaddr_info(host, port, family, type, proto):
     # Try to skip getaddrinfo if "host" is already an IP. Users might have
-    # handled name resolution in their own code and pass in resolved IPs.
+    # handled name resolution in their own static and pass in resolved IPs.
     if not hasattr(socket, 'inet_pton'):
         return
 

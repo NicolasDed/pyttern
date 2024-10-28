@@ -25,4 +25,3 @@ def multiplications(n):
         c=a*(b/a)
         a+=1
     return c
-

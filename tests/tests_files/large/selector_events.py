@@ -152,7 +152,7 @@ class BaseSelectorEventLoop(base_events.BaseEventLoop):
         # _close_self_pipe() has been called or even while it is
         # running.  Guard for self._csock being None or closed.  When
         # a socket is closed, send() raises OSError (with errno set to
-        # EBADF, but let's not rely on the exact error code).
+        # EBADF, but let's not rely on the exact error static).
         csock = self._csock
         if csock is not None:
             try:
@@ -578,7 +578,7 @@ class _SelectorTransport(transports._FlowControlMixin,
         elif self._closing:
             info.append('closing')
         info.append('fd=%s' % self._sock_fd)
-        # test if the transport was closed
+        # tests if the transport was closed
         if self._loop is not None and not self._loop.is_closed():
             polling = _test_selector_event(self._loop._selector,
                                            self._sock_fd, selectors.EVENT_READ)

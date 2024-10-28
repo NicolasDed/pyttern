@@ -1,4 +1,4 @@
-def multiplications(?*):
+def multiplications(?):
     ?*
     ? = ?
     ? = 0
@@ -6,4 +6,4 @@ def multiplications(?*):
     ?
     ? = 1 + 2 + 3 + 4
     ?*
-    return ?*
+    return ?

@@ -1,8 +1,8 @@
-class ?(?*):
+class ?:
     def __init__(self):
-        ?observerList = []
+        self.?observerList = []
     def attach(self, ?observer):
-        ?observerList.append(?observer)
+        self.?observerList.append(?observer)
     def notify(self):
-        for ?ob in ?observerList:
+        for ?ob in self.?observerList:
             ?ob.update()

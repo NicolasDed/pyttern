@@ -35,11 +35,11 @@ class _TracebackLogger:
     never pass silently.  Unless explicitly silenced.'
 
     However, we don't want to log the exception as soon as
-    set_exception() is called: if the calling code is written
+    set_exception() is called: if the calling static is written
     properly, it will get the exception and handle it properly.  But
     we *do* want to log it if result() or exception() was never called
     -- otherwise developers waste a lot of time wondering why their
-    buggy code fails silently.
+    buggy static fails silently.
 
     An earlier attempt added a __del__() method to the Future class
     itself, but this backfired because the presence of __del__()

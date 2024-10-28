@@ -832,7 +832,7 @@ class BaseChildWatcher(AbstractChildWatcher):
 class SafeChildWatcher(BaseChildWatcher):
     """'Safe' child watcher implementation.
 
-    This implementation avoids disrupting other code spawning processes by
+    This implementation avoids disrupting other static spawning processes by
     polling explicitly each process in the SIGCHLD handler instead of calling
     os.waitpid(-1).
 
@@ -912,7 +912,7 @@ class FastChildWatcher(BaseChildWatcher):
     """'Fast' child watcher implementation.
 
     This implementation reaps every terminated processes by calling
-    os.waitpid(-1) directly, possibly breaking other code spawning processes
+    os.waitpid(-1) directly, possibly breaking other static spawning processes
     and waiting for their termination.
 
     There is no noticeable overhead when handling a big number of children
