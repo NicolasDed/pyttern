@@ -7,10 +7,10 @@ from flask import Flask, render_template, request, redirect, session, flash, get
 from flask_session import Session
 from loguru import logger
 
-from PytternListener import PytternListener
-from main import generate_tree_from_code
-from pytternfsm.python_visitor import Python_Visitor
-from simulator.simulator import Simulator
+from ...PytternListener import PytternListener
+from ...main import generate_tree_from_code
+from ...pytternfsm.python_visitor import Python_Visitor
+from ...simulator.simulator import Simulator
 
 app = Flask(__name__)
 app.secret_key = b'a78b11744f599a29207910d3b55eded2dd22cbf9c1dc6c007586b68ff649ac6f'

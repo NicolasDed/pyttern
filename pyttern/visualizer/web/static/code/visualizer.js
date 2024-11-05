@@ -27,6 +27,17 @@ function generate_cytoscape(){
                     'label': 'data(symbol)',
                     'text-valign': 'center',
                 }
+            }
+            ,{
+                selector: 'node.merged',
+                style: {
+                    'text-margin-y': '-10px', // adjusts the label positioning slightly up
+                    'overlay-opacity': 0, // ensures no extra selection box around the node
+                    'text-wrap': 'wrap', // to make sure it wraps if label is large
+                    'text-rotation': 'none',
+                    'text-valign': 'center',
+                    'label': function(ele) { return ele.data("label") + "\n\n+"; }
+                }
             },
             {
                 selector: 'edge',
@@ -51,18 +62,35 @@ function generate_cytoscape(){
 function recursive_generation(node, cy) {
     let new_elem = cy.add({
             group: 'nodes',
-            data: {label: node.name, id:node.id},
+            data: {label: node.name, id:node.id, merged: false},
             //grabbable: false
         })
-        if("symbol" in node) new_elem.data("symbol", node.symbol)
-        for(let child of node.children) {
-            let child_elem = recursive_generation(child, cy)
-            cy.add({
-                group: 'edges',
-                data: { source: new_elem.id(), target: child_elem.id()}
-            })
+    new_elem.on('click', function(evt){
+        isMerged = new_elem.data("merged")
+        if(!isMerged){
+            new_elem.data("merged", true)
+            new_elem.addClass("merged"); // Add class to display "+"
+            successors = new_elem.successors()
+            successors.style({ 'display': 'none' })
+            successors.data("merged", false)
         }
-        return new_elem
+        else{
+            new_elem.data("merged", false)
+            new_elem.removeClass("merged"); // Remove class to hide "+"
+            new_elem.successors().style({ 'display': 'element' })
+        }
+        cy.layout({name: 'dagre', padding: 5, fit: false, nodeDimensionsIncludeLabels: true}).run()
+        console.log(new_elem.data("merged"))
+    })
+    if("symbol" in node) new_elem.data("symbol", node.symbol)
+    for(let child of node.children) {
+        let child_elem = recursive_generation(child, cy)
+        cy.add({
+            group: 'edges',
+            data: { source: new_elem.id(), target: child_elem.id()}
+        })
+    }
+    return new_elem
 }
 
 function change_pyttern_graph(){
@@ -163,7 +191,7 @@ function reset_pyttern_graph(){
 function set_current_step(new_step){
     new_step = Math.max(0, Math.min(new_step, max_step))
     step = new_step
-    $.ajax({
+    return $.ajax({
         type: 'POST',
         url: '/api/step',
         contentType: 'application/json',
@@ -355,7 +383,7 @@ function set_matching_states(matching_states){
 }
 
 function start_simulator(){
-    $.ajax({
+    return $.ajax({
         type: 'POST',
         url: '/api/start',
         contentType: 'application/json',
@@ -421,4 +449,28 @@ function pop(transition) {
         }, 3000); // Hide after 3 seconds
     }
     return _pop
+}
+
+function download_pyttern_graph(){
+    let value = $("#pyttern-graph-select").val()
+    let cy = null
+    if(value === "fsm"){
+        cy = pyttern_fsm_cy
+    }
+    else{
+        cy = pyttern_tree_cy
+    }
+    let png = cy.png({full: true})
+    let a = document.createElement('a');
+    a.href = png
+    a.download = 'pyttern_graph.png'
+    a.click()
+}
+
+function download_python_graph(){
+    let png = python_tree_cy.png({full: true})
+    let a = document.createElement('a');
+    a.href = png
+    a.download = 'python_graph.png'
+    a.click()
 }
