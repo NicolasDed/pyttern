@@ -52,14 +52,26 @@ def generate_tree_from_file(file):
 
 
 def run_application():
-    from visualizer.web import application
+    from .visualizer.web import application
     application.app.run(debug=True)
 
 
-def main(pattern, code, args=None):
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--web", action="store_true")
+
+    parser.add_argument("pattern")
+    parser.add_argument("code")
+
+    args = parser.parse_args()
+
     if args and args.web:
         run_application()
         return
+
+    pattern = args.pattern
+    code = args.code
 
     try:
         pattern_tree = generate_tree_from_file(pattern)
@@ -82,12 +94,4 @@ def main(pattern, code, args=None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("--web", action="store_true")
-
-    parser.add_argument("pattern")
-    parser.add_argument("code")
-
-    args = parser.parse_args()
-    main(args.pattern, args.code, args)
+    main()
