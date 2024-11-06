@@ -1,11 +1,11 @@
-const RATIO = 1/4;
+const RATIO = 1/2;
 
 async function generateGIF() {
     const pytternImages = [];
     const pythonImages = [];
 
     await start_simulator();
-    for (let i = 0; i < max_step; i++) {
+    for (let i = 0; i < max_step/2; i++) {
         await set_current_step(i);
 
         const pytternImage = pyttern_fsm_cy.png({ full: true, maxWidth: 1000, maxHeight: 1000});
@@ -100,12 +100,15 @@ async function createGif(pytternImages, pythonImages) {
         link.click(); // Simulate a click to download
         console.log('GIF created and downloaded successfully.');
         URL.revokeObjectURL(link.href); // Release the object URL
-        frames.length = 0; // Clear the frames array
         for(worker of gif.freeWorkers){
             worker.terminate()
         }
-        worker.frames.length = 0;
+        gif.frames.length = 0;
     });
+
+    frames.length = 0; // Clear the frames array
+    pytternImages.length = 0; // Clear the pytternImages
+    pythonImages.length = 0; // Clear the pythonImages
 
     // Render the GIF
     let res = gif.render();

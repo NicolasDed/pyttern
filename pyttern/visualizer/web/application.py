@@ -135,7 +135,13 @@ class JsonListener(PytternListener):
 
 
 """ Web endpoints """
+from flask_assets import Environment, Bundle
 
+assets = Environment(app)
+
+js = Bundle('code/visualizer.js', 'code/gifmaker.js', 'code/gifs/gif.js', 'code/gifs/gif.worker.js',
+            filters='jsmin', output='gen/packed.js')
+assets.register('js_all', js)
 
 @app.route("/")
 def index():
