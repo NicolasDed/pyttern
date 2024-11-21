@@ -8,6 +8,7 @@ from flask_session import Session
 from loguru import logger
 
 from ...PytternListener import PytternListener
+from ...main import generate_tree_from_code
 from ...pytternfsm.python.python_visitor import Python_Visitor
 from ...simulator.simulator import Simulator
 
@@ -134,7 +135,13 @@ class JsonListener(PytternListener):
 
 
 """ Web endpoints """
+from flask_assets import Environment, Bundle
 
+assets = Environment(app)
+
+js = Bundle('code/visualizer.js', 'code/gifmaker.js', 'code/gifs/gif.js', 'code/gifs/gif.worker.js',
+            filters='jsmin', output='gen/packed.js')
+assets.register('js_all', js)
 
 @app.route("/")
 def index():

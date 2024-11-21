@@ -6,7 +6,7 @@ import pytest
 from tqdm import tqdm
 
 from pyttern.main import generate_tree_from_file
-from pyttern.pytternfsm.python_visitor import Python_Visitor
+from pyttern.pytternfsm.python.python_visitor import Python_Visitor
 from pyttern.simulator.simulator import Simulator
 from . import tests_files
 

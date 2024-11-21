@@ -23,3 +23,7 @@ pylint="^3.2.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+pyttern = "pyttern.main:main"
+pytternweb = "pyttern.main:run_application"
