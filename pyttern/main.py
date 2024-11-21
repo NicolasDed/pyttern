@@ -5,10 +5,6 @@ import argparse
 
 from .language_processors import get_processor
 
-def run_application():
-    from .visualizer.web import application
-    application.app.run(debug=True)
-    
 
 # def match_files(pattern_path, code_path, strict_match=True, match_details=False):
 #     try:
@@ -65,16 +61,20 @@ def run_application():
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--web", action="store_true")
-    parser.add_argument("--lang", choices=['python', 'java'], required=True, help="Specify the language (python/java)")
+    parser.add_argument("--web", action="store_true", help="Launch the web application")
+    parser.add_argument("--lang", choices=['python', 'java'], help="Specify the language (python/java)")
 
-    parser.add_argument("pattern")
-    parser.add_argument("code")
+    parser.add_argument("pattern", nargs="?", help="Pattern file path")
+    parser.add_argument("code", nargs="?", help="Code file path")
 
     args = parser.parse_args()
 
     if args and args.web:
         run_application()
+        return
+    
+    if not args.lang or not args.pattern or not args.code:
+        print("You must specify --lang, pattern file, and code file when not running the web application.")
         return
 
     processor = get_processor(args.lang) # Get processor behaviour adapted to language
