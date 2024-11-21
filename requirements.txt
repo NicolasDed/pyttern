@@ -1,4 +1,4 @@
-antlr4-python3-runtime==4.7.2
+antlr4-python3-runtime==4.9.3
 cachelib==0.13.0
 Flask==3.0.3
 Flask-Session==0.8.0

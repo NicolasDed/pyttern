@@ -3,14 +3,13 @@ from functools import wraps
 
 from antlr4 import ParseTreeVisitor
 from cachelib import FileSystemCache
-from flask import Flask, render_template, request, redirect, session, flash, get_flashed_messages
+from flask import Flask, render_template, request, redirect, session, flash, get_flashed_messages, g
 from flask_session import Session
 from loguru import logger
 
-from PytternListener import PytternListener
-from main import generate_tree_from_code
-from pytternfsm.python_visitor import Python_Visitor
-from simulator.simulator import Simulator
+from ...PytternListener import PytternListener
+from ...pytternfsm.python.python_visitor import Python_Visitor
+from ...simulator.simulator import Simulator
 
 app = Flask(__name__)
 app.secret_key = b'a78b11744f599a29207910d3b55eded2dd22cbf9c1dc6c007586b68ff649ac6f'
@@ -81,11 +80,11 @@ def file_check():
 
 
 def get_simulator(pyttern_code, python_code):
-    pyttern_tree = generate_tree_from_code(pyttern_code)
+    pyttern_tree = app.processor.generate_tree_from_code(pyttern_code)
     strict = session.get('strict', False)
     pyttern_fsm = Python_Visitor(strict=strict).visit(pyttern_tree)
 
-    python_tree = generate_tree_from_code(python_code)
+    python_tree = app.processor.generate_tree_from_code(python_code)
 
     return Simulator(pyttern_fsm, python_tree)
 
@@ -149,7 +148,7 @@ def index():
     if "pyttern_code" in session and session["pyttern_code"] is not None:
         try:
             pyttern_code = session["pyttern_code"]
-            pyttern_tree = generate_tree_from_code(pyttern_code)
+            pyttern_tree = app.processor.generate_tree_from_code(pyttern_code)
             pyttern_tree_graph = PtToJson().visit(pyttern_tree)
             strict = session.get('strict', False)
             pyttern_fsm = Python_Visitor(strict=strict).visit(pyttern_tree)
@@ -160,7 +159,7 @@ def index():
             print(e)
     if "python_code" in session and session["python_code"] is not None:
         python_code = session["python_code"]
-        python_tree = generate_tree_from_code(python_code)
+        python_tree = app.processor.generate_tree_from_code(python_code)
         python_graph = PtToJson().visit(python_tree)
 
     return render_template(
@@ -171,8 +170,10 @@ def index():
 @app.route("/submit-pyttern", methods=['POST'])
 def submit_pyttern():
     code = request.files['pyttern-file']
+    # TODO: check for file extenion
     pyttern_code = code.stream.read()
     session['pyttern_code'] = pyttern_code.decode()
+    session['language'] = "Python"
 
     strict = request.form.get('strict', 'off') == 'on'
     session['strict'] = strict
