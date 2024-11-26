@@ -82,20 +82,21 @@ def file_check():
     return _file_check
 
 
-def get_simulator(pyttern_code, python_code):
-    global current_language_processor
-    if current_language_processor is None:
-        raise Exception("Current language processor is not set")
-    
-    pyttern_tree = current_language_processor.generate_tree_from_code(pyttern_code)
-    # strict = session.get('strict', False)
-    pyttern_fsm = current_language_processor.create_fsm(pyttern_tree)
-    code_tree = current_language_processor.generate_tree_from_code(python_code)
+def get_simulator(pyttern_code, code):
+    if "pattern_language" in session and session["pattern_language"] is not None and "code_language" in session and session["code_language"] is not None:
+        current_language_processor = get_processor(session["pattern_language"])
+        pyttern_tree = current_language_processor.generate_tree_from_code(pyttern_code)
+        # strict = session.get('strict', False)
+        pyttern_fsm = current_language_processor.create_fsm(pyttern_tree)
+        code_tree = current_language_processor.generate_tree_from_code(code)
 
-    return current_language_processor.create_simulator(pyttern_fsm, code_tree)
+        return current_language_processor.create_simulator(pyttern_fsm, code_tree)
+    else:
+        raise Exception("No language is set")
 
 
 def fsm_to_json(fsm):
+    print("FSM :::", fsm)
     nodes = []
     to_check = [fsm]
     visited = set()
@@ -174,13 +175,13 @@ def index():
     if "pyttern_code" in session and session["pyttern_code"] is not None:
         try:
             pyttern_code = session["pyttern_code"]
-            if "pattern_language" in session and session["pattern_language"]:
-                print("PASSSED FOR PATTERN !!!")
+            if "pattern_language" in session and session["pattern_language"] is not None:
                 current_language_processor = get_processor(session["pattern_language"])
                 pyttern_tree = current_language_processor.generate_tree_from_code(pyttern_code)
                 pyttern_tree_graph = PtToJson().visit(pyttern_tree)
                 # strict = session.get('strict', False)
                 pyttern_fsm = current_language_processor.create_fsm(pyttern_tree)
+                print("PYTTERN FSM ::: ", pyttern_fsm)
                 pyttern_fsm_graph = fsm_to_json(pyttern_fsm)
             else:
                 flash("Pattern language not set.", "error")
@@ -191,8 +192,7 @@ def index():
             
     if "code_file" in session and session["code_file"] is not None:
         code_file = session["code_file"]
-        if "code_language" in session and session["code_language"]:
-            print("PASSSED FOR CODE !!!")
+        if "code_language" in session and session["code_language"] is not None:
             current_processor = get_processor(session["code_language"])
             code_tree = current_processor.generate_tree_from_code(code_file)
             code_tree_graph = PtToJson().visit(code_tree)

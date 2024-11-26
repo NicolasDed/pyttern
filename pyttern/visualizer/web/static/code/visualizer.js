@@ -169,7 +169,6 @@ function select_pyttern_graph(value){
 }
 
 function generate_code_graph(pyttern_json){
-    console.log("POPO")
     if (code_tree_cy == null) {
         code_tree_cy = generate_cytoscape()
         code_tree_cy.mount($("#code-cy"))

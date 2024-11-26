@@ -47,8 +47,7 @@ elem.on('click',function(evt){console.log(transition)
 pop(transition)(evt)})}
 console.log("Graph generated!")}
 function select_pyttern_graph(value){console.log(value)}
-function generate_code_graph(pyttern_json){console.log("POPO")
-if(code_tree_cy==null){code_tree_cy=generate_cytoscape()
+function generate_code_graph(pyttern_json){if(code_tree_cy==null){code_tree_cy=generate_cytoscape()
 code_tree_cy.mount($("#code-cy"))}
 recursive_generation(pyttern_json,code_tree_cy)
 code_tree_cy.layout({name:'dagre',padding:5,fit:true,nodeDimensionsIncludeLabels:true}).run()
