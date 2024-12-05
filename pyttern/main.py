@@ -141,6 +141,7 @@ def main():
         simu.step()
     print(simu.match_set.matches)
 
-
+logger.disable("pyttern")
 if __name__ == "__main__":
+    logger.enable("pyttern")
     main()
