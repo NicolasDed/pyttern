@@ -312,6 +312,29 @@ def foo():
 ```
 
 
-## Augassign WIP
-We implemented a match between `augassign` and `assign`. For example, the pattern `x = x + 1` will match `x += 1` and the 
-pattern `x += 1` will match `x = x + 1`.
+## File structure
+To implement a system that allows to create logic with different patterns, we implemented a specific file structure.
+The file structure is composed as follows:
+```
+pattern_name
+└── and
+    ├── pattern1.pyt
+    ├── pattern2.pyt
+    └── or
+        ├── not
+        │   └── pattern3.pyt
+        └── pattern4.pyt
+```
+The resulting is a boolean logic tree. The `and` folder contains patterns that must all match. 
+The `or` folder contains patterns that can match. 
+The `not` folder contains patterns that must not match.
+This allows the creation of more complex patterns with different files.
+
+## Visualization
+To visualize the matching algorithm, we implemented a web visualization tool. If you installed Pyttern, you can run it
+using the following command:
+```bash
+pytternweb
+```
+You can then import your pyttern on the left part of the site and your code on the right side. You can control the
+matching algorithm using the buttons on the bottom of the site.

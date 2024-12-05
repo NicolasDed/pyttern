@@ -269,5 +269,5 @@ contains_wildcard: '?' '<' (expr_wildcard | expr_stmt) '>' wildcard_type?;
 compound_wildcard: simple_compound_wildcard | multiple_compound_wildcard | strict_mode;
 simple_compound_wildcard: '?' wildcard_type? ':' wildcard_number? block;
 multiple_compound_wildcard: ('?' wildcard_type? ':' '*' block) | ('?' wildcard_type? '*' ':' block);
-strict_mode: '?' 'strict' '[' (simple_stmts | NEWLINE stmt+) ']' NEWLINE;
+strict_mode: '?' STRICT '[' (simple_stmts | NEWLINE stmt+) ']' NEWLINE;
 list_wildcard: '?' '*';

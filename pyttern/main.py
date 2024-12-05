@@ -65,7 +65,7 @@ def match_wildcards(pattern_path, code_path, strict_match=True, match_details=Fa
 
 @cache
 def generate_tree_from_code(code):
-    code = code.strip()
+    code = code.strip() + "\n"
     stream = InputStream(code)
     return generate_tree_from_stream(stream)
 
