@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyttern"
-version = "0.2.0"
+version = "0.2.2"
 description = ""
 authors = ["julien <julien.lienard@uclouvain.be>"]
 readme = "README.md"
@@ -12,6 +12,7 @@ antlr4-python3-runtime="4.7.2"
 cachelib="^0.13.0"
 Flask="^3.0.3"
 Flask-Session="^0.8.0"
+Flask_Assets="^2.1.0"
 loguru="^0.7.2"
 pymemcache="^4.0.0"
 tqdm="^4.66.5"
@@ -27,3 +28,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 pyttern = "pyttern.main:main"
 pytternweb = "pyttern.main:run_application"
+pytterncompile = "pyttern.main:_compile_code"

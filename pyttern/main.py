@@ -16,7 +16,7 @@ from .pytternfsm.tree_pruner import TreePruner
 from .simulator.simulator import Simulator
 
 
-def match_files(pattern_path, code_path, strict_match=True, match_details=False):
+def match_files(pattern_path, code_path, strict_match=False, match_details=False):
     try:
         pattern = generate_tree_from_file(pattern_path)
         code = generate_tree_from_file(code_path)
@@ -34,7 +34,7 @@ def match_files(pattern_path, code_path, strict_match=True, match_details=False)
     return len(simu.match_set.matches) > 0
 
 
-def match_wildcards(pattern_path, code_path, strict_match=True, match_details=False):
+def match_wildcards(pattern_path, code_path, strict_match=False, match_details=False):
     """
     Match all python files with all pattern files.
     The path_pattern_with_wildcards and path_python_with_wildcard

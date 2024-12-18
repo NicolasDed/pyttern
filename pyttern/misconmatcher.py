@@ -2,7 +2,7 @@
 # Date: 2024-10-31
 # Description: Functions useful to apply complex pattern matching (composed of multiple patterns)
 # Modified by: Julien Liénard
-
+import sys
 from os import listdir
 
 from loguru import logger
@@ -31,9 +31,11 @@ def retrieve_pytterns_and_explore(path, code, pyt_dict):
     """
     Browses the pyttern folder, matches the misconceptions and the code, stores the results in a dictionary and returns this dictionary.
     """
+    logger.debug(f"Retrieving pytterns from {path}")
     for pyttern in listdir(path):
         for f in listdir(f"{path}/{pyttern}"):
             if f[-8:] != "feedback":
+                logger.debug(f"Starting exploration on {path}/{pyttern}/{f}")
                 pyt_dict[pyttern] = match_misconception(f"{path}/{pyttern}", f, code)
 
 
@@ -49,6 +51,7 @@ def match_misconception(path, current, code):
     
     # Matches code with a pyttern
     if file_ext == "pyt":
+        logger.debug(f"Matching {new_path} with {code}")
         return match_files(new_path, code)
     
     # Matches code with a regex
@@ -72,9 +75,9 @@ def match_misconception(path, current, code):
     
     # Apply "not" operator to the unique file or folder in the "not" folder
     elif current == "not":
-        if len(listdir(new_path)) > 1:
-            raise SingleFileError("The not folder must contain only one file or folder.")
         f = listdir(new_path)[0]
+        if len(listdir(new_path)) > 1:
+            print(f"Error: 'not' folder should contain only one file or folder. {f} taken as default", file=sys.stderr)
         return not match_misconception(new_path, f, code)
 
 
