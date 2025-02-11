@@ -11,6 +11,7 @@ from ...PytternListener import PytternListener
 from ...pytternfsm.python.python_visitor import Python_Visitor
 from ...simulator.simulator import Simulator
 from ...language_processors import get_processor
+from ...language_processors.language_utils import determine_language
 
 app = Flask(__name__)
 app.secret_key = b'a78b11744f599a29207910d3b55eded2dd22cbf9c1dc6c007586b68ff649ac6f'
@@ -117,19 +118,6 @@ def fsm_to_json(fsm):
         json_obj = json.dumps(infos)
         nodes.append(json_obj)
     return nodes
-
-
-def determine_language(filename):
-    """
-    Determines the language based on the file extension.
-    Returns 'python' or 'java' atm or None for unsupported file types.
-    """
-    extension = filename.split('.')[-1]
-    if extension == "pyt" or extension == "py":
-        return "python"
-    elif extension == "jat" or extension == "java":
-        return "java"
-    return None
 
 
 class JsonListener(PytternListener):
