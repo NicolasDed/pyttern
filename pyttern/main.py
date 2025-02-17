@@ -6,7 +6,7 @@ import argparse
 from .language_processors import get_processor
 
 
-# def match_files(pattern_path, code_path, strict_match=True, match_details=False):
+# def match_files(pattern_path, code_path, strict_match=False, match_details=False):
 #     try:
 #         pattern = generate_tree_from_file(pattern_path)
 #         code = generate_tree_from_file(code_path)
@@ -24,7 +24,7 @@ from .language_processors import get_processor
 #     return len(simu.match_set.matches) > 0
 
 
-# def match_wildcards(pattern_path, code_path, strict_match=True, match_details=False):
+# def match_wildcards(pattern_path, code_path, strict_match=False, match_details=False):
 #     """
 #     Match all python files with all pattern files.
 #     The path_pattern_with_wildcards and path_python_with_wildcard
@@ -51,6 +51,43 @@ from .language_processors import get_processor
 #                 ret[python_filepath] = {}
 #             ret[python_filepath][pattern_filepath] = result
 #     return ret
+
+
+# @cache
+# def generate_tree_from_code(code):
+#     code = code.strip() + "\n"
+#     stream = InputStream(code)
+#     return generate_tree_from_stream(stream)
+
+
+# @cache
+# def generate_tree_from_stream(stream):
+#     logger.info("Generating tree")
+#     lexer = Python3Lexer(stream)
+#     stream = CommonTokenStream(lexer)
+#     py_parser = Python3Parser(stream)
+
+#     error = io.StringIO()
+
+#     py_parser.removeErrorListeners()
+#     error_listener = Python3ErrorListener(error)
+#     py_parser.addErrorListener(error_listener)
+
+#     tree = py_parser.file_input()
+#     if len(error_listener.symbol) > 0:
+#         raise IOError(
+#             f"Syntax error in {stream} at line {error_listener.line} "
+#             f"({repr(error_listener.symbol)}) : {error.getvalue()}")
+
+#     pruned_tree = TreePruner().visit(tree)
+
+#     return pruned_tree
+
+
+# @cache
+# def generate_tree_from_file(file):
+#     file_input = FileStream(file, encoding="utf-8")
+#     return generate_tree_from_stream(file_input)
 
 
 def run_application():
@@ -101,6 +138,7 @@ def main():
         simu.step()
     print(simu.match_set.matches)
 
-
+logger.disable("pyttern")
 if __name__ == "__main__":
+    logger.enable("pyttern")
     main()

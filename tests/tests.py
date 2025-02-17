@@ -1,13 +1,17 @@
-import glob
 import importlib.resources as pkg_resources
 import os
+import time
 
 import pytest
-from tqdm import tqdm
+from loguru import logger
 
+<<<<<<< HEAD
 from pyttern.main import generate_tree_from_file
 from pyttern.pytternfsm.python.python_visitor import Python_Visitor
 from pyttern.simulator.simulator import Simulator
+=======
+from pyttern import match_files, match_wildcards
+>>>>>>> upstream/main
 from . import tests_files
 
 
@@ -23,53 +27,6 @@ def discover_files(directory, extension=None):
                     yield os.path.join(root, file)
 
 
-def match_files(pattern_path, code_path, strict_match=True, match_details=False):
-    try:
-        pattern = generate_tree_from_file(pattern_path)
-        code = generate_tree_from_file(code_path)
-    except Exception as e:
-        assert False, e
-
-    fsm = Python_Visitor(strict_match).visit(pattern)
-
-    simu = Simulator(fsm, code)
-    simu.start()
-    while len(simu.states) > 0:
-        simu.step()
-    if match_details:
-        return len(simu.match_set.matches) > 0, simu.match_set.matches
-    return len(simu.match_set.matches) > 0
-
-
-def match_wildcards(pattern_path, code_path, strict_match=True, match_details=False):
-    """
-    Match all python files with all pattern files.
-    The path_pattern_with_wildcards and path_python_with_wildcard
-    can contain wildcards. The function returns a dictionary with the results of the matches.
-    :param pattern_path: Path to the pattern files with wildcards.
-    :param code_path: Path to the python files with wildcards.
-    :param strict_match: If True, the match will be strict, otherwise it will be soft.
-    :param match_details: If True, the function will return the match details.
-    :return: Dictionary with the results of the matches.
-    """
-    ret = {}
-    patterns_filespath = glob.glob(str(pattern_path))
-    pythons_filespath = glob.glob(str(code_path))
-
-    try:
-        pythons_filespath = tqdm(pythons_filespath)
-    except NameError:
-        pass
-
-    for python_filepath in pythons_filespath:
-        for pattern_filepath in patterns_filespath:
-            result = match_files(pattern_filepath, python_filepath, strict_match, match_details)
-            if python_filepath not in ret:
-                ret[python_filepath] = {}
-            ret[python_filepath][pattern_filepath] = result
-    return ret
-
-
 class TestASTWildcards:
 
     @pytest.mark.timeout(10)
@@ -78,8 +35,7 @@ class TestASTWildcards:
 
         for n_1 in nbr:
             for n_2 in nbr:
-                val, details = match_files(
-                    (pkg_resources.files(tests_files) / f"q1_{n_1}.py"),
+                val, details = match_files((pkg_resources.files(tests_files) / f"q1_{n_1}.py"),
                     (pkg_resources.files(tests_files) / f"q1_{n_2}.py"), True, True)
                 if n_1 == n_2:
                     assert val, f"{n_1} != {n_2}: {details}"
@@ -92,8 +48,7 @@ class TestASTWildcards:
 
         for n_1 in nbr:
             for n_2 in nbr:
-                val, details = match_files(
-                    (pkg_resources.files(tests_files) / f"q1_{n_1}.py"),
+                val, details = match_files((pkg_resources.files(tests_files) / f"q1_{n_1}.py"),
                     (pkg_resources.files(tests_files) / f"q1_{n_2}.py"), False, True)
                 if n_1 == n_2:
                     assert val, f"{n_1} != {n_2}: {details}"
@@ -130,21 +85,20 @@ class TestASTWildcards:
 
     @pytest.mark.timeout(10)
     def test_ast_labeled_wildcard(self):
-        val, det = match_files(
-            get_test_file("pytternLabeled.pyh"), get_test_file("q1_3.py"), strict_match=True, match_details=True)
+        val, det = match_files(get_test_file("pytternLabeled.pyh"), get_test_file("q1_3.py"), strict_match=True,
+            match_details=True)
         assert val, det
 
     @pytest.mark.timeout(10)
     def test_ast_multiple_depth(self):
-        val, msg = match_files(
-            get_test_file("pytternMultipleDepth.pyh"), get_test_file("q1_254.py"), strict_match=True,
+        val, msg = match_files(get_test_file("pytternMultipleDepth.pyh"), get_test_file("q1_254.py"), strict_match=True,
             match_details=True)
         assert val, msg
 
     @pytest.mark.timeout(10)
     def test_pattern_13(self):
-        val, match = match_files(
-            get_test_file("Pattern13.pyh"), get_test_file("q1_560.py"), strict_match=True, match_details=True)
+        val, match = match_files(get_test_file("Pattern13.pyh"), get_test_file("q1_560.py"), strict_match=True,
+            match_details=True)
         assert val, match
 
     @pytest.mark.timeout(10)
@@ -158,33 +112,31 @@ class TestASTWildcards:
 
     @pytest.mark.timeout(10)
     def test_soft_pattern_match(self):
-        val, match = match_files(
-            get_test_file("Pattern13soft.pyh"), get_test_file("q1_560.py"), strict_match=False, match_details=True)
+        val, match = match_files(get_test_file("Pattern13soft.pyh"), get_test_file("q1_560.py"), strict_match=False,
+            match_details=True)
         assert val, match
 
-        val, match = match_files(
-            get_test_file("Pattern13soft.pyh"), get_test_file("q1_560.py"), strict_match=True, match_details=True)
+        val, match = match_files(get_test_file("Pattern13soft.pyh"), get_test_file("q1_560.py"), strict_match=True,
+            match_details=True)
         assert not val, match
 
     @pytest.mark.timeout(10)
     def test_soft_ast_body_wildcard(self):
-        val, match = match_files(
-            get_test_file("pytternCompoundSoft.pyh"), get_test_file("q1_254.py"), strict_match=False,
-            match_details=True)
+        val, match = match_files(get_test_file("pytternCompoundSoft.pyh"), get_test_file("q1_254.py"),
+            strict_match=False, match_details=True)
         assert val, match
 
-        val, match = match_files(
-            get_test_file("pytternCompoundSoft.pyh"), get_test_file("q1_254.py"), strict_match=True, match_details=True)
+        val, match = match_files(get_test_file("pytternCompoundSoft.pyh"), get_test_file("q1_254.py"),
+            strict_match=True, match_details=True)
         assert not val, match
 
     def test_strict_mode(self):
-        val, match = match_files(
-            get_test_file("strictModeTest.pyh"), get_test_file("q1_254.py"), strict_match=False, match_details=True)
+        val, match = match_files(get_test_file("strictModeTest.pyh"), get_test_file("q1_254.py"), strict_match=False,
+            match_details=True)
         assert val, match
 
-        val, match = match_files(
-            get_test_file("strictModeTest.pyh"), get_test_file("strictModeNok.py"), strict_match=False,
-            match_details=True)
+        val, match = match_files(get_test_file("strictModeTest.pyh"), get_test_file("strictModeNok.py"),
+            strict_match=False, match_details=True)
         assert not val, match
 
     def test_match_wildcards_unique(self):
@@ -360,3 +312,22 @@ class TestASTWildcards:
         pattern_path = get_test_file("missplacedreturn/indentreturn.pyt")
         res, det = match_files(pattern_path, code_path, match_details=True, strict_match=False)
         assert res, det
+
+    @pytest.mark.timeout(90)
+    def test_big_load(self):
+        logger.level("WARNING")
+        start_time = time.time()
+        pattern_path = get_test_file("multAndDivPatterns/*.pyh")
+        code_path = get_test_file("multAndDiv.py")
+        for _ in range(2000):
+            matches = match_wildcards(pattern_path, code_path, match_details=True, strict_match=False)
+            for _, match in matches.items():
+                for pattern, result in match.items():
+                    do_match, details = result
+                    if "patternMultPlusDIv" in pattern:
+                        assert do_match, f"Cannot match {pattern}: {details}"
+                    else:
+                        assert not do_match, details
+        end_time = time.time()
+        logger.level("INFO")
+        assert end_time - start_time < 60, f"Execution took {end_time - start_time} seconds"
