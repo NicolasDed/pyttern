@@ -160,6 +160,8 @@ def index():
     pyttern_tree_graph = "null"
     code_tree_graph = "null"
     
+    # session["pyttern_code"] = None
+    # session["code_file"] = None
     if "pyttern_code" in session and session["pyttern_code"] is not None:
         try:
             pyttern_code = session["pyttern_code"]

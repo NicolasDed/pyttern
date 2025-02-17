@@ -24,9 +24,14 @@ class Java_Visitor(JavaParserVisitor):
 
     def visitChildren(self, node, clazz=None):
         children = list(node.getChildren())
-        if len(children) == 0:
-            logger.debug(f"Handling {node.__class__.__name__} as Terminal")
+
+        if isinstance(node, TerminalNode):
+            logger.debug(f"Handling terminal node: {node.getText()}")
             return self.text_node(node.getText())
+
+        # if len(children) == 0:
+        #     logger.debug(f"Handling {node.__class__.__name__} as Terminal")
+        #     return self.text_node(node.getText())
 
         if clazz is None:
             clazz = node.__class__

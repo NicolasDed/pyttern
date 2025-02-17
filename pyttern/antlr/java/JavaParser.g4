@@ -89,7 +89,7 @@ variableModifier
     ;
 
 classDeclaration
-    : CLASS identifier typeParameters? (EXTENDS typeType)? (IMPLEMENTS typeList)? (
+    : CLASS (var_wildcard | identifier) typeParameters? (EXTENDS typeType)? (IMPLEMENTS typeList)? (
         PERMITS typeList
     )? // Java17
     classBody
@@ -253,6 +253,7 @@ variableDeclarator
 
 variableDeclaratorId
     : identifier ('[' ']')*
+    | var_wildcard
     ;
 
 variableInitializer
@@ -799,3 +800,6 @@ explicitGenericInvocationSuffix
 arguments
     : '(' expressionList? ')'
     ;
+
+// Syntax of wildcards
+var_wildcard: '#' identifier;
