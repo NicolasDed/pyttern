@@ -7,7 +7,7 @@ from os import listdir
 
 from loguru import logger
 
-from .main import match_files
+from .matcher import match_files
 
 
 class SingleFileError(Exception):

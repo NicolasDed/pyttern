@@ -1,0 +1,9 @@
+public class # {
+    public static void main(String[] #) {
+        # # = 0;
+        # # = 'c';
+        # # = 10000000000L;
+        # # = 1.0;
+        # # = true;
+    }
+}

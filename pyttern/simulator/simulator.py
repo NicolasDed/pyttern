@@ -39,24 +39,31 @@ class Simulator:
 
     def step(self):
         logger.debug(f"Step {self.n_step}")
-        self.n_step += 1
+
         if len(self.states) == 0:
             raise Warning("No more states to process")
-        current_state = self.states.pop()
-        current_fsm, current_ast, variables, matches = current_state
-        for listener in self._listeners:
-            listener.step(self, current_fsm, current_ast, variables, matches)
+
+        current_state = self.states[-1]
 
         if self.is_matching(current_state):
             self.accepted_states += self.visited_states
             self.visited_states = []
+            self.states.pop()
+            self.n_step += 1
             return
+
+        current_state = self.states.pop()
+        current_fsm, current_ast, variables, matches = current_state
+
+        for listener in self._listeners:
+            listener.step(self, current_fsm, current_ast, variables, matches)
 
         match, new_variables = Simulator.check_var(current_ast, current_fsm.var, variables)
         if new_variables is not variables:
             for listener in self._listeners:
                 listener.on_new_variable(self, current_fsm.var, new_variables[current_fsm.var])
         if not match:
+            self.n_step += 1
             return
 
         for next_node, func, movements in current_fsm.get_transitions():
@@ -77,7 +84,13 @@ class Simulator:
             self.visited_states.append(new_state)
             self.states.append(new_state)
             for listener in self._listeners:
-                listener.on_transition(self, current_fsm, current_ast, next_node, next_ast, func, movements, new_state[3])
+                listener.on_transition(
+                    self, current_fsm, current_ast,
+                    next_node, next_ast, func, movements,
+                    new_state[3]
+                )
+
+        self.n_step += 1
 
     def move_ast(self, ast, movements):
         current_ast = ast
@@ -107,7 +120,10 @@ class Simulator:
 
     def is_matching(self, state):
         fsm, ast, _, match = state
-        if isinstance(ast, TerminalNode) and str(ast) == "<EOF>" and len(list(fsm.get_out_transitions())) == 0:
+        no_more_transitions = len(list(fsm.get_out_transitions())) == 0
+        is_end_node = isinstance(ast, TerminalNode) or (hasattr(ast, "getChildCount") and ast.getChildCount() == 0)
+
+        if no_more_transitions and is_end_node:
             logger.info("Match found")
             self.match_set.record(match)
             for listener in self._listeners:
@@ -125,9 +141,8 @@ class Simulator:
             return True, variables
 
         if var in variables:
-            if Simulator.match(current_ast, variables[var]):
-                return True, variables
-            return False, variables
+            return str(current_ast) == str(variables[var]), variables
+
         new_variables = variables.copy()
         new_variables[var] = current_ast
         return True, new_variables

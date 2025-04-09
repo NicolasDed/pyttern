@@ -89,7 +89,7 @@ variableModifier
     ;
 
 classDeclaration
-    : CLASS (var_wildcard | identifier) typeParameters? (EXTENDS typeType)? (IMPLEMENTS typeList)? (
+    : CLASS (simple_wildcard | identifier) typeParameters? (EXTENDS typeType)? (IMPLEMENTS typeList)? (
         PERMITS typeList
     )? // Java17
     classBody
@@ -253,7 +253,6 @@ variableDeclarator
 
 variableDeclaratorId
     : identifier ('[' ']')*
-    | var_wildcard
     ;
 
 variableInitializer
@@ -297,6 +296,7 @@ formalParameterList
 
 formalParameter
     : variableModifier* typeType variableDeclaratorId
+    | list_wildcard
     ;
 
 lastFormalParameter
@@ -461,6 +461,7 @@ blockStatement
     : localVariableDeclaration ';'
     | localTypeDeclaration
     | statement
+    | list_wildcard
     ;
 
 localVariableDeclaration
@@ -484,6 +485,7 @@ identifier
     | PERMITS
     | RECORD
     | VAR
+    | '#'
     ;
 
 typeIdentifier // Identifiers that are not restricted for type declarations
@@ -527,6 +529,7 @@ statement
     | statementExpression = expression ';'
     | switchExpression ';'? // Java17
     | identifierLabel = identifier ':' statement
+    | simple_compound_wildcard
     ;
 
 catchClause
@@ -781,6 +784,7 @@ primitiveType
     | LONG
     | FLOAT
     | DOUBLE
+    | '#'
     ;
 
 typeArguments
@@ -802,4 +806,6 @@ arguments
     ;
 
 // Syntax of wildcards
-var_wildcard: '#' identifier;
+simple_wildcard: '#';
+list_wildcard: '#' '*';
+simple_compound_wildcard: '#' block;

@@ -12,10 +12,22 @@ from ..antlr.java.JavaParser import JavaParser
 from ..antlr.java.JavaLexer import JavaLexer
 from ..pyttern_error_listener import Python3ErrorListener
 from ..pytternfsm.java.java_visitor import Java_Visitor
-# from ..pytternfsm.java.tree_pruner import TreePruner
 from ..simulator.simulator import Simulator
 
 class JavaProcessor(BaseProcessor):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(JavaProcessor, cls).__new__(cls)
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+        
     def generate_tree_from_code(self, code):
         code = code.strip()
         stream = InputStream(code)
@@ -34,14 +46,6 @@ class JavaProcessor(BaseProcessor):
         java_parser.addErrorListener(error_listener)
 
         tree = java_parser.compilationUnit()
-        # if len(error_listener.symbol) > 0:
-        #     raise IOError(
-        #         f"Syntax error in {stream} at line {error_listener.line} "
-        #         f"({repr(error_listener.symbol)}) : {error.getvalue()}")
-
-        # pruned_tree = TreePruner().visit(tree)
-
-        # return pruned_tree
         return tree
 
     def generate_tree_from_file(self, file):
@@ -49,7 +53,6 @@ class JavaProcessor(BaseProcessor):
         return self.generate_tree_from_stream(file_input)
 
     def create_fsm(self, pattern_tree):
-        # return JavaParserVisitor(pattern_tree)
         return Java_Visitor().visit(pattern_tree)
 
     def create_simulator(self, fsm, code_tree):

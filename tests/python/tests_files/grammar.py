@@ -4,7 +4,7 @@
 
 import unittest
 
-from tests.tests import run_unittest, check_syntax_error
+from tests.python.tests import run_unittest, check_syntax_error
 
 
 # testing import *

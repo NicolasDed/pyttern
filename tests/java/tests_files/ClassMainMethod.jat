@@ -1,0 +1,10 @@
+public class # {
+    public static void main(String[] #) {
+        System.out.println(foo());
+    }
+
+    public static String foo() {
+        int # = 0;
+        return "bar";
+    }
+}

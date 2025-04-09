@@ -3,8 +3,8 @@ from .java_processor import JavaProcessor
 
 def get_processor(lang):
     if lang == 'python':
-        return PythonProcessor()
+        return PythonProcessor.get_instance()
     elif lang == 'java':
-        return JavaProcessor()
+        return JavaProcessor.get_instance()
     else:
         raise ValueError(f"Unsupported language: {lang}")

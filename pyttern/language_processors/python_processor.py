@@ -16,13 +16,24 @@ from ..pytternfsm.python.tree_pruner import TreePruner
 from ..simulator.simulator import Simulator
 
 class PythonProcessor(BaseProcessor):
-    @cache
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(PythonProcessor, cls).__new__(cls)
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
     def generate_tree_from_code(self, code):
         code = code.strip()
         stream = InputStream(code)
         return self.generate_tree_from_stream(stream)
 
-    @cache
     def generate_tree_from_stream(self, stream):
         logger.info("Generating tree")
         lexer = Python3Lexer(stream)
@@ -45,7 +56,6 @@ class PythonProcessor(BaseProcessor):
 
         return pruned_tree
 
-    @cache
     def generate_tree_from_file(self, file):
         file_input = FileStream(file, encoding="utf-8")
         return self.generate_tree_from_stream(file_input)
