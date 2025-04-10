@@ -462,6 +462,7 @@ blockStatement
     | localTypeDeclaration
     | statement
     | list_wildcard
+    | simple_compound_wildcard
     ;
 
 localVariableDeclaration
@@ -529,7 +530,6 @@ statement
     | statementExpression = expression ';'
     | switchExpression ';'? // Java17
     | identifierLabel = identifier ':' statement
-    | simple_compound_wildcard
     ;
 
 catchClause
@@ -808,4 +808,5 @@ arguments
 // Syntax of wildcards
 simple_wildcard: '#';
 list_wildcard: '#' '*';
-simple_compound_wildcard: '#' block;
+var_wildcard: '#' identifier;
+simple_compound_wildcard: '#' statement;

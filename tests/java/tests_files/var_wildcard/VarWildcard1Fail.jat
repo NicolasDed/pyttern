@@ -1,0 +1,6 @@
+public class VarWildcard1Fail {
+    public static int foo(int #name) {
+        name = 1.0;
+        return name;
+    }
+}

@@ -173,17 +173,16 @@ class Java_Visitor(JavaParserVisitor):
     def visitSimple_compound_wildcard(self, ctx: JavaParser.Simple_compound_wildcardContext):
         next_node = FSM()
         pred = ObjectTransition()
+        self.depth += 1
 
-        transition = (next_node, pred, [Movement.MLC])
-        self.current_fsm_node.add_transition(*transition)
-
-        self_transition = (next_node, ObjectTransition(), [Movement.MRS])
-        next_node.add_transition(*self_transition)
+        self.current_fsm_node.add_transition(next_node, pred, [Movement.MLC])
+        next_node.add_transition(next_node, ObjectTransition(), [Movement.MRS])
 
         self.current_fsm_node = next_node
 
-        # Visit the block inside the wildcard
-        ctx.block().accept(self)
+        statement = ctx.statement()
+        if statement is not None:
+            statement.accept(self)
 
         return next_node
 

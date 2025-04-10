@@ -1,0 +1,6 @@
+public class VarWildcard1 {
+    public static int foo(int #name) {
+        name = 1;
+        return name;
+    }
+}

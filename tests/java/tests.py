@@ -1,6 +1,5 @@
 import importlib.resources as pkg_resources
 import os
-import time
 
 import pytest
 from loguru import logger
@@ -43,24 +42,32 @@ class TestASTWildcards:
 
     @pytest.mark.timeout(10)
     def test_simple_wildcard(self):
-        pattern_path = get_test_file("ClassMainMethod.jat")
-        code_path = get_test_file("ClassMainMethod.java")
+        pattern_path = get_test_file("simple_wildcard/ClassMainMethod.jat")
+        code_path = get_test_file("simple_wildcard/ClassMainMethod.java")
 
         res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
         assert res, det
 
     @pytest.mark.timeout(10)
     def test_primitive_types(self):
-        pattern_path = get_test_file("VariableName.jat")
-        code_path = get_test_file("VariableName.java")
+        pattern_path = get_test_file("primitive_types/VariableName.jat")
+        code_path = get_test_file("primitive_types/VariableName.java")
 
         res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
         assert res, det
 
     @pytest.mark.timeout(10)
     def test_list_wildcard(self):
-        pattern_path = get_test_file("ListWildcard.jat")
-        code_path = get_test_file("ListWildcard.java")
+        pattern_path = get_test_file("list_wildcard/ListWildcard.jat")
+        code_path = get_test_file("list_wildcard/ListWildcard.java")
+
+        res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
+        assert res, det
+
+    @pytest.mark.timeout(10)
+    def test_simple_compound_wildcard(self):
+        pattern_path = get_test_file("simple_compound_wildcard/SimpleCompoundWildcard.jat")
+        code_path = get_test_file("simple_compound_wildcard/SimpleCompoundWildcard.java")
 
         res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
         assert res, det
