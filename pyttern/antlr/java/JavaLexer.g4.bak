@@ -189,6 +189,7 @@ RSHIFT_ASSIGN  : '>>=';
 URSHIFT_ASSIGN : '>>>=';
 
 // Rules for wildcards
+WILDCARD_SPACE : '#' [ \t]+ ;
 WILDCARD : '#';
 
 // Java 8 tokens

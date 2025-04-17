@@ -1160,6 +1160,15 @@ class JavaParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by JavaParser#var_wildcard.
+    def enterVar_wildcard(self, ctx:JavaParser.Var_wildcardContext):
+        pass
+
+    # Exit a parse tree produced by JavaParser#var_wildcard.
+    def exitVar_wildcard(self, ctx:JavaParser.Var_wildcardContext):
+        pass
+
+
     # Enter a parse tree produced by JavaParser#simple_compound_wildcard.
     def enterSimple_compound_wildcard(self, ctx:JavaParser.Simple_compound_wildcardContext):
         pass

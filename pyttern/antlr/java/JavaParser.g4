@@ -252,7 +252,7 @@ variableDeclarator
     ;
 
 variableDeclaratorId
-    : identifier ('[' ']')*
+    : (identifier | var_wildcard) ('[' ']')*
     ;
 
 variableInitializer
@@ -486,7 +486,7 @@ identifier
     | PERMITS
     | RECORD
     | VAR
-    | '#'
+    | WILDCARD
     ;
 
 typeIdentifier // Identifiers that are not restricted for type declarations
@@ -694,6 +694,7 @@ primary
     | SUPER
     | literal
     | identifier
+    | var_wildcard
     | typeTypeOrVoid '.' CLASS
     | nonWildcardTypeArguments (explicitGenericInvocationSuffix | THIS arguments)
     ;
@@ -772,7 +773,7 @@ typeList
     ;
 
 typeType
-    : annotation* (classOrInterfaceType | primitiveType) (annotation* '[' ']')*
+    : annotation* (classOrInterfaceType | primitiveType | var_wildcard) (annotation* '[' ']')*
     ;
 
 primitiveType
@@ -784,7 +785,7 @@ primitiveType
     | LONG
     | FLOAT
     | DOUBLE
-    | '#'
+    | WILDCARD_SPACE
     ;
 
 typeArguments

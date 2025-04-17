@@ -106,6 +106,15 @@ class Java_Visitor(JavaParserVisitor):
 
         return next_node
 
+    def visitVar_wildcard(self, ctx: JavaParser.Var_wildcardContext):
+        var_name = ctx.identifier().getText()
+        print("VN:::", var_name)
+        next_node = FSM()
+        transition = self.get_up_transition(next_node, VarTransition(var_name))
+        self.current_fsm_node.add_transition(*transition)
+        self.current_fsm_node = next_node
+        return next_node
+
     def visitSimple_wildcard(self, ctx: JavaParser.Simple_wildcardContext):
         pred = ObjectTransition()
 
@@ -127,8 +136,8 @@ class Java_Visitor(JavaParserVisitor):
         self.depth += 1
 
         next_node = FSM()
-        if text == "#":
-            logger.debug("Find #")
+        if ctx.WILDCARD_SPACE():
+            logger.debug("Find primitive wildcard (# or # )")
             transition = self.get_up_transition(next_node, ObjectTransition())
         else:
             transition = self.get_up_transition(next_node, StringTransition(text))
@@ -141,6 +150,7 @@ class Java_Visitor(JavaParserVisitor):
     def visitIdentifier(self, ctx: JavaParser.IdentifierContext):
         text = ctx.getText()
         logger.debug("Find visitIdentifier")
+        print(f"TEXT {text}")
 
         identifier_node = FSM()
         transition = (identifier_node, ClassTransition(JavaParser.IdentifierContext), [Movement.MLC])

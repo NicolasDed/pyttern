@@ -71,3 +71,23 @@ class TestASTWildcards:
 
         res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
         assert res, det
+
+    @pytest.mark.timeout(10)
+    def test_var_wildcard(self):
+        print("Testing matching var wildcards")
+        for n in range(1, 4):
+            pattern_path = get_test_file(f"var_wildcard/VarWildcard{n}.jat")
+            code_path = get_test_file(f"var_wildcard/VarWildcard{n}.java")
+
+            val, details = match_files(pattern_path, code_path, self.LANGUAGE, False, True)
+
+            assert val, details
+
+        print("Testing not matching var wildcards")
+        for n in range(1, 2):
+            pattern_path = get_test_file(f"var_wildcard/VarWildcard{n}Fail.jat")
+            code_path = get_test_file(f"var_wildcard/VarWildcard{n}.java")
+
+            val, details = match_files(pattern_path, code_path, self.LANGUAGE, False, True)
+
+            assert not val, details

@@ -1,8 +1,8 @@
-public class VarWildcard3 {
+class VarWildcard {
     public static int foo(#type #name) {
-        name = 1;
+        #name = 1;
         #type y = 1;
-        #type res = name + y;
+        #type res = #name + y;
         return res;
     }
 }

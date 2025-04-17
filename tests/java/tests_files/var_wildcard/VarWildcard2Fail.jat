@@ -1,4 +1,4 @@
-public class VarWildcard2Fail {
+class VarWildcard {
     public static int foo(#type x) {
         x = 1;
         #type y = 1.0;

@@ -1,11 +1,11 @@
-public class VarWildcard4 {
+class VarWildcard {
     public static int foo(#type #name) {
-        name = 1;
+        #name = 1;
         #type y = 1;
-        #type res = name + y;
+        #type res = #name + y;
         #type2 #name2 = 1.0;
         #type2 y2 = 1.0;
-        #type2 res2 = #name2.concat(b);
+        #type2 res2 = #name2 + y2;
         return res;
     }
 }

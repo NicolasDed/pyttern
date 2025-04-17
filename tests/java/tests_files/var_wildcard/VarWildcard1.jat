@@ -1,6 +1,6 @@
-public class VarWildcard1 {
+class VarWildcard {
     public static int foo(int #name) {
-        name = 1;
-        return name;
+        #name = 1;
+        return #name;
     }
 }
