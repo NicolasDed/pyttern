@@ -41,28 +41,37 @@ class TestASTWildcards:
                     assert not val, f"{n_1} = {n_2}: {details}"
 
     @pytest.mark.timeout(10)
-    def test_simple_wildcard(self):
-        pattern_path = get_test_file("simple_wildcard/ClassMainMethod.jat")
-        code_path = get_test_file("simple_wildcard/ClassMainMethod.java")
+    def test_identifier_wildcard(self):
+        pattern_path = get_test_file("identifier_wildcard/IdentifierWildcard.jat")
+        code_path = get_test_file("identifier_wildcard/IdentifierWildcard.java")
 
         res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
         assert res, det
 
     @pytest.mark.timeout(10)
-    def test_primitive_types(self):
-        pattern_path = get_test_file("primitive_types/VariableName.jat")
-        code_path = get_test_file("primitive_types/VariableName.java")
+    def test_primitive_type_wildcard(self):
+        for n in range(1, 7):
+            pattern_path = get_test_file(f"primitive_type_wildcard/PrimitiveTypeWildcard{n}.jat")
+            code_path = get_test_file(f"primitive_type_wildcard/PrimitiveTypeWildcard{n}.java")
 
-        res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
-        assert res, det
+            res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
+            assert res, det
 
     @pytest.mark.timeout(10)
     def test_list_wildcard(self):
-        pattern_path = get_test_file("list_wildcard/ListWildcard.jat")
-        code_path = get_test_file("list_wildcard/ListWildcard.java")
+        pattern_path = get_test_file("list_wildcard/ListWildcard1.jat")
+        code_path_1 = get_test_file("list_wildcard/ListWildcard1.java")
+        code_path_2 = get_test_file("list_wildcard/ListWildcard2.java")
+        code_path_fail = get_test_file("list_wildcard/ListWildcardFail.java")
 
-        res, det = match_files(pattern_path, code_path, self.LANGUAGE, match_details=True)
+        res, det = match_files(pattern_path, code_path_1, self.LANGUAGE, match_details=True)
         assert res, det
+
+        res, det = match_files(pattern_path, code_path_2, self.LANGUAGE, match_details=True)
+        assert res, det
+
+        res, det = match_files(pattern_path, code_path_fail, self.LANGUAGE, match_details=True)
+        assert not res, det
 
     @pytest.mark.timeout(10)
     def test_simple_compound_wildcard(self):
@@ -74,20 +83,16 @@ class TestASTWildcards:
 
     @pytest.mark.timeout(10)
     def test_var_wildcard(self):
-        print("Testing matching var wildcards")
         for n in range(1, 4):
             pattern_path = get_test_file(f"var_wildcard/VarWildcard{n}.jat")
             code_path = get_test_file(f"var_wildcard/VarWildcard{n}.java")
 
-            val, details = match_files(pattern_path, code_path, self.LANGUAGE, False, True)
+            res, det = match_files(pattern_path, code_path, self.LANGUAGE, False, True)
+            assert res, det
 
-            assert val, details
-
-        print("Testing not matching var wildcards")
         for n in range(1, 2):
             pattern_path = get_test_file(f"var_wildcard/VarWildcard{n}Fail.jat")
             code_path = get_test_file(f"var_wildcard/VarWildcard{n}.java")
 
-            val, details = match_files(pattern_path, code_path, self.LANGUAGE, False, True)
-
-            assert not val, details
+            res, det = match_files(pattern_path, code_path, self.LANGUAGE, False, True)
+            assert not res, det

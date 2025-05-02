@@ -1,0 +1,6 @@
+class ListWildcard {
+    public static int foo() {
+        x = 1;
+        return x;
+    }
+}

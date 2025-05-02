@@ -188,10 +188,6 @@ LSHIFT_ASSIGN  : '<<=';
 RSHIFT_ASSIGN  : '>>=';
 URSHIFT_ASSIGN : '>>>=';
 
-// Rules for wildcards
-WILDCARD_SPACE : '#' [ \t]+ ;
-WILDCARD : '#';
-
 // Java 8 tokens
 
 ARROW      : '->';
@@ -235,3 +231,9 @@ fragment Letter:
     | ~[\u0000-\u007F\uD800-\uDBFF]   // covers all characters above 0x7F which are not a surrogate
     | [\uD800-\uDBFF] [\uDC00-\uDFFF] // covers UTF-16 surrogate pairs encodings for U+10000 to U+10FFFF
 ;
+
+// Rules for wildcards
+fragment HASH: '#';
+
+WILDCARD: HASH;
+WILDCARD_SPACE: HASH WS+;

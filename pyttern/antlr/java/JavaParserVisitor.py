@@ -639,8 +639,8 @@ class JavaParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by JavaParser#simple_wildcard.
-    def visitSimple_wildcard(self, ctx:JavaParser.Simple_wildcardContext):
+    # Visit a parse tree produced by JavaParser#primitive_type_wildcard.
+    def visitPrimitive_type_wildcard(self, ctx:JavaParser.Primitive_type_wildcardContext):
         return self.visitChildren(ctx)
 
 

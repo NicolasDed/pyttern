@@ -1,0 +1,9 @@
+class PrimitiveTypeWildcard {
+    public static void main(String[] args) {
+        # i = 0;
+        # c = 'c';
+        # l = 10000000000L;
+        # d = 1.0;
+        # b = true;
+    }
+}

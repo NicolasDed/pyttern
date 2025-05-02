@@ -4,7 +4,9 @@ from loguru import logger
 from ...antlr.java.JavaParserVisitor import JavaParserVisitor
 from ...antlr.java.JavaParser import JavaParser
 from ...simulator.pyttern_fsm import FSM, Movement
-from ...simulator.transitions import ClassTransition, StringTransition, VarTransition, ObjectTransition, ExceptTransition
+from ...simulator.transitions import ClassTransition, StringTransition, VarTransition, ObjectTransition, \
+    ExceptTransition
+
 
 class Java_Visitor(JavaParserVisitor):
     def __init__(self, strict=False):
@@ -60,7 +62,7 @@ class Java_Visitor(JavaParserVisitor):
 
         self.depth = 0
         return transition
-        
+
     def visit(self, tree):
         FSM.default_name = 1
         self.depth = 0
@@ -70,9 +72,9 @@ class Java_Visitor(JavaParserVisitor):
 
         return start_node
 
-    def visitChildren(self, node, clazz=None): # clazz -> type of node
+    def visitChildren(self, node, clazz=None):  # clazz -> type of node
 
-        if isinstance(node, TerminalNode): # TerminalNode -> leaf
+        if isinstance(node, TerminalNode):  # TerminalNode -> leaf
             logger.debug(f"Handling {node.__class__.__name__} as Terminal")
             return self.text_node(node.getText())
 
@@ -108,49 +110,23 @@ class Java_Visitor(JavaParserVisitor):
 
     def visitVar_wildcard(self, ctx: JavaParser.Var_wildcardContext):
         var_name = ctx.identifier().getText()
-        print("VN:::", var_name)
         next_node = FSM()
         transition = self.get_up_transition(next_node, VarTransition(var_name))
         self.current_fsm_node.add_transition(*transition)
         self.current_fsm_node = next_node
         return next_node
 
-    def visitSimple_wildcard(self, ctx: JavaParser.Simple_wildcardContext):
-        pred = ObjectTransition()
-
+    def visitPrimitive_type_wildcard(self, ctx: JavaParser.Primitive_type_wildcardContext):
+        logger.debug("Visit primitive_type_wildcard")
         next_node = FSM()
-        transition = self.get_up_transition(next_node, pred)
+        transition = self.get_up_transition(next_node, ObjectTransition())
         self.current_fsm_node.add_transition(*transition)
-
         self.current_fsm_node = next_node
+
         return next_node
 
-    def visitPrimitiveType(self, ctx: JavaParser.PrimitiveTypeContext):
-        text = ctx.getText()
-        logger.debug("Find visitPrimitiveType")
-
-        primitive_node = FSM()
-        transition = (primitive_node, ClassTransition(JavaParser.PrimitiveTypeContext), [Movement.MLC])
-        self.current_fsm_node.add_transition(*transition)
-        self.current_fsm_node = primitive_node
-        self.depth += 1
-
-        next_node = FSM()
-        if ctx.WILDCARD_SPACE():
-            logger.debug("Find primitive wildcard (# or # )")
-            transition = self.get_up_transition(next_node, ObjectTransition())
-        else:
-            transition = self.get_up_transition(next_node, StringTransition(text))
-
-        self.current_fsm_node.add_transition(*transition)
-        self.current_fsm_node = next_node
-
-        return primitive_node
-
     def visitIdentifier(self, ctx: JavaParser.IdentifierContext):
-        text = ctx.getText()
         logger.debug("Find visitIdentifier")
-        print(f"TEXT {text}")
 
         identifier_node = FSM()
         transition = (identifier_node, ClassTransition(JavaParser.IdentifierContext), [Movement.MLC])
@@ -159,10 +135,11 @@ class Java_Visitor(JavaParserVisitor):
         self.depth += 1
 
         next_node = FSM()
-        if text == "#":
-            logger.debug("Find #")
+
+        if ctx.WILDCARD() or ctx.WILDCARD_SPACE():
             transition = self.get_up_transition(next_node, ObjectTransition())
         else:
+            text = ctx.getText()
             transition = self.get_up_transition(next_node, StringTransition(text))
 
         self.current_fsm_node.add_transition(*transition)
@@ -195,6 +172,3 @@ class Java_Visitor(JavaParserVisitor):
             statement.accept(self)
 
         return next_node
-
-
-

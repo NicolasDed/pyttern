@@ -89,7 +89,7 @@ variableModifier
     ;
 
 classDeclaration
-    : CLASS (simple_wildcard | identifier) typeParameters? (EXTENDS typeType)? (IMPLEMENTS typeList)? (
+    : CLASS identifier typeParameters? (EXTENDS typeType)? (IMPLEMENTS typeList)? (
         PERMITS typeList
     )? // Java17
     classBody
@@ -487,6 +487,7 @@ identifier
     | RECORD
     | VAR
     | WILDCARD
+    | WILDCARD_SPACE
     ;
 
 typeIdentifier // Identifiers that are not restricted for type declarations
@@ -773,7 +774,7 @@ typeList
     ;
 
 typeType
-    : annotation* (classOrInterfaceType | primitiveType | var_wildcard) (annotation* '[' ']')*
+    : annotation* (classOrInterfaceType | primitiveType | primitive_type_wildcard | var_wildcard) (annotation* '[' ']')*
     ;
 
 primitiveType
@@ -785,7 +786,6 @@ primitiveType
     | LONG
     | FLOAT
     | DOUBLE
-    | WILDCARD_SPACE
     ;
 
 typeArguments
@@ -807,7 +807,7 @@ arguments
     ;
 
 // Syntax of wildcards
-simple_wildcard: '#';
-list_wildcard: '#' '*';
-var_wildcard: '#' identifier;
-simple_compound_wildcard: '#' statement;
+primitive_type_wildcard: WILDCARD_SPACE;
+list_wildcard: WILDCARD '*';
+var_wildcard: WILDCARD identifier;
+simple_compound_wildcard: (WILDCARD | WILDCARD_SPACE) statement;
